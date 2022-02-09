@@ -1,21 +1,12 @@
 from datetime import datetime
 import os
-from kucoin.client import Client
 import asyncio
 import pandas as pd
-import configparser
 
-
-cfg = configparser.ConfigParser()
-cfg.read('api.cfg')
-api_key = cfg.get('KEYS','api_key')
-api_secret = cfg.get('KEYS', 'api_secret')
-api_passphrase = cfg.get('KEYS', 'api_passphrase')
-client = Client(api_key, api_secret, api_passphrase)
 
 class DataService():
 
-    def __init__(self, symbol, timeFrame, startTime, endTime, limit=1440*60):
+    def __init__(self, client, symbol, timeFrame, startTime, endTime, limit=1440*60):
         self.symbol = symbol
         self.timeFrame = timeFrame
         self.startTime = startTime
@@ -23,6 +14,7 @@ class DataService():
         self.klines = []
         self.limit = limit
         self.dataFrame = ""
+        self.client = client
         
         asyncio.run(self.fetchKlines())
 
@@ -45,16 +37,16 @@ class DataService():
         for i in range(startTime,endTime,self.limit):
             temp = []
             if (i+self.limit < endTime):
-                temp.extend(client.get_kline_data(self.symbol, self.timeFrame, i, i+self.limit))
+                temp.extend(self.client.get_kline_data(self.symbol, self.timeFrame, i, i+self.limit))
             else:
-                temp.extend(client.get_kline_data(self.symbol, self.timeFrame, i, endTime))
+                temp.extend(self.client.get_kline_data(self.symbol, self.timeFrame, i, endTime))
             self.klines.extend(temp)
             print(temp[0][0],temp[-1][0])
             await asyncio.sleep(2.5)
         self.makeDataFrame()
                         
     def makeDataFrame(self):
-        dataFrame = pd.DataFrame(self.klines, columns = ['timestamp', 'open', 'close', 'high', 'low', 'volume', 'amount'])
+        dataFrame = pd.DataFrame(self.klines, columns = ['timestamp', 'open', 'close', 'high', 'low', 'amount', 'volume'])
         dataFrame['timestamp'] = dataFrame['timestamp'].astype(float)*1000
         dataFrame['timestamp'] = pd.to_datetime(dataFrame['timestamp'], unit='ms')
         dataFrame.set_index('timestamp', inplace=True)
@@ -67,9 +59,3 @@ class DataService():
             return
         else:
             self.dataFrame.to_csv(fileName)
-
-
-
-
-    
-d = DataService("BTC-USDT", "1min", "2021-01-01", "2021-01-03")
