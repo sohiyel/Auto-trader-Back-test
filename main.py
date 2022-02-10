@@ -1,6 +1,5 @@
-from client import KucoinClient
 from data import DataService
 
-newClient = KucoinClient()
-client = newClient.client
-d = DataService(client, "BTC-USDT", "1min", "2021-01-01", "2021-01-04")
+
+# spotData = DataService('spot', "BTC-USDT", "1min", "2021-01-01", "2021-01-04")
+futuresData = DataService('futures', ".KXBT", 240, "2021-01-01", "2022-01-01")
