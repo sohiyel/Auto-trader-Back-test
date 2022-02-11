@@ -1,5 +1,6 @@
 class Order():
-    def __init__(self, pair, type, volume, openPrice, currentPrice, openAt, stopLoss = "", target = "") -> None:
+    def __init__(self, id, pair, type, volume, openPrice, currentPrice, openAt, stopLoss = "", target = "") -> None:
+        self.id = id
         self.pair = pair
         self.type = type
         self.volume = volume
