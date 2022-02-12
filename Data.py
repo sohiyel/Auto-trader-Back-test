@@ -5,6 +5,7 @@ import pandas as pd
 from pytz import timezone
 from kucoinFutures import KucoinFutures
 from kucoinSpot import KucoinSpot
+from tfMap import tfMap
 
 class DataService():
 
@@ -16,6 +17,8 @@ class DataService():
         self.klines = []
         self.dataFrame = ""
         self.market = market
+        self.startAtTs = self.convertTime(startTime)
+        self.endAtTs = self.convertTime(endTime)
         if market == 'futures':
             self.limit = 200
             self.client = KucoinFutures(market)
@@ -26,12 +29,12 @@ class DataService():
         asyncio.run(self.fetchKlines())
 
     def convertTime(self, ttime):
-        date_time_obj = datetime.strptime(ttime, '%Y-%m-%d')
+        date_time_obj = datetime.strptime(ttime, '%Y-%m-%d %H:%M:%S')
         utc_time = date_time_obj.replace(tzinfo=timezone('utc'))
-        return datetime.timestamp(utc_time)
+        return int(datetime.timestamp(utc_time))
 
     async def fetchKlines(self):
-        fileName = "./data/"+self.market+"/"+self.symbol+"_"+self.startTime+"_"+self.endTime+".csv"
+        fileName = "./data/"+self.market+"/"+self.symbol+"_"+str(self.startAtTs)+"_"+str(self.endAtTs)+".csv"
         if ( os.path.exists(fileName)):
             self.dataFrame = pd.read_csv(fileName)
             print(fileName + " has been read from disk")
@@ -39,10 +42,8 @@ class DataService():
             await self.getKlines()
         
     async def getKlines(self):
-        startTime = int(self.convertTime(self.startTime))
-        endTime = int(self.convertTime(self.endTime))
-        print(startTime, endTime)
-        self.klines = await self.client.get_klines_data(self.symbol, self.timeFrame, startTime, endTime)
+        print(self.startAtTs, self.endAtTs)
+        self.klines = await self.client.get_klines_data(self.symbol, self.timeFrame, self.startAtTs, self.endAtTs)
         self.makeDataFrame()
                         
     def makeDataFrame(self):
@@ -61,8 +62,16 @@ class DataService():
         asyncio.create_task(self.writeToCSV())
         
     async def writeToCSV(self):
-        fileName = "./data/"+self.market+"/"+self.symbol+"_"+self.startTime+"_"+self.endTime+".csv"
+        fileName = "./data/"+self.market+"/"+self.symbol+"_"+str(self.startAtTs)+"_"+str(self.endAtTs)+".csv"
         if ( os.path.exists(fileName)):
             return
         else:
             self.dataFrame.to_csv(fileName)
+
+    def getCurrentData(self, lastState):
+        if lastState <= self.endAtTs:
+            dt_object = datetime.fromtimestamp(lastState, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
+            return self.dataFrame.loc[self.dataFrame['timestamp'] == dt_object]
+        else:
+            "<----------End of this dataset!---------->"
+            return False
