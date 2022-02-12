@@ -1,11 +1,11 @@
 class Position():
-    def __init__(self, id, pair, type, volume, openPrice, currentPrice, openAt, stopLoss = "", takeProfit = "", comment="") -> None:
+    def __init__(self, id, pair, type, volume, openPrice, openAt, stopLoss = "", takeProfit = "", comment="") -> None:
         self.id = id
         self.pair = pair
         self.type = type
         self.volume = volume
         self.openPrice = openPrice
-        self.currentPrice = currentPrice
+        self.currentPrice = openPrice
         self.openAt = openAt
         self.stopLoss = stopLoss
         self.takeProfit = takeProfit
@@ -15,9 +15,12 @@ class Position():
         self.comment = comment
 
     def calcProfit(self):
-        if self.closeAt != "":
-            self.profit = self.currentPrice - self.openPrice
+        if self.type == "LONG":
+            self.profit = (self.currentPrice - self.openPrice) * self.volume
+        elif self.type == "SHORT":
+            self.profit = (self.openPrice - self.currentPrice) * self.volume
         return self.profit
 
     def closePosition(self, timestamp):
         self.closeAt = timestamp
+        return self.calcProfit()
