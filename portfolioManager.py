@@ -5,5 +5,7 @@ class PortfolioManager():
         self.profit = 0.0
         self.loss = 0.0
         self.pol = 0.0
+        self.numProfits = 0
+        self.numLosses = 0
         
 

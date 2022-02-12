@@ -23,4 +23,5 @@ class Position():
 
     def closePosition(self, timestamp):
         self.closeAt = timestamp
-        return self.calcProfit()
+        self.calcProfit()
+        return self.openPrice * self.volume + self.profit

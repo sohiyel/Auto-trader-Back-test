@@ -11,13 +11,16 @@ class PositionManager():
             positionId = uuid.uuid4()
             newPosition = Position(positionId, pair, type, volume, price, timestamp, stopLoss, takeProfit, comment)
             self.openPositions.append(newPosition)
+            return True
+        else:
+            return False
 
     def closePosition(self, timestamp):
         if len(self.openPositions) > 0:
-            profit = self.openPositions[0].closePosition(timestamp)
+            lastPrice = self.openPositions[0].closePosition(timestamp)
             self.closedPositions.append(self.openPositions[0])
             self.openPositions = []
-            return profit
+            return lastPrice
         else:
             return 0
 

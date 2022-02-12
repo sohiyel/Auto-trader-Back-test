@@ -3,6 +3,8 @@ from orderManager import OrderManager
 from data import DataService
 from portfolioManager import PortfolioManager
 from tfMap import tfMap
+from datetime import datetime
+from pytz import timezone
 class Trader():
     def __init__ (self, symbol, timeFrame, startAt, endAt, initialCapital, orderManagers):
         self.pair = symbol
@@ -20,30 +22,54 @@ class Trader():
 
         self.mainloop()
 
-    def processOrder(self, choice, price, volume):
+    def processOrders(self, choice, price, volume):
         if choice == 0:
             pass
         elif choice == 1:
-            self.positionManager.openPosition(self.pair, "LONG", price, volume, self.lastState)
-            self.portfolioManager.balance -= price * volume
+            if self.positionManager.openPosition(self.pair, "LONG", price, volume, self.lastState):
+                self.portfolioManager.balance -= price * volume
         elif choice == 2:
-            profit = self.positionManager.closePosition(self.lastState)
-            self.portfolioManager.balance += profit
+            if len(self.positionManager.openPositions) > 0:
+                lastPrice = self.positionManager.closePosition(self.lastState)
+                self.portfolioManager.balance += lastPrice
+                if self.positionManager.closedPositions[-1].profit > 0:
+                    self.portfolioManager.numProfits += 1
+                    self.portfolioManager.profit += self.positionManager.closedPositions[-1].profit
+                else:
+                    self.portfolioManager.loss += self.positionManager.closedPositions[-1].profit
+                    self.portfolioManager.numLosses += 1
+                print(self.positionManager.closedPositions[-1].profit)
         elif choice == 3:
-            self.positionManager.openPosition(self.pair, "SHORT", price, volume, self.lastState)
-            self.portfolioManager.balance -= price * volume
+            if self.positionManager.openPosition(self.pair, "SHORT", price, volume, self.lastState):
+                self.portfolioManager.balance -= price * volume
         elif choice == 4:
-            profit = self.positionManager.closePosition(self.lastState)
-            self.portfolioManager.balance += profit
+            if len(self.positionManager.openPositions) > 0:
+                lastPrice = self.positionManager.closePosition(self.lastState)
+                self.portfolioManager.balance += lastPrice
+                if self.positionManager.closedPositions[-1].profit > 0:
+                    self.portfolioManager.numProfits += 1
+                    self.portfolioManager.profit += self.positionManager.closedPositions[-1].profit
+                else:
+                    self.portfolioManager.loss += self.positionManager.closedPositions[-1].profit
+                    self.portfolioManager.numLosses += 1
+                print(self.positionManager.closedPositions[-1].profit)
 
 
 
     def mainloop(self):
         for i in range(self.dataService.startAtTs,self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
+            if self.portfolioManager.balance <= 0:
+                break
             self.lastState = i
             self.lastCandle = self.dataService.getCurrentData(i)
             # print(self.lastCandle['close'].values[0])
             self.positionManager.updatePositions(self.lastCandle['close'].values[0])
             choice = self.orderManager.decider(self.lastCandle, self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.positionAveragePrice(), self.positionManager.positionSize())
-            self.processOrder(choice, self.lastCandle["close"].values[0], 0.01)
-            print(self.portfolioManager.balance)
+            self.processOrders(choice, self.lastCandle["close"].values[0], 0.01)
+            # print(self.portfolioManager.balance)
+
+        print (self.portfolioManager.numProfits, self.portfolioManager.numLosses)
+        print (self.portfolioManager.profit, self.portfolioManager.loss)
+        print (self.portfolioManager.pol)
+        print (self.portfolioManager.balance)
+        print (datetime.fromtimestamp(i, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S'))
