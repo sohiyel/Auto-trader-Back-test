@@ -1,7 +1,7 @@
 from position import Position
 import uuid
 
-class PositionManagert():
+class PositionManager():
     def __init__(self) -> None:
         self.openPositions = []
         self.closedPositions = []

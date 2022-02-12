@@ -1,6 +1,5 @@
-class SignalManager():
-    def __init__(self, market, initialCapital) -> None:
-        self.market = market
+class OrderManager():
+    def __init__(self, initialCapital) -> None:
         self.initialCapital = initialCapital
         self.equity = initialCapital
         self.positionSize = 0
