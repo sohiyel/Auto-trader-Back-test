@@ -68,6 +68,8 @@ class Trader():
             self.processOrders(choice, self.lastCandle["close"].values[0], 0.01)
             # print(self.portfolioManager.balance)
 
+            self.portfolioManager.calcPoL()
+
         print (self.portfolioManager.numProfits, self.portfolioManager.numLosses)
         print (self.portfolioManager.profit, self.portfolioManager.loss)
         print (self.portfolioManager.pol)

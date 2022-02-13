@@ -1,3 +1,4 @@
+
 class PortfolioManager():
     def __init__(self, initialCapital) -> None:
         self.balance = initialCapital
@@ -8,4 +9,7 @@ class PortfolioManager():
         self.numProfits = 0
         self.numLosses = 0
         
+    def calcPoL(self):
+        if self.loss != 0:
+            self.pol = abs( self.profit / self.loss )
 
