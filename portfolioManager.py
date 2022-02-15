@@ -14,7 +14,12 @@ class PortfolioManager():
             self.pol = abs( self.profit / self.loss )
 
     def openPosition(self, volume, price, commission):
-        self.balance -= volume * price *  ( 1 + commission )
+        if volume * price *  ( 1 + commission ) < self.balance:
+            self.balance -= volume * price *  ( 1 + commission )
+            return True
+        else:
+            print ("Insufficent balance!")
+            return False
 
     def closePosition(self, lastPrice, commission):
         self.balance += lastPrice *  ( 1 + commission )
@@ -28,5 +33,10 @@ class PortfolioManager():
         self.numLosses += 1
 
     def addVolume(self, volume, price, commission):
-        self.balance -= volume * price *  ( 1 + commission )
+        if volume * price *  ( 1 + commission ) < self.balance:
+            self.balance -= volume * price *  ( 1 + commission )
+            return True
+        else:
+            print ("Insufficent balance!")
+            return False
 

@@ -15,6 +15,7 @@ class PositionManager():
         if len(self.openPositions) > 0:
             lastPrice = self.openPositions[0].closePosition(timestamp)
             self.closedPositions.append(self.openPositions[0])
+            self.closedPositions[-1].calcProfit()
             self.openPositions = []
             return lastPrice
         else:
@@ -27,7 +28,7 @@ class PositionManager():
     def updatePositions(self, currentPrice):
         for i in self.openPositions:
             i.currentPrice = currentPrice
-            i.calcProfit()
+            i.profit = i.calcProfit()
 
     def positionAveragePrice(self):
         return 0
