@@ -7,13 +7,9 @@ class PositionManager():
         self.closedPositions = []
     
     def openPosition(self, pair, type, price, volume, timestamp, stopLoss="", takeProfit="", comment=""):
-        if len(self.openPositions) < 1:
-            positionId = uuid.uuid4()
-            newPosition = Position(positionId, pair, type, volume, price, timestamp, stopLoss, takeProfit, comment)
-            self.openPositions.append(newPosition)
-            return True
-        else:
-            return False
+        positionId = uuid.uuid4()
+        newPosition = Position(positionId, pair, type, volume, price, timestamp, stopLoss, takeProfit, comment)
+        self.openPositions.append(newPosition)
 
     def closePosition(self, timestamp):
         if len(self.openPositions) > 0:
@@ -22,11 +18,16 @@ class PositionManager():
             self.openPositions = []
             return lastPrice
         else:
-            return 0
+            return
+
+    def addVolume(self, price, volume):
+        self.openPositions[0].volume += volume
+        self.openPositions[0].openPrice = (self.openPositions[0].openPrice + price) / 2
 
     def updatePositions(self, currentPrice):
         for i in self.openPositions:
             i.currentPrice = currentPrice
+            i.calcProfit()
 
     def positionAveragePrice(self):
         return 0

@@ -11,7 +11,7 @@ class Position():
         self.takeProfit = takeProfit
         self.closeAt = ""
         self.profit = 0.0
-        self.commission = 0.06
+        self.commission = 0.00
         self.comment = comment
 
     def calcProfit(self):
@@ -24,4 +24,21 @@ class Position():
     def closePosition(self, timestamp):
         self.closeAt = timestamp
         self.calcProfit()
-        return self.openPrice * self.volume + self.profit
+        return (self.openPrice * self.volume) + self.profit
+
+    def to_dict(self):
+        return {
+            'id' : self.id,
+            'pair': self.pair,
+            'type': self.type,
+            'volume': self.volume,
+            'openPrice': self.openPrice,
+            'currentPrice': self.currentPrice,
+            'openAt': self.openAt,
+            'stopLoss': self.stopLoss,
+            'takeProfit': self.takeProfit,
+            'closeAt': self.closeAt,
+            'profit': self.profit,
+            'commission': self.commission,
+            'comment': self.commission
+        }

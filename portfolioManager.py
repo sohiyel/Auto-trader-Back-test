@@ -13,3 +13,20 @@ class PortfolioManager():
         if self.loss != 0:
             self.pol = abs( self.profit / self.loss )
 
+    def openPosition(self, volume, price, commission):
+        self.balance -= volume * price *  ( 1 + commission )
+
+    def closePosition(self, lastPrice, commission):
+        self.balance += lastPrice *  ( 1 + commission )
+
+    def addProfit(self, profit):
+        self.profit += profit
+        self.numProfits += 1
+
+    def addLoss(self, loss):
+        self.loss += loss
+        self.numLosses += 1
+
+    def addVolume(self, volume, price, commission):
+        self.balance -= volume * price *  ( 1 + commission )
+
