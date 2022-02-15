@@ -21,8 +21,8 @@ class PositionManager():
             return
 
     def addVolume(self, price, volume):
+        self.openPositions[0].openPrice = (self.openPositions[0].openPrice * self.openPositions[0].volume + price * volume) / ( self.openPositions[0].volume + volume )
         self.openPositions[0].volume += volume
-        self.openPositions[0].openPrice = (self.openPositions[0].openPrice + price) / 2
 
     def updatePositions(self, currentPrice):
         for i in self.openPositions:

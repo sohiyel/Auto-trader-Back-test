@@ -27,66 +27,50 @@ class Trader():
         self.balances = []
         self.mainloop()
 
+    def openPosition(self, type, price, volume):
+        if len( self.positionManager.openPositions ) == 0:
+                self.positionManager.openPosition(self.pair, type, price, volume, self.lastState)
+                self.portfolioManager.openPosition(volume, price, self.positionManager.openPositions[0].commission)
+        elif len( self.positionManager.openPositions ) == 1:
+            if self.positionManager.openPositions[0].type == type:
+                self.positionManager.addVolume(price, volume)
+                self.portfolioManager.addVolume(volume, price, self.positionManager.openPositions[0].commission)
+            else:
+                lastPrice = self.positionManager.closePosition(self.lastState)
+                self.portfolioManager.closePosition(lastPrice, self.positionManager.closedPositions[-1].commission)
+                if self.positionManager.closedPositions[-1].profit > 0:
+                    self.portfolioManager.addProfit(self.positionManager.closedPositions[-1].profit)
+                else:
+                    self.portfolioManager.addLoss(self.positionManager.closedPositions[-1].profit)
+                self.balances.append(self.portfolioManager.balance)
+                self.positionManager.openPosition(self.pair, type, price, volume, self.lastState)
+                self.portfolioManager.openPosition(volume, price, self.positionManager.openPositions[0].commission)
+
+    def closePosition(self):
+        if len(self.positionManager.openPositions) > 0:
+            lastPrice = self.positionManager.closePosition(self.lastState)
+            self.portfolioManager.closePosition(lastPrice, self.positionManager.closedPositions[-1].commission)
+            if self.positionManager.closedPositions[-1].profit > 0:
+                self.portfolioManager.addProfit(self.positionManager.closedPositions[-1].profit)
+            else:
+                self.portfolioManager.addLoss(self.positionManager.closedPositions[-1].profit)
+            self.balances.append(self.portfolioManager.balance)
+
     def processOrders(self, choice, price, volume):
         if choice == 0:
             pass
+
         elif choice == 1:
-            if len( self.positionManager.openPositions ) == 0:
-                self.positionManager.openPosition(self.pair, "LONG", price, volume, self.lastState)
-                self.portfolioManager.openPosition(volume, price, self.positionManager.openPositions[0].commission)
-            elif len( self.positionManager.openPositions ) == 1:
-                if self.positionManager.openPositions[0].type == "LONG":
-                    self.positionManager.addVolume(price, volume)
-                    self.portfolioManager.addVolume(volume, price, self.positionManager.openPositions[0].commission)
-                else:
-                    lastPrice = self.positionManager.closePosition(self.lastState)
-                    self.portfolioManager.closePosition(lastPrice, self.positionManager.closedPositions[-1].commission)
-                    if self.positionManager.closedPositions[-1].profit > 0:
-                        self.portfolioManager.addProfit(self.positionManager.closedPositions[-1].profit)
-                    else:
-                        self.portfolioManager.addLoss(self.positionManager.closedPositions[-1].profit)
-                    self.balances.append(self.portfolioManager.balance)
-                    self.positionManager.openPosition(self.pair, "LONG", price, volume, self.lastState)
-                    self.portfolioManager.openPosition(volume, price, self.positionManager.openPositions[0].commission)
+            self.openPosition("Long", price, volume)
             
         elif choice == 2:
-            if len(self.positionManager.openPositions) > 0:
-                lastPrice = self.positionManager.closePosition(self.lastState)
-                self.portfolioManager.closePosition(lastPrice, self.positionManager.closedPositions[-1].commission)
-                if self.positionManager.closedPositions[-1].profit > 0:
-                    self.portfolioManager.addProfit(self.positionManager.closedPositions[-1].profit)
-                else:
-                    self.portfolioManager.addLoss(self.positionManager.closedPositions[-1].profit)
-                self.balances.append(self.portfolioManager.balance)
+            self.closePosition()
+
         elif choice == 3:
-            if len( self.positionManager.openPositions ) == 0:
-                self.positionManager.openPosition(self.pair, "SHORT", price, volume, self.lastState)
-                self.portfolioManager.openPosition(volume, price, self.positionManager.openPositions[0].commission)
-            elif len( self.positionManager.openPositions ) == 1:
-                if self.positionManager.openPositions[0].type == "SHORT":
-                    self.positionManager.addVolume(price, volume)
-                    self.portfolioManager.addVolume(volume, price, self.positionManager.openPositions[0].commission)
-                else:
-                    lastPrice = self.positionManager.closePosition(self.lastState)
-                    self.portfolioManager.closePosition(lastPrice, self.positionManager.closedPositions[-1].commission)
-                    if self.positionManager.closedPositions[-1].profit > 0:
-                        self.portfolioManager.addProfit(self.positionManager.closedPositions[-1].profit)
-                    else:
-                        self.portfolioManager.addLoss(self.positionManager.closedPositions[-1].profit)
-                    self.balances.append(self.portfolioManager.balance)
-                    self.positionManager.openPosition(self.pair, "SHORT", price, volume, self.lastState)
-                    self.portfolioManager.openPosition(volume, price, self.positionManager.openPositions[0].commission)
+            self.openPosition("SHORT", price, volume)
             
         elif choice == 4:
-            if len(self.positionManager.openPositions) > 0:
-                lastPrice = self.positionManager.closePosition(self.lastState)
-                self.portfolioManager.closePosition(lastPrice, self.positionManager.closedPositions[-1].commission)
-                if self.positionManager.closedPositions[-1].profit > 0:
-                    self.portfolioManager.addProfit(self.positionManager.closedPositions[-1].profit)
-                else:
-                    self.portfolioManager.addLoss(self.positionManager.closedPositions[-1].profit)
-                
-                self.balances.append(self.portfolioManager.balance)
+            self.closePosition()
 
 
 
@@ -100,7 +84,7 @@ class Trader():
             # print(self.lastCandle['close'].values[0])
             self.positionManager.updatePositions(self.lastCandle['close'].values[0])
             choice = self.orderManager.decider(self.lastCandle, self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.positionAveragePrice(), self.positionManager.positionSize())
-            self.processOrders(choice, self.lastCandle["close"].values[0], 0.01)
+            self.processOrders(choice, self.lastCandle["close"].values[0], 1)
             # print(self.portfolioManager.balance)
 
             self.portfolioManager.calcPoL()
@@ -112,7 +96,7 @@ class Trader():
             df['Balance'] = self.portfolioManager.balance
             print(df)
 
-        self.processOrders(4, self.lastCandle["close"].values[0], 0.01)
+        self.processOrders(4, self.lastCandle["close"].values[0], 1)
         print (self.portfolioManager.numProfits, self.portfolioManager.numLosses)
         print (self.portfolioManager.profit, self.portfolioManager.loss)
         print (self.portfolioManager.pol)
