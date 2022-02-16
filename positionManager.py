@@ -30,6 +30,12 @@ class PositionManager():
             i.currentPrice = currentPrice
             i.profit = i.calcProfit()
 
+    def calcEquity(self):
+        totalEquity = 0
+        for i in self.openPositions:
+            totalEquity += i.calcEquity()
+        return totalEquity
+
     def positionAveragePrice(self):
         return 0
 

@@ -25,6 +25,7 @@ class Trader():
         self.timeFrame = timeFrame
         self.lastCandle = ""
         self.balances = []
+        self.equities = []
         self.mainloop()
 
     def openPosition(self, type, price, volume, commission):
@@ -74,6 +75,10 @@ class Trader():
         elif choice == 4:
             self.closePosition(commission)
 
+        if len(self.positionManager.openPositions) > 0:
+            lastPrice = self.positionManager.calcEquity()
+            self.equities.append(self.portfolioManager.updateEquity(lastPrice))
+
 
 
     def mainloop(self):
@@ -98,6 +103,7 @@ class Trader():
 
             df = pandas.DataFrame.from_records([position.to_dict() for position in self.positionManager.openPositions])
             df['Balance'] = self.portfolioManager.balance
+            df['Equity'] = self.portfolioManager.equity
             print(df)
 
         self.processOrders(4, self.lastCandle["close"].values[0], 1, 0)

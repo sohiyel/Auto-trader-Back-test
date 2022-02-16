@@ -16,13 +16,17 @@ class Position():
 
     def calcProfit(self):
         if self.type == "LONG":
-            self.profit = (self.currentPrice - self.openPrice) * self.volume
+            self.profit = (self.currentPrice - self.openPrice) * self.volume * (1 - self.commission)
         elif self.type == "SHORT":
-            self.profit = (self.openPrice - self.currentPrice) * self.volume
+            self.profit = (self.openPrice - self.currentPrice) * self.volume * (1 - self.commission)
         return self.profit
 
     def closePosition(self, timestamp):
         self.closeAt = timestamp
+        self.calcProfit()
+        return (self.openPrice * self.volume) + self.profit
+
+    def calcEquity(self):
         self.calcProfit()
         return (self.openPrice * self.volume) + self.profit
 

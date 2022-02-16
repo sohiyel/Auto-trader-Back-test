@@ -40,3 +40,6 @@ class PortfolioManager():
             print ("Insufficent balance!")
             return False
 
+    def updateEquity(self, lastPrice):
+        self.equity = self.balance + lastPrice
+        return self.equity
