@@ -1,4 +1,5 @@
 from random import randint
+from signals.signalManager import SignalManager
 
 
 class OrderManager():
@@ -7,8 +8,9 @@ class OrderManager():
         self.equity = initialCapital
         self.positionSize = 0
         self.positionAveragePrice = 0
+        self.signalManager = SignalManager()
 
     def decider(self, marketData, equity, initialCapital, positionAveragePrice, positionSize):
-        choice = randint(0,4)
+        choice = self.signalManager.getSignal(marketData)
         return choice
 

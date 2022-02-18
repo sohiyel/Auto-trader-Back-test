@@ -1,5 +1,8 @@
-from strategies.price_action01 import PriceAction01
+from .price_action_signal import PriceActionSignal
 
 class SignalManager():
     def __init__(self) -> None:
-        pass
+        self.signal = PriceActionSignal()
+
+    def getSignal(self, marketData):
+        return self.signal.decider(marketData)
