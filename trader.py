@@ -7,7 +7,7 @@ from tfMap import tfMap
 from datetime import datetime
 from pytz import timezone
 import os
-
+from plotter import Plotter
 
 
 class Trader():
@@ -23,6 +23,7 @@ class Trader():
         self.positionManager = PositionManager()
         self.portfolioManager = PortfolioManager(initialCapital)
         self.timeFrame = timeFrame
+        self.plotter =  Plotter(self.pair + "_" + str(self.startAt) + "_" + str(self.endAt) + "_" + self.timeFrame + ".csv" )
         self.lastCandle = ""
         self.balances = []
         self.equities = []
@@ -117,3 +118,5 @@ class Trader():
         df = pandas.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
         df['Balance'] = self.balances
         print(df)
+
+        self.plotter.writeDFtoFile(df)
