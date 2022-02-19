@@ -1,0 +1,6 @@
+{
+    "and_or_strategies" : {
+        "enter_strategies_and" : true,
+        "exit_strategies_and" : true
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "long_name": "EMA Cross Price",
+    "description": "When Price Cross Over EMA .....",
+
+    "params": [
+        {
+            "time_frame" : "default",
+            "pair" : "default",
+            "inputs": [
+                {"name": "len", "title": "length of EMA", "type": "int", "value": 40}
+            ],
+            "exits": {
+                "sl_percent": 0.4,
+                "tp_percent": 0.8
+            }
+        },
+        {
+            "time_frame" : "1m",
+            "pair" : "BTC/USDT",
+            "inputs": [
+                {"name": "len", "title": "length of EMA", "type": "int", "value": 50}
+            ],
+            "exits": {
+                "sl_percent": 0.25,
+                "tp_percent": 0.5
+            }
+        },
+        {
+            "time_frame" : "5m",
+            "pair" : "BTC/USDT",
+            "inputs": [
+                {"name": "len", "title": "length of EMA", "type": "int", "value": 80}
+            ],
+            "exits": {
+                "sl_percent": 0.5,
+                "tp_percent": 1
+            }
+        }
+    ]
+}

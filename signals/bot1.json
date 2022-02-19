@@ -1,0 +1,30 @@
+{
+    "long_name": "bot 1 one ema and two ema",
+    "description": "When bot 1 one ema and two ema .....",
+    "strategies" : [
+        {"strategy": "two_ema"},
+        {"strategy": "one_ema"}
+    ],
+    "and_or_strategies" : {
+        "enter_strategies_and" : true,
+        "exit_strategies_and" : false
+    },
+    "params": [
+        {
+            "time_frame" : "default",
+            "pair" : "default",
+            "exits": {
+                "sl_percent": 0.3,
+                "tp_percent": 0.6
+            }
+        },
+        {
+            "time_frame" : "1m",
+            "pair" : "BTCUSDT",
+            "exits": {
+                "sl_percent": 0.4,
+                "tp_percent": 0.8
+            }
+        }
+    ]
+}
