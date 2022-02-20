@@ -1,6 +1,6 @@
 from strategies.one_ema import OneEMA
 
-class OneEMASignal():
+class OneEMA():
     def __init__(self, timeFrame="default", pair="default") -> None:
         self.lastSignal = 0
         self.marketData = []

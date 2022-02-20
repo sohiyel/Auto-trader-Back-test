@@ -8,4 +8,5 @@ class SignalManager():
         self.signal = SignalClass()
 
     def getSignal(self, marketData):
-        return self.signal.decider(marketData)
+        signal = self.signal.decider(marketData)
+        return signal

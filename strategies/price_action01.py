@@ -1,4 +1,5 @@
 from strategies.strategy import Strategy
+from signalClass import SignalClass
 
 class PriceAction01(Strategy):
     def __init__(self) -> None:
@@ -43,4 +44,5 @@ class PriceAction01(Strategy):
         self.longExit()
         self.shortEnt()
         self.shortExit()
-        return self.decisions
+        sig = SignalClass(price = self.marketData[-1]["close"],longEnter = self.decisions["longEnt"], longExit = self.decisions["longExt"], shortEnter = self.decisions["shortEnt"], shortExit = self.decisions["shortExt"])
+        return sig
