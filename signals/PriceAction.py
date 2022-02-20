@@ -1,5 +1,6 @@
 from strategies.price_action01 import PriceAction01
 from signalClass import SignalClass
+
 class PriceAction():
     def __init__(self) -> None:
         self.lastSignal = 0

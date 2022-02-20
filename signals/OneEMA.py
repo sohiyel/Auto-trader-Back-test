@@ -1,4 +1,5 @@
-from strategies.one_ema import OneEMA
+from strategies.one_ema import OneEMAStrategy
+from signalClass import SignalClass
 
 class OneEMA():
     def __init__(self, timeFrame="default", pair="default") -> None:
@@ -9,9 +10,9 @@ class OneEMA():
         
     def decider(self, marketData):
         self.marketData.append(marketData)
-        if len(self.marketData) < 5:
-            return 0
-        strategy = OneEMA(self.timeFrame, self.pair)
+        if len(self.marketData) < 50:
+            return SignalClass()
+        strategy = OneEMAStrategy(self.timeFrame, self.pair)
         signal = strategy.decider(self.marketData)
-        # print(decision)
+        # print(self.marketData[-1])
         return signal

@@ -44,5 +44,5 @@ class PriceAction01(Strategy):
         self.longExit()
         self.shortEnt()
         self.shortExit()
-        sig = SignalClass(price = self.marketData[-1]["close"],longEnter = self.decisions["longEnt"], longExit = self.decisions["longExt"], shortEnter = self.decisions["shortEnt"], shortExit = self.decisions["shortExt"])
+        sig = SignalClass(price = self.marketData[-1]["close"], longEnter = self.decisions["longEnt"], longExit = self.decisions["longExt"], shortEnter = self.decisions["shortEnt"], shortExit = self.decisions["shortExt"])
         return sig
