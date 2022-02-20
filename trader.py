@@ -11,15 +11,15 @@ from plotter import Plotter
 
 
 class Trader():
-    def __init__ (self,market, symbol, timeFrame, startAt, endAt, initialCapital, orderManagers, volume):
+    def __init__ (self,market, symbol, timeFrame, startAt, endAt, initialCapital, signalName, volume):
         self.pair = symbol
         self.dataService = DataService(market, symbol, timeFrame, startAt, endAt)
         self.startAt = self.dataService.startAtTs
         self.endAt = self.dataService.endAtTs
         self.lastState = self.dataService.startAtTs
         self.initialCapital = initialCapital
-        self.orderManagers = orderManagers
-        self.orderManager = OrderManager(initialCapital)
+        self.signalName = signalName
+        self.orderManager = OrderManager(initialCapital, signalName)
         self.positionManager = PositionManager()
         self.portfolioManager = PortfolioManager(initialCapital)
         self.timeFrame = timeFrame

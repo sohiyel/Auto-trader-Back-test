@@ -1,5 +1,6 @@
 from strategies.strategy import Strategy
 import json
+from ..signalClass import Signal
 
 class OneEMA(Strategy):
     def __init__(self, timeFrame = "default", pair = "default") -> None:
@@ -36,4 +37,5 @@ class OneEMA(Strategy):
         self.longExit()
         self.shortEnt()
         self.shortExit()
-        return self.decisions
+        sig = Signal(self.pair, longEnter = self.decisions["longEnt"], longExit = self.decisions["longExt"], shortEnter = self.decisions["shortEnt"], shortExit = self.decisions["shortExt"])
+        return sig

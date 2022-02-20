@@ -1,8 +1,7 @@
 from strategies.price_action01 import PriceAction01
 
-class PriceActionSignal():
+class PriceAction():
     def __init__(self) -> None:
-        super().__init__()
         self.lastSignal = 0
         self.marketData = []
         
