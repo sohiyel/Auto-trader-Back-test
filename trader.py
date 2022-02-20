@@ -93,7 +93,7 @@ class Trader():
             self.lastState = i
             self.lastCandle = self.dataService.getCurrentData(i)
             # print(self.lastCandle['close'].values[0])
-            self.positionManager.updatePositions(self.lastCandle['close'].values[0])
+            self.positionManager.updatePositions(self.lastCandle['close'].values[0], self.lastState)
             choice = self.orderManager.decider(self.lastCandle.iloc[0], self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.positionAveragePrice(), self.positionManager.positionSize())
             self.processOrders(choice, self.lastCandle["close"].values[0], self.volume, 0)
             # print(self.portfolioManager.balance)

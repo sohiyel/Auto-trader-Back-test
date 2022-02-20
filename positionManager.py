@@ -25,10 +25,24 @@ class PositionManager():
         self.openPositions[0].openPrice = (self.openPositions[0].openPrice * self.openPositions[0].volume + price * volume) / ( self.openPositions[0].volume + volume )
         self.openPositions[0].volume += volume
 
-    def updatePositions(self, currentPrice):
+    def updatePositions(self, currentPrice, timestamp):
         for i in self.openPositions:
             i.currentPrice = currentPrice
             i.profit = i.calcProfit()
+            if i.type == 'LONG':
+                if i.takeProfit:
+                    if currentPrice > i.takeProfit:
+                        self.closePosition(timestamp)
+                if i.stopLoss:
+                    if currentPrice < i.stopLoss:
+                        self.closePosition(timestamp)
+            elif i.type == 'SHORT':
+                if i.takeProfit:
+                    if currentPrice < i.takeProfit:
+                        self.closePosition(timestamp)
+                if i.stopLoss:
+                    if currentPrice > i.stopLoss:
+                        self.closePosition(timestamp)
 
     def calcEquity(self):
         totalEquity = 0
