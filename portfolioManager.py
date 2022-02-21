@@ -18,7 +18,7 @@ class PortfolioManager():
             self.balance -= volume * price *  ( 1 + commission )
             return True
         else:
-            print ("Insufficent balance!")
+            print ("Insufficent balance!", self.balance, price * volume)
             return False
 
     def closePosition(self, lastPrice, commission):

@@ -32,17 +32,18 @@ class PositionManager():
             if i.type == 'LONG':
                 if i.takeProfit > 0:
                     if currentPrice > i.takeProfit:
-                        self.closePosition(timestamp)
+                        return False
                 if i.stopLoss > 0:
                     if currentPrice < i.stopLoss:
-                        self.closePosition(timestamp)
+                        return False
             elif i.type == 'SHORT':
                 if i.takeProfit > 0:
                     if currentPrice < i.takeProfit:
-                        self.closePosition(timestamp)
+                        return False
                 if i.stopLoss > 0:
                     if currentPrice > i.stopLoss:
-                        self.closePosition(timestamp)
+                        return False
+        return True
 
     def calcEquity(self):
         totalEquity = 0

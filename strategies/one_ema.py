@@ -18,6 +18,8 @@ class OneEMAStrategy(Strategy):
                 if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
                     self.params = p
             self.emaLength = self.params["inputs"][0]["value"]
+            self.stopLoss = self.params["exits"]["sl_percent"]
+            self.takeProfit = self.params["exits"]["tp_percent"]
 
     def longEnter(self):
         if self.df.iloc[-1]['close'] > self.ema.iloc[-1]:
@@ -43,6 +45,13 @@ class OneEMAStrategy(Strategy):
         self.longExit()
         self.shortEnt()
         self.shortExit()
-        sig = SignalClass(self.pair, price = self.df.iloc[-1]["close"], longEnter = self.decisions["longEnt"], longExit = self.decisions["longExt"], shortEnter = self.decisions["shortEnt"], shortExit = self.decisions["shortExt"])
+        sig = SignalClass(pair = self.pair,
+                        price = self.df.iloc[-1]["close"],
+                        stopLoss = self.stopLoss * self.df.iloc[-1]["close"],
+                        takeProfit = self.takeProfit * self.df.iloc[-1]["close"],
+                        longEnter = self.decisions["longEnt"],
+                        longExit = self.decisions["longExt"],
+                        shortEnter = self.decisions["shortEnt"],
+                        shortExit = self.decisions["shortExt"])
         # print(sig)
         return sig
