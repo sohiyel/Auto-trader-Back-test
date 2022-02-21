@@ -1,5 +1,4 @@
 from strategies.one_ema import OneEMAStrategy
-from signalClass import SignalClass
 
 class OneEMA():
     def __init__(self, timeFrame="default", pair="default") -> None:

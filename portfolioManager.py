@@ -15,14 +15,14 @@ class PortfolioManager():
 
     def openPosition(self, volume, price, commission):
         if volume * price *  ( 1 + commission ) < self.balance:
-            self.balance -= volume * price *  ( 1 + commission )
+            self.balance -= volume * price
             return True
         else:
             print ("Insufficent balance!", self.balance, price * volume)
             return False
 
     def closePosition(self, lastPrice, commission):
-        self.balance += lastPrice *  ( 1 + commission )
+        self.balance += lastPrice
 
     def addProfit(self, profit):
         self.profit += profit

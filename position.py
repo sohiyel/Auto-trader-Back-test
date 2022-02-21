@@ -7,22 +7,28 @@ class Position():
         self.openPrice = openPrice
         self.currentPrice = openPrice
         self.openAt = openAt
-        self.stopLoss = stopLoss
-        self.takeProfit = takeProfit
+        if type == "LONG":
+            self.stopLoss = (1 - stopLoss ) * openPrice
+            self.takeProfit = (1 + takeProfit) * openPrice
+        elif type == "SHORT":
+            self.stopLoss = (1 + stopLoss) * openPrice
+            self.takeProfit = (1 - takeProfit) * openPrice
         self.closeAt = ""
         self.profit = 0.0
-        self.commission = 0.00
+        self.commission = 0.0006 * openPrice * volume
         self.comment = comment
+        
 
     def calcProfit(self):
         if self.type == "LONG":
-            self.profit = (self.currentPrice - self.openPrice) * self.volume * (1 - self.commission)
+            self.profit = (self.currentPrice - self.openPrice) * self.volume - self.commission
         elif self.type == "SHORT":
-            self.profit = (self.openPrice - self.currentPrice) * self.volume * (1 - self.commission)
+            self.profit = (self.openPrice - self.currentPrice) * self.volume - self.commission
         return self.profit
 
     def closePosition(self, timestamp):
         self.closeAt = timestamp
+        self.commission += self.volume * self.currentPrice * 0.0006
         self.calcProfit()
         return (self.openPrice * self.volume) + self.profit
 

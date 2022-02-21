@@ -8,6 +8,7 @@ from datetime import datetime
 from pytz import timezone
 import os
 from plotter import Plotter
+import time
 
 
 class Trader():
@@ -87,9 +88,10 @@ class Trader():
 
     def mainloop(self):
         global balances
+        start_time = time.time()
         for i in range(self.dataService.startAtTs,self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
-                self.processOrders(4, None, 0)
+                self.processOrders(4, None, 0.0006)
                 self.portfolioManager.balance = 0
                 break
             self.lastState = i
@@ -97,11 +99,11 @@ class Trader():
             # print(self.lastCandle['close'].values[0])
             checkContinue = self.positionManager.updatePositions(self.lastCandle['close'].values[0], self.lastState)
             if not checkContinue :
-                self.processOrders(4, None, 0)
+                self.processOrders(4, None, 0.00060)
                 continue
 
             choice, signal = self.orderManager.decider(self.lastCandle.iloc[0], self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.positionAveragePrice(), self.positionManager.positionSize())
-            self.processOrders(choice, signal, 0)
+            self.processOrders(choice, signal, 0.00060)
             # print(self.portfolioManager.balance)
 
             self.portfolioManager.calcPoL()
@@ -114,7 +116,9 @@ class Trader():
             # df['Equity'] = self.portfolioManager.equity
             # print(df)
 
-        self.processOrders(4, None, 0)
+        self.processOrders(4, None, 0.0006)
+        print("--- %s seconds ---" % (time.time() - start_time))
+
         print (self.portfolioManager.numProfits, self.portfolioManager.numLosses)
         print (self.portfolioManager.profit, self.portfolioManager.loss)
         print (self.portfolioManager.pol)
@@ -125,5 +129,8 @@ class Trader():
         df = pandas.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
         df['Balance'] = self.balances
         print(df)
+        print("--- %s seconds ---" % (time.time() - start_time))
 
         self.plotter.writeDFtoFile(df)
+        print("--- %s seconds ---" % (time.time() - start_time))
+

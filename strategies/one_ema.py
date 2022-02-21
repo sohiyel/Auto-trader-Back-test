@@ -49,8 +49,8 @@ class OneEMAStrategy(Strategy):
         self.shortExit()
         sig = SignalClass(pair = self.pair,
                         price = self.df.iloc[-1]["close"],
-                        stopLoss = self.stopLoss * self.df.iloc[-1]["close"],
-                        takeProfit = self.takeProfit * self.df.iloc[-1]["close"],
+                        stopLoss = self.stopLoss,
+                        takeProfit = self.takeProfit,
                         longEnter = self.decisions["longEnt"],
                         longExit = self.decisions["longExt"],
                         shortEnter = self.decisions["shortEnt"],
