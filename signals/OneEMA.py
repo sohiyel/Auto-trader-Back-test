@@ -10,8 +10,6 @@ class OneEMA():
         
     def decider(self, marketData):
         self.marketData.append(marketData)
-        if len(self.marketData) < 50:
-            return SignalClass()
         strategy = OneEMAStrategy(self.timeFrame, self.pair)
         signal = strategy.decider(self.marketData)
         # print(self.marketData[-1])
