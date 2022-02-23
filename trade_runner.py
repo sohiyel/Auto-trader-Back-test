@@ -10,7 +10,7 @@ trader = Trader(market = "spot",
                 startAt = "2021-01-01 00:00:00",
                 endAt = "2021-01-02 00:00:00",
                 initialCapital = 100000,
-                strategyName = "TwoEMA",
+                strategyName = "RSIStrategy",
                 botName= "",
                 volume = 1)
 # trader = Trader("spot", "BTC-USDT", "1min", "2021-01-01 00:00:00", "2021-01-04 00:00:00", 100000, [])

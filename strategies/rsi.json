@@ -16,8 +16,8 @@
             }
         },
         {
-            "time_frame" : "1m",
-            "pair" : "BTC/USDT",
+            "time_frame" : "1min",
+            "pair" : "BTC-USDT",
             "inputs": [
                 {"name": "len", "title": "length of RSI", "type": "int", "value": 20},
                 {"name": "mid_line", "title": "RSI mid Line", "type": "int", "value": 49}
@@ -28,8 +28,8 @@
             }
         },
         {
-            "time_frame" : "5m",
-            "pair" : "BTC/USDT",
+            "time_frame" : "5min",
+            "pair" : "BTC-USDT",
             "inputs": [
                 {"name": "len", "title": "length of RSI", "type": "int", "value": 30},
                 {"name": "mid_line", "title": "RSI mid Line", "type": "int", "value": 51}
