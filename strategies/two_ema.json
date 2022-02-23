@@ -16,8 +16,8 @@
             }
         },
         {
-            "time_frame" : "1m",
-            "pair" : "BTC/USDT",
+            "time_frame" : "1min",
+            "pair" : "BTC-USDT",
             "inputs": [
                 {"name": "fast_len", "title": "length of Fast EMA", "type": "int", "value": 50},
                 {"name": "slow_len", "title": "length of Slow EMA", "type": "int", "value": 100}
@@ -28,8 +28,8 @@
             }
         },
         {
-            "time_frame" : "5m",
-            "pair" : "BTC/USDT",
+            "time_frame" : "5min",
+            "pair" : "BTC-USDT",
             "inputs": [
                 {"name": "fast_len", "title": "length of Fast EMA", "type": "int", "value": 80},
                 {"name": "slow_len", "title": "length of Slow EMA", "type": "int", "value": 160}

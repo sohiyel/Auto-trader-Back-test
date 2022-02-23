@@ -15,8 +15,8 @@
             }
         },
         {
-            "time_frame" : "1m",
-            "pair" : "BTC/USDT",
+            "time_frame" : "1min",
+            "pair" : "BTC-USDT",
             "inputs": [
                 {"name": "len", "title": "length of EMA", "type": "int", "value": 50}
             ],
@@ -26,8 +26,8 @@
             }
         },
         {
-            "time_frame" : "5m",
-            "pair" : "BTC/USDT",
+            "time_frame" : "5min",
+            "pair" : "BTC-USDT",
             "inputs": [
                 {"name": "len", "title": "length of EMA", "type": "int", "value": 80}
             ],
