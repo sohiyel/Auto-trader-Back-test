@@ -1,4 +1,4 @@
-from strategies.price_action01 import PriceAction01
+from strategies.PriceAction import PriceAction01
 from signalClass import SignalClass
 
 class PriceAction():

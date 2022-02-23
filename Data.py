@@ -21,10 +21,10 @@ class DataService():
         self.endAtTs = self.convertTime(endTime)
         if market == 'futures':
             self.limit = 200
-            self.client = KucoinFutures(market)
+            self.client = KucoinFutures(market, timeFrame)
         else:
             self.limit = 1440
-            self.client = KucoinSpot(market)
+            self.client = KucoinSpot(market, timeFrame)
         
         asyncio.run(self.fetchKlines())
 
@@ -67,6 +67,9 @@ class DataService():
             return
         else:
             self.dataFrame.to_csv(fileName)
+            self.dataFrame = pd.read_csv(fileName)
+            print(fileName + " has been read from disk")
+
 
     def getCurrentData(self, lastState):
         if lastState <= self.endAtTs:

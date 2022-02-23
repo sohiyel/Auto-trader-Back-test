@@ -6,11 +6,11 @@ from trader import Trader
 
 trader = Trader(market = "spot",
                 pair = "BTC-USDT",
-                timeFrame = "1min",
+                timeFrame = "4hour",
                 startAt = "2021-01-01 00:00:00",
-                endAt = "2021-01-02 00:00:00",
+                endAt = "2021-09-01 00:00:00",
                 initialCapital = 100000,
-                strategyName = "",
+                strategyName = "RSIStrategy",
                 botName= "Bot02",
                 volume = 1)
 # trader = Trader("spot", "BTC-USDT", "1min", "2021-01-01 00:00:00", "2021-01-04 00:00:00", 100000, [])

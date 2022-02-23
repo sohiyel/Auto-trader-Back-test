@@ -2,11 +2,11 @@ from kucoin import Kucoin
 import requests
 import asyncio
 
+
 class KucoinSpot(Kucoin):
-    def __init__(self, market):
-        super().__init__(market)
+    def __init__(self, market, timeFrame):
+        super().__init__(market, timeFrame)
         self.baseUrl = 'https://api.kucoin.com'
-        self.limit = 1440 * 60
 
     def get_klines(self, symbol, timeFrame, startAt, endAt):
         kLineURL = '/api/v1/market/candles?'
@@ -18,6 +18,7 @@ class KucoinSpot(Kucoin):
         }
         response = requests.get(self.baseUrl+kLineURL,params=params)
         if response.status_code ==  200:
+            print(response.json())
             return(response.json()['data'])
         else:
             print("Something went wrong. Error: "+ str(response.status_code))

@@ -3,10 +3,9 @@ import requests
 import asyncio
 
 class KucoinFutures(Kucoin):
-    def __init__(self, market):
-        super().__init__(market)
+    def __init__(self, market, timeFrame):
+        super().__init__(market, timeFrame)
         self.baseUrl = 'https://api-futures.kucoin.com/'
-        self.limit = 200 * 60000
 
     def get_klines(self, symbol, granularity, startAt, endAt):
         kLineURL = 'api/v1/kline/query?'

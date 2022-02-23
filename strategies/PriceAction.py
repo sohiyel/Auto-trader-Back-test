@@ -1,8 +1,8 @@
 from strategies.strategy import Strategy
 from signalClass import SignalClass
 
-class PriceAction01(Strategy):
-    def __init__(self) -> None:
+class PriceAction(Strategy):
+    def __init__(self, timeFrame = "default", pair = "default") -> None:
         super().__init__()
         self.marketData = []
 
@@ -40,6 +40,8 @@ class PriceAction01(Strategy):
 
     def decider(self, marketData):
         self.marketData = marketData
+        if len(self.marketData) < 5:
+            return SignalClass()
         self.longEnter()
         self.longExit()
         self.shortEnt()
