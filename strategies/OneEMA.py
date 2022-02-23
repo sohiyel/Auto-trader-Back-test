@@ -4,7 +4,7 @@ from signalClass import SignalClass
 import pandas as pd
 import pandas_ta as ta
 
-class OneEMAStrategy(Strategy):
+class OneEMA(Strategy):
     def __init__(self, timeFrame = "default", pair = "default") -> None:
         super().__init__()
         self.marketData = []
@@ -41,6 +41,7 @@ class OneEMAStrategy(Strategy):
         self.marketData = marketData
         if len(self.marketData) < self.emaLength:
             return SignalClass()
+        self.df = ""
         self.df = pd.DataFrame(marketData)
         self.ema = ta.ema(self.df["close"], length=self.emaLength)
         self.longEnter()

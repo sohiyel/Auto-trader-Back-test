@@ -1,6 +1,6 @@
-from strategies.one_ema import OneEMAStrategy
+from strategies.OneEMA import OneEMA
 
-class OneEMA():
+class OneEMABot():
     def __init__(self, timeFrame="default", pair="default") -> None:
         self.lastSignal = 0
         self.marketData = []
@@ -9,7 +9,7 @@ class OneEMA():
         
     def decider(self, marketData):
         self.marketData.append(marketData)
-        strategy = OneEMAStrategy(self.timeFrame, self.pair)
+        strategy = OneEMA(self.timeFrame, self.pair)
         signal = strategy.decider(self.marketData)
         # print(self.marketData[-1])
         return signal

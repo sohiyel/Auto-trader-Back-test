@@ -12,15 +12,15 @@ import time
 
 
 class Trader():
-    def __init__ (self,market, symbol, timeFrame, startAt, endAt, initialCapital, signalName, volume):
-        self.pair = symbol
-        self.dataService = DataService(market, symbol, timeFrame, startAt, endAt)
+    def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume):
+        self.pair = pair
+        self.dataService = DataService(market, pair, timeFrame, startAt, endAt)
         self.startAt = self.dataService.startAtTs
         self.endAt = self.dataService.endAtTs
         self.lastState = self.dataService.startAtTs
         self.initialCapital = initialCapital
-        self.signalName = signalName
-        self.orderManager = OrderManager(initialCapital, signalName)
+        self.strategyName = strategyName
+        self.orderManager = OrderManager(initialCapital, strategyName, botName, timeFrame, pair)
         self.positionManager = PositionManager()
         self.portfolioManager = PortfolioManager(initialCapital)
         self.timeFrame = timeFrame
