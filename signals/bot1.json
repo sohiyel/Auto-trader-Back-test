@@ -19,8 +19,8 @@
             }
         },
         {
-            "time_frame" : "1m",
-            "pair" : "BTCUSDT",
+            "time_frame" : "1min",
+            "pair" : "BTC-USDT",
             "exits": {
                 "sl_percent": 0.4,
                 "tp_percent": 0.8

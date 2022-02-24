@@ -8,7 +8,7 @@ class PositionManager():
     
     def openPosition(self, signal, lastState):
         positionId = uuid.uuid4()
-        newPosition = Position(positionId, signal.pair, signal.type, signal.volume, signal.price, lastState, signal.stopLoss, signal.takeProfit, signal.comment)
+        newPosition = Position(positionId, signal.pair, signal.type, signal.volume, signal.price, lastState, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
         self.openPositions.append(newPosition)
 
     def closePosition(self, timestamp):

@@ -1,5 +1,5 @@
 class Position():
-    def __init__(self, id, pair, type, volume, openPrice, openAt, stopLoss = "", takeProfit = "", comment="") -> None:
+    def __init__(self, id, pair, type, volume, openPrice, openAt, stopLoss = 0, takeProfit = 0, slPercent = 0, tpPercent = 0, comment="") -> None:
         self.id = id
         self.pair = pair
         self.type = type
@@ -7,12 +7,16 @@ class Position():
         self.openPrice = openPrice
         self.currentPrice = openPrice
         self.openAt = openAt
-        if type == "LONG":
-            self.stopLoss = (1 - stopLoss ) * openPrice
-            self.takeProfit = (1 + takeProfit) * openPrice
-        elif type == "SHORT":
-            self.stopLoss = (1 + stopLoss) * openPrice
-            self.takeProfit = (1 - takeProfit) * openPrice
+        if slPercent > 0 and tpPercent > 0:
+            if type == "LONG":
+                self.stopLoss = (1 - slPercent ) * openPrice
+                self.takeProfit = (1 + tpPercent) * openPrice
+            elif type == "SHORT":
+                self.stopLoss = (1 + slPercent) * openPrice
+                self.takeProfit = (1 - tpPercent) * openPrice
+        elif stopLoss > 0 and takeProfit > 0:
+            self.takeProfit = takeProfit
+            self.stopLoss = stopLoss
         self.closeAt = ""
         self.profit = 0.0
         self.commission = 0.0006 * openPrice * volume

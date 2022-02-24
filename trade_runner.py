@@ -5,12 +5,12 @@ from trader import Trader
 #futuresData = DataService('futures', ".KXBT", 240, "2021-01-01", "2022-01-01")
 
 trader = Trader(market = "spot",
-                pair = "BTC-USDT",
+                pair = "ETH-USDT",
                 timeFrame = "4hour",
                 startAt = "2021-01-01 00:00:00",
                 endAt = "2021-09-01 00:00:00",
                 initialCapital = 100000,
                 strategyName = "RSIStrategy",
-                botName= "Bot02",
+                botName= "Bot01",
                 volume = 1)
 # trader = Trader("spot", "BTC-USDT", "1min", "2021-01-01 00:00:00", "2021-01-04 00:00:00", 100000, [])

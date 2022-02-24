@@ -1,6 +1,7 @@
 from strategies.OneEMA import OneEMA
 from strategies.TwoEMA import TwoEMA
 from signalClass import SignalClass
+import json
 
 class Bot01():
     def __init__(self, timeFrame="default", pair="default") -> None:
@@ -8,6 +9,14 @@ class Bot01():
         self.marketData = []
         self.timeFrame = timeFrame
         self.pair = pair
+        with open("signals/bot1.json") as json_data_file:
+            bot01 = json.load(json_data_file)
+            self.params = bot01["params"][0]
+            for p in bot01["params"]:
+                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
+                    self.params = p
+        self.slPercent = self.params["exits"]["sl_percent"]
+        self.tpPercent = self.params["exits"]["tp_percent"]
         
     def decider(self, marketData):
         self.marketData.append(marketData)
@@ -21,8 +30,8 @@ class Bot01():
                             signal01.price,
                             signal01.stopLoss,
                             signal01.takeProfit,
-                            signal01.slPercent,
-                            signal01.tpPercent,
+                            self.slPercent,
+                            self.tpPercent,
                             signal01.comment+signal02.comment,
                             signal01.longEnter and signal02.longEnter,
                             signal01.longExit and signal02.longExit,
