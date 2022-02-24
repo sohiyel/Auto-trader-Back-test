@@ -1,5 +1,6 @@
 import importlib
 from signals.single_strategy import SingleStrategy
+from signals.bot_signal import BotSignal
 import os
 
 class SignalManager():
@@ -7,9 +8,7 @@ class SignalManager():
         if botName == "":
             self.signal = SingleStrategy(strategyName, timeFrame, pair)
         else:
-            signals = importlib.import_module("signals."+botName)
-            SignalClass = getattr(signals, botName)
-            self.signal = SignalClass(timeFrame, pair)
+            self.signal = BotSignal(botName, timeFrame, pair)
 
     def getSignal(self, marketData):
         signal = self.signal.decider(marketData)

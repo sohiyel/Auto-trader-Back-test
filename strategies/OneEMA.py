@@ -52,6 +52,7 @@ class OneEMA(Strategy):
                         price = self.df.iloc[-1]["close"],
                         slPercent = self.stopLoss,
                         tpPercent = self.takeProfit,
+                        comment= "OneEMA",
                         longEnter = self.decisions["longEnt"],
                         longExit = self.decisions["longExt"],
                         shortEnter = self.decisions["shortEnt"],

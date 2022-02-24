@@ -2,8 +2,8 @@
     "long_name": "bot 1 one ema and two ema",
     "description": "When bot 1 one ema and two ema .....",
     "strategies" : [
-        {"strategy": "two_ema"},
-        {"strategy": "one_ema"}
+        {"strategy": "TwoEMA"},
+        {"strategy": "OneEMA"}
     ],
     "and_or_strategies" : {
         "enter_strategies_and" : true,

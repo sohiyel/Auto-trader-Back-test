@@ -53,6 +53,7 @@ class TwoEMA(Strategy):
                         price = self.df.iloc[-1]["close"],
                         slPercent = self.stopLoss,
                         tpPercent = self.takeProfit,
+                        comment = "TwoEMA",
                         longEnter = self.decisions["longEnt"],
                         longExit = self.decisions["longExt"],
                         shortEnter = self.decisions["shortEnt"],

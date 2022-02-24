@@ -54,5 +54,5 @@ class Position():
             'closeAt': self.closeAt,
             'profit': self.profit,
             'commission': self.commission,
-            'comment': self.commission
+            'comment': self.comment
         }
