@@ -2,6 +2,22 @@
     "long_name": "RSI Cross Horizental Line",
     "description": "When RSI Cross Horizental Line .....",
 
+    "default": [
+        {
+            "time_frame" : "4hour",
+            "pair" : "ETH-USDT",
+            "inputs": [
+                {"name": "len", "title": "length of RSI", "type": "int", "value": 12, "from": 14, "to": 45, "step": 3, "optimized" : true},
+                {"name": "mid_line", "title": "RSI mid Line", "type": "int", "value": 12, "from": 14, "to": 45, "step": 3, "optimized": true}
+            ],
+            "exits": {
+                "sl_percent": 0.4,
+                "tp_percent": 0.8
+            }
+        }
+        
+    ],
+
     "params": [
         {
             "time_frame" : "default",
@@ -19,7 +35,7 @@
             "time_frame" : "1min",
             "pair" : "BTC-USDT",
             "inputs": [
-                {"name": "len", "title": "length of RSI", "type": "int", "value": 20},
+                {"name": "len", "title": "length of RSI", "type": "int", "value": 20, "optimization": true},
                 {"name": "mid_line", "title": "RSI mid Line", "type": "int", "value": 49}
             ],
             "exits": {
@@ -40,4 +56,7 @@
             }
         }
     ]
+
+    
+
 }
