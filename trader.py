@@ -89,6 +89,7 @@ class Trader():
     def mainloop(self):
         global balances
         start_time = time.time()
+        print("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
         for i in range(self.dataService.startAtTs,self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
                 self.processOrders(4, None, 0.0006)
@@ -117,20 +118,33 @@ class Trader():
             # print(df)
 
         self.processOrders(4, None, 0.0006)
-        print("--- %s seconds ---" % (time.time() - start_time))
+        netProfitPercent = (self.portfolioManager.balance - self.initialCapital)/self.initialCapital * 100
+        numberOfDays = ((self.endAt - self.startAt)/(1440 * 60))
+        numberOfTrades = len(self.positionManager.closedPositions)
+        
 
-        print (self.portfolioManager.numProfits, self.portfolioManager.numLosses)
-        print (self.portfolioManager.profit, self.portfolioManager.loss)
-        print (self.portfolioManager.pol)
-        print (self.portfolioManager.balance)
-        print (datetime.fromtimestamp(i, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S'))
-        print( len(self.balances))
+        print ("Number of trades: " + str(numberOfTrades))
+        print ("Number of win trade: {winTrades} \t Number of lose trades: {loseTrades}".format(winTrades=self.portfolioManager.numProfits,
+                                                                                                loseTrades=self.portfolioManager.numLosses))
+        print ("Sum amount of profits: {profits} \t Sum amount of loss: {loss}".format(profits = self.portfolioManager.profit,
+                                                                                        loss = self.portfolioManager.loss))
+        print ("Profit Factor: " + str(self.portfolioManager.profit / self.portfolioManager.loss))
+        print ("Current Balance: " + str(self.portfolioManager.balance))
+        print ("Net profit percent: "+ str(netProfitPercent))
+        print ("Min of equity: " + str(min(self.equities)))
+        print ("Min of balance: " + str(min(self.balances)))
+        print ("Net profit per day: " + str(netProfitPercent/numberOfDays))
+        print ("Number of days per trade: " + str(numberOfDays/numberOfTrades))
+        print ("Percent profitable: " + str(self.portfolioManager.numProfits / numberOfTrades * 100))
+        print ("Maximum drawdown :" + str((self.initialCapital - min(self.equities)) / self.initialCapital))
+
+
 
         df = pandas.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
         df['Balance'] = self.balances
         print(df)
-        print("--- %s seconds ---" % (time.time() - start_time))
 
         self.plotter.writeDFtoFile(df)
-        print("--- %s seconds ---" % (time.time() - start_time))
+        print("--- End time: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
+        print("--- Duration: %s seconds ---" % (time.time() - start_time))
 
