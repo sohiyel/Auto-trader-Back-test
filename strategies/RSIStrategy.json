@@ -7,8 +7,8 @@
             "time_frame" : "4hour",
             "pair" : "ETH-USDT",
             "inputs": [
-                {"name": "len", "title": "length of RSI", "type": "int", "value": 12, "from": 14, "to": 45, "step": 3, "optimized" : true},
-                {"name": "mid_line", "title": "RSI mid Line", "type": "int", "value": 12, "from": 14, "to": 45, "step": 3, "optimized": true}
+                {"name": "len", "title": "length of RSI", "type": "int", "value": 12, "from": 14, "to": 21, "step": 3, "optimized" : true},
+                {"name": "mid_line", "title": "RSI mid Line", "type": "int", "value": 12, "from": 14, "to": 21, "step": 3, "optimized": true}
             ],
             "exits": {
                 "sl_percent": 0.4,
