@@ -11,16 +11,17 @@ class TwoEMA(Strategy):
         self.timeFrame = timeFrame
         self.pair = pair
         self.df = ""
-        with open("strategies/two_ema.json") as json_data_file:
-            strategy = json.load(json_data_file)
-            self.params = strategy["params"][0]
-            for p in strategy["params"]:
-                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                    self.params = p
-            self.fastEMALength = self.params["inputs"][0]["value"]
-            self.slowEMALength = self.params["inputs"][1]["value"]
-            self.stopLoss = self.params["exits"]["sl_percent"]
-            self.takeProfit = self.params["exits"]["tp_percent"]
+        json_data_file = open("strategies/two_ema.json")
+        strategy = json.load(json_data_file)
+        self.params = strategy["params"][0]
+        for p in strategy["params"]:
+            if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
+                self.params = p
+        self.fastEMALength = self.params["inputs"][0]["value"]
+        self.slowEMALength = self.params["inputs"][1]["value"]
+        self.stopLoss = self.params["exits"]["sl_percent"]
+        self.takeProfit = self.params["exits"]["tp_percent"]
+        json_data_file.close()
 
     def longEnter(self):
         if self.fastEMA.iloc[-1] > self.slowEMA.iloc[-1]:
@@ -39,10 +40,16 @@ class TwoEMA(Strategy):
             self.decisions['shortExt'] = 1
 
     def decider(self, marketData):
-        self.marketData = marketData
-        if len(self.marketData) < self.slowEMALength:
+        self.decisions = {
+            'longEnt' : 0,
+            'shortEnt' : 0,
+            'longExt' : 0,
+            'shortExt' : 0,
+        }
+        if len(marketData) < self.slowEMALength:
             return SignalClass()
-        self.df = pd.DataFrame(marketData)
+        self.marketData = marketData
+        self.df = pd.DataFrame(self.marketData)
         self.fastEMA = ta.ema(self.df["close"], length=self.fastEMALength)
         self.slowEMA = ta.ema(self.df["close"], length=self.slowEMALength)
         self.longEnter()

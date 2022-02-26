@@ -10,30 +10,28 @@ class BotSignal():
         self.pair = pair
         self.strategyNames = []
         self.strategies = []
-        with open("signals/"+botName+".json") as json_data_file:
-            botJson = json.load(json_data_file)
-            self.params = botJson["params"][0]
-            for p in botJson["params"]:
-                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                    self.params = p
-            for s in botJson["strategies"]:
-                self.strategyNames.append(s["strategy"])
+        json_data_file = open("signals/"+botName+".json")
+        botJson = json.load(json_data_file)
+        self.params = botJson["params"][0]
+        for p in botJson["params"]:
+            if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
+                self.params = p
+        
+        for s in botJson["strategies"]:
+            self.strategyNames.append(s["strategy"])
+        
+        for s in self.strategyNames:
+            strategies = importlib.import_module("strategies."+s)
+            StrategyClass = getattr(strategies, s)
+            self.strategies.append(StrategyClass(self.timeFrame, self.pair))
+        json_data_file.close()
         self.slPercent = self.params["exits"]["sl_percent"]
         self.tpPercent = self.params["exits"]["tp_percent"]
-        
-            
-        
         
         
     def decider(self, marketData):
         self.marketData.append(marketData)
         signals = []
-        self.strategies = []
-
-        for s in self.strategyNames:
-            strategies = importlib.import_module("strategies."+s)
-            StrategyClass = getattr(strategies, s)
-            self.strategies.append(StrategyClass(self.timeFrame, self.pair))
 
         for s in self.strategies:
             signals.append(s.decider(self.marketData))

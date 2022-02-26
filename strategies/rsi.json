@@ -2,7 +2,7 @@
     "long_name": "RSI Cross Horizental Line",
     "description": "When RSI Cross Horizental Line .....",
 
-    "default": [
+    "optimization": [
         {
             "time_frame" : "4hour",
             "pair" : "ETH-USDT",

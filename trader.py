@@ -128,7 +128,8 @@ class Trader():
                                                                                                 loseTrades=self.portfolioManager.numLosses))
         print ("Sum amount of profits: {profits} \t Sum amount of loss: {loss}".format(profits = self.portfolioManager.profit,
                                                                                         loss = self.portfolioManager.loss))
-        print ("Profit Factor: " + str(self.portfolioManager.profit / self.portfolioManager.loss))
+        if self.portfolioManager.loss != 0:
+            print ("Profit Factor: " + str(self.portfolioManager.profit / self.portfolioManager.loss))
         print ("Current Balance: " + str(self.portfolioManager.balance))
         print ("Net profit percent: "+ str(netProfitPercent))
         print ("Min of equity: " + str(min(self.equities)))

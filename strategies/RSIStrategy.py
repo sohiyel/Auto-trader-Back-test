@@ -39,11 +39,18 @@ class RSIStrategy(Strategy):
             self.decisions['shortExt'] = 1
 
     def decider(self, marketData):
-        self.marketData = marketData
-        if len(self.marketData) < self.rsiLength:
+        if len(marketData) < self.rsiLength:
             return SignalClass()
+
+        self.marketData = marketData
+        self.decisions = {
+            'longEnt' : 0,
+            'shortEnt' : 0,
+            'longExt' : 0,
+            'shortExt' : 0,
+        }
         self.df = ""
-        self.df = pd.DataFrame(marketData)
+        self.df = pd.DataFrame(self.marketData)
         self.rsi = ta.rsi(self.df["close"], length= self.rsiLength)
         self.longEnter()
         self.longExit()

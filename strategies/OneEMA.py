@@ -38,11 +38,17 @@ class OneEMA(Strategy):
             self.decisions['shortExt'] = 1
 
     def decider(self, marketData):
-        self.marketData = marketData
-        if len(self.marketData) < self.emaLength:
+        if len(marketData) < self.emaLength:
             return SignalClass()
-        self.df = ""
-        self.df = pd.DataFrame(marketData)
+        
+        self.marketData = marketData[-self.emaLength:]
+        self.decisions = {
+            'longEnt' : 0,
+            'shortEnt' : 0,
+            'longExt' : 0,
+            'shortExt' : 0,
+        }
+        self.df = pd.DataFrame(self.marketData)
         self.ema = ta.ema(self.df["close"], length=self.emaLength)
         self.longEnter()
         self.longExit()
