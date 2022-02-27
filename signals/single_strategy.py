@@ -1,14 +1,12 @@
 import importlib
 
 class SingleStrategy():
-    def __init__(self, strategyName, timeFrame="default", pair="default") -> None:
+    def __init__(self, strategyName, currentInput) -> None:
         self.lastSignal = 0
         self.marketData = []
         strategies = importlib.import_module("strategies."+strategyName)
         self.StrategyClass = getattr(strategies, strategyName)
-        self.timeFrame = timeFrame
-        self.pair = pair
-        self.strategy = self.StrategyClass(self.timeFrame, self.pair)
+        self.strategy = self.StrategyClass(currentInput)
         
     def decider(self, marketData):
         self.marketData.append(marketData)

@@ -1,3 +1,4 @@
+from logging import currentframe
 import pandas
 from positionManager import PositionManager
 from orderManager import OrderManager
@@ -12,7 +13,7 @@ import time
 
 
 class Trader():
-    def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume):
+    def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization):
         self.pair = pair
         self.dataService = DataService(market, pair, timeFrame, startAt, endAt)
         self.startAt = self.dataService.startAtTs
@@ -20,7 +21,7 @@ class Trader():
         self.lastState = self.dataService.startAtTs
         self.initialCapital = initialCapital
         self.strategyName = strategyName
-        self.orderManager = OrderManager(initialCapital, strategyName, botName, timeFrame, pair)
+        self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput)
         self.positionManager = PositionManager()
         self.portfolioManager = PortfolioManager(initialCapital)
         self.timeFrame = timeFrame
@@ -29,6 +30,8 @@ class Trader():
         self.balances = []
         self.equities = []
         self.volume = volume
+        self.currentInput = currentInput
+        self.optimization = optimization
         self.mainloop()
 
     def openPosition(self, signal, commission):
@@ -140,12 +143,12 @@ class Trader():
         print ("Maximum drawdown :" + str((self.initialCapital - min(self.equities)) / self.initialCapital))
 
 
+        if not self.optimization:
+            df = pandas.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
+            df['Balance'] = self.balances
+            print(df)
 
-        df = pandas.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
-        df['Balance'] = self.balances
-        print(df)
-
-        self.plotter.writeDFtoFile(df)
+            self.plotter.writeDFtoFile(df)
         print("--- End time: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
         print("--- Duration: %s seconds ---" % (time.time() - start_time))
 

@@ -5,21 +5,13 @@ import pandas as pd
 import pandas_ta as ta
 
 class OneEMA(Strategy):
-    def __init__(self, timeFrame = "default", pair = "default") -> None:
+    def __init__(self, currentInput) -> None:
         super().__init__()
         self.marketData = []
-        self.timeFrame = timeFrame
-        self.pair = pair
         self.df = ""
-        with open("strategies/one_ema.json") as json_data_file:
-            strategy = json.load(json_data_file)
-            self.params = strategy["params"][0]
-            for p in strategy["params"]:
-                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                    self.params = p
-            self.emaLength = self.params["inputs"][0]["value"]
-            self.stopLoss = self.params["exits"]["sl_percent"]
-            self.takeProfit = self.params["exits"]["tp_percent"]
+        self.emaLength = next((x.value for x in currentInput if x.name == "len"), None)
+        self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
+        self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
 
     def longEnter(self):
         if self.df.iloc[-1]['close'] > self.ema.iloc[-1]:
@@ -54,7 +46,7 @@ class OneEMA(Strategy):
         self.longExit()
         self.shortEnt()
         self.shortExit()
-        sig = SignalClass(pair = self.pair,
+        sig = SignalClass(pair = "BTC-USDT",
                         price = self.df.iloc[-1]["close"],
                         slPercent = self.stopLoss,
                         tpPercent = self.takeProfit,

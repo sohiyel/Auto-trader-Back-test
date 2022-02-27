@@ -1,6 +1,8 @@
+from pprint import isreadable
 from data import DataService
 from trader import Trader
 from userInput import UserInput
+import pandas as pd
 
 # spotData = DataService('spot', "BTC-USDT", "1min", "2021-01-01 00:00:00", "2021-01-04 00:00:00")
 #futuresData = DataService('futures', ".KXBT", 240, "2021-01-01", "2022-01-01")
@@ -16,6 +18,31 @@ from userInput import UserInput
                 volume = 1)"""
 # trader = Trader("spot", "BTC-USDT", "1min", "2021-01-01 00:00:00", "2021-01-04 00:00:00", 100000, [])
 
-userInput = UserInput("BTC-USDT", "1min", "TwoEMA", "Bot02", True)
-print(len(userInput.inputs[0]), len(userInput.inputs[1]), len(userInput.inputs[2]))
-print( len( userInput.allInputs))
+pair =  "BTC-USDT"
+timeFrame = "4hour"
+strategyName = "RSIStrategy"
+botName = ""
+startAt = "2021-01-01 00:00:00"
+endAt = "2021-09-01 00:00:00"
+volume = 1
+initialCapital = 100000
+market = "spot"
+optimization = False
+
+userInput = UserInput(pair, timeFrame, strategyName, botName, optimization)
+print("Number of steps: " + str(len(userInput.inputs)))
+for i in range(len(userInput.inputs)):
+    userInput.step = i
+    currentInput = userInput.getCurrentInput()
+    
+    trader = Trader(market = market,
+                    pair = pair,
+                    timeFrame = timeFrame,
+                    startAt = startAt,
+                    endAt = endAt,
+                    initialCapital = initialCapital,
+                    strategyName = strategyName,
+                    botName= botName,
+                    volume = volume,
+                    currentInput = currentInput,
+                    optimization = optimization)

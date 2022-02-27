@@ -1,6 +1,7 @@
 import json
 from paramInput import ParamInput
 import itertools
+import numpy as np
 
 class UserInput():
     def __init__(self, pair, timeFrame, strategyName, botName, optimization = False) -> None:
@@ -15,7 +16,6 @@ class UserInput():
             self.inputs= self.getBotInputs(botName)
         else:
             self.inputs = self.getStrategyInputs(strategyName)
-        self.allInputs = list( itertools.product( *self.inputs ) )
 
 
     def getStrategyInputs(self, strategyName):
@@ -32,11 +32,11 @@ class UserInput():
                 pi = ParamInput(i["name"], i["title"], i["type"], i["value"], i["from"], i["to"], i["step"], i["optimized"])
                 if pi.optimization:
                     strategyInputs = []
-                    for i in range(pi.minValue,pi.maxValue,pi.step):
+                    for i in np.arange(pi.minValue, pi.maxValue, pi.step):
                         strategyInputs.append(ParamInput(pi.name, pi.title, pi.type, i, pi.minValue, pi.maxValue, pi.step, pi.optimization))
                     inputs.append(strategyInputs)
                 else:
-                    inputs.append(pi)
+                    inputs.append([pi])
         else:    
             params = jsonFile["params"][0]
             for p in jsonFile["params"]:
@@ -44,10 +44,10 @@ class UserInput():
                     params = p
             for i in params["inputs"]:
                 pi = ParamInput(i["name"], i["title"], i["type"], i["value"])
-                inputs.append(pi)
+                inputs.append([pi])
         
         json_data_file.close()
-        return list(itertools.product(*inputs))
+        return list( itertools.product( *inputs ) )
 
     def getBotInputs(self, botName):
         strategyNames = []
@@ -60,4 +60,7 @@ class UserInput():
         for strategy in strategyNames:
             inputs.append( self.getStrategyInputs(strategy) )
         
-        return inputs
+        return list( itertools.product( *inputs ) )
+
+    def getCurrentInput(self):
+        return self.inputs[self.step]

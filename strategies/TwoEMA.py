@@ -5,23 +5,14 @@ import pandas as pd
 import pandas_ta as ta
 
 class TwoEMA(Strategy):
-    def __init__(self, timeFrame = "default", pair = "default") -> None:
+    def __init__(self, currentInput) -> None:
         super().__init__()
         self.marketData = []
-        self.timeFrame = timeFrame
-        self.pair = pair
         self.df = ""
-        json_data_file = open("strategies/two_ema.json")
-        strategy = json.load(json_data_file)
-        self.params = strategy["params"][0]
-        for p in strategy["params"]:
-            if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                self.params = p
-        self.fastEMALength = self.params["inputs"][0]["value"]
-        self.slowEMALength = self.params["inputs"][1]["value"]
-        self.stopLoss = self.params["exits"]["sl_percent"]
-        self.takeProfit = self.params["exits"]["tp_percent"]
-        json_data_file.close()
+        self.fastEMALength = next((x.value for x in currentInput if x.name == "fast_len"), None)
+        self.slowEMALength = next((x.value for x in currentInput if x.name == "slow_len"), None)
+        self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
+        self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
 
     def longEnter(self):
         if self.fastEMA.iloc[-1] > self.slowEMA.iloc[-1]:
@@ -56,7 +47,7 @@ class TwoEMA(Strategy):
         self.longExit()
         self.shortEnt()
         self.shortExit()
-        sig = SignalClass(pair = self.pair,
+        sig = SignalClass(pair = "BTC-USDT",
                         price = self.df.iloc[-1]["close"],
                         slPercent = self.stopLoss,
                         tpPercent = self.takeProfit,

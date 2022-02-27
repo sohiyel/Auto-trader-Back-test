@@ -5,22 +5,14 @@ import pandas as pd
 import pandas_ta as ta
 
 class RSIStrategy(Strategy):
-    def __init__(self, timeFrame = "default", pair = "default") -> None:
+    def __init__(self, currentInput) -> None:
         super().__init__()
         self.marketData = []
-        self.timeFrame = timeFrame
-        self.pair = pair
         self.df = ""
-        with open("strategies/rsi.json") as json_data_file:
-            strategy = json.load(json_data_file)
-            self.params = strategy["params"][0]
-            for p in strategy["params"]:
-                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                    self.params = p
-            self.rsiLength = self.params["inputs"][0]["value"]
-            self.rsiMidLine = self.params["inputs"][1]["value"]
-            self.stopLoss = self.params["exits"]["sl_percent"]
-            self.takeProfit = self.params["exits"]["tp_percent"]
+        self.rsiLength = next((x.value for x in currentInput if x.name == "len"), None)
+        self.rsiMidLine = next((x.value for x in currentInput if x.name == "mid_line"), None)
+        self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
+        self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
 
     def longEnter(self):
         if self.rsi.iloc[-1] > self.rsiMidLine:
@@ -56,7 +48,7 @@ class RSIStrategy(Strategy):
         self.longExit()
         self.shortEnt()
         self.shortExit()
-        sig = SignalClass(pair = self.pair,
+        sig = SignalClass(pair = "BTC-USDT",
                         price = self.df.iloc[-1]["close"],
                         slPercent = self.stopLoss,
                         tpPercent = self.takeProfit,

@@ -4,11 +4,11 @@ from signals.bot_signal import BotSignal
 import os
 
 class SignalManager():
-    def __init__(self, strategyName, botName, pair, timeFrame) -> None:
+    def __init__(self, strategyName, botName, currentInput) -> None:
         if botName == "":
-            self.signal = SingleStrategy(strategyName, timeFrame, pair)
+            self.signal = SingleStrategy(strategyName, currentInput)
         else:
-            self.signal = BotSignal(botName, timeFrame, pair)
+            self.signal = BotSignal(botName, currentInput)
 
     def getSignal(self, marketData):
         signal = self.signal.decider(marketData)

@@ -9,4 +9,15 @@ class ParamInput():
         self.step = step
         self.optimization = optimization
     
+    def to_dict(self):
+        return {
+            'name' : self.name,
+            'title': self.title,
+            'type': self.type,
+            'value': self.value,
+            'minValue': self.minValue,
+            'maxValue': self.maxValue,
+            'step': self.step,
+            'optimization': self.optimization
+        }
         
