@@ -1,5 +1,5 @@
 from logging import currentframe
-import pandas
+import pandas as pd
 from positionManager import PositionManager
 from orderManager import OrderManager
 from data import DataService
@@ -32,7 +32,7 @@ class Trader():
         self.volume = volume
         self.currentInput = currentInput
         self.optimization = optimization
-        self.mainloop()
+
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
@@ -115,7 +115,7 @@ class Trader():
             # clear = lambda: os.system('cls')
             # clear()
 
-            # df = pandas.DataFrame.from_records([position.to_dict() for position in self.positionManager.openPositions])
+            # df = pd.DataFrame.from_records([position.to_dict() for position in self.positionManager.openPositions])
             # df['Balance'] = self.portfolioManager.balance
             # df['Equity'] = self.portfolioManager.equity
             # print(df)
@@ -124,31 +124,35 @@ class Trader():
         netProfitPercent = (self.portfolioManager.balance - self.initialCapital)/self.initialCapital * 100
         numberOfDays = ((self.endAt - self.startAt)/(1440 * 60))
         numberOfTrades = len(self.positionManager.closedPositions)
-        
 
-        print ("Number of trades: " + str(numberOfTrades))
-        print ("Number of win trade: {winTrades} \t Number of lose trades: {loseTrades}".format(winTrades=self.portfolioManager.numProfits,
-                                                                                                loseTrades=self.portfolioManager.numLosses))
-        print ("Sum amount of profits: {profits} \t Sum amount of loss: {loss}".format(profits = self.portfolioManager.profit,
-                                                                                        loss = self.portfolioManager.loss))
-        if self.portfolioManager.loss != 0:
-            print ("Profit Factor: " + str(self.portfolioManager.profit / self.portfolioManager.loss))
-        print ("Current Balance: " + str(self.portfolioManager.balance))
-        print ("Net profit percent: "+ str(netProfitPercent))
-        print ("Min of equity: " + str(min(self.equities)))
-        print ("Min of balance: " + str(min(self.balances)))
-        print ("Net profit per day: " + str(netProfitPercent/numberOfDays))
-        print ("Number of days per trade: " + str(numberOfDays/numberOfTrades))
-        print ("Percent profitable: " + str(self.portfolioManager.numProfits / numberOfTrades * 100))
-        print ("Maximum drawdown :" + str((self.initialCapital - min(self.equities)) / self.initialCapital))
+        result = pd.DataFrame(
+            {
+                "Number of trades" : [numberOfTrades],
+                "Number of win trade" : [self.portfolioManager.numProfits],
+                "Number of lose trades" : [self.portfolioManager.numLosses],
+                "Sum amount of profits" : [self.portfolioManager.profit],
+                "Sum amount of loss" : [self.portfolioManager.loss],
+                "Profit Factor" : [self.portfolioManager.profit / self.portfolioManager.loss],
+                "Current Balance" : [self.portfolioManager.balance],
+                "Net profit percent" : [netProfitPercent],
+                "Min of equity" : [min(self.equities)],
+                "Min of balance" : [min(self.balances)],
+                "Net profit per day" : [netProfitPercent/numberOfDays],
+                "Number of days per trade" : [numberOfDays/numberOfTrades],
+                "Percent profitable" : [self.portfolioManager.numProfits / numberOfTrades * 100],
+                "Maximum drawdown" : [(self.initialCapital - min(self.equities)) / self.initialCapital]
+            }
+        )
 
+        print(result)
 
         if not self.optimization:
-            df = pandas.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
+            df = pd.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
             df['Balance'] = self.balances
             print(df)
 
             self.plotter.writeDFtoFile(df)
         print("--- End time: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
         print("--- Duration: %s seconds ---" % (time.time() - start_time))
+        return result
 

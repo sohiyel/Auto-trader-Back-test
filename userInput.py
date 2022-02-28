@@ -29,11 +29,11 @@ class UserInput():
                     params = p
             
             for i in params["inputs"]:
-                pi = ParamInput(i["name"], i["title"], i["type"], i["value"], i["from"], i["to"], i["step"], i["optimized"])
+                pi = ParamInput(i["name"], i["title"], i["type"], i["value"], i["from"], i["to"], i["step"], i["optimized"], i["strategy"])
                 if pi.optimization:
                     strategyInputs = []
                     for i in np.arange(pi.minValue, pi.maxValue, pi.step):
-                        strategyInputs.append(ParamInput(pi.name, pi.title, pi.type, i, pi.minValue, pi.maxValue, pi.step, pi.optimization))
+                        strategyInputs.append(ParamInput(pi.name, pi.title, pi.type, i, pi.minValue, pi.maxValue, pi.step, pi.optimization, pi.strategy))
                     inputs.append(strategyInputs)
                 else:
                     inputs.append([pi])
@@ -43,7 +43,7 @@ class UserInput():
                 if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
                     params = p
             for i in params["inputs"]:
-                pi = ParamInput(i["name"], i["title"], i["type"], i["value"])
+                pi = ParamInput(i["name"], i["title"], i["type"], i["value"],i["strategy"])
                 inputs.append([pi])
         
         json_data_file.close()

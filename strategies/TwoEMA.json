@@ -8,10 +8,10 @@
             "time_frame" : "4hour",
             "pair" : "ETH-USDT",
             "inputs": [
-                {"name": "fast_len", "title": "length of Fast EMA", "type": "int", "value": 40, "from": 20, "to": 31, "step": 10, "optimized" : true},
-                {"name": "slow_len", "title": "length of Slow EMA", "type": "int", "value": 100, "from": 50, "to": 101, "step": 50, "optimized": true},
-                {"name": "sl_percent", "title": "Stop loss", "type": "int", "value": 0.1, "from": 0.1, "to": 0.4, "step": 0.1, "optimized" : false},
-                {"name": "tp_percent", "title": "Takeprofit", "type": "int", "value": 0.3, "from": 0.3, "to": 0.51, "step": 0.1, "optimized" : false}
+                {"name": "fast_len", "title": "length of Fast EMA", "type": "int", "value": 40, "from": 20, "to": 31, "step": 10, "optimized" : true, "strategy" : "TwoEMA"},
+                {"name": "slow_len", "title": "length of Slow EMA", "type": "int", "value": 100, "from": 50, "to": 101, "step": 50, "optimized": true, "strategy" : "TwoEMA"},
+                {"name": "sl_percent", "title": "Stop loss", "type": "int", "value": 0.1, "from": 0.1, "to": 0.4, "step": 0.1, "optimized" : false, "strategy" : "TwoEMA"},
+                {"name": "tp_percent", "title": "Takeprofit", "type": "int", "value": 0.3, "from": 0.3, "to": 0.51, "step": 0.1, "optimized" : false, "strategy" : "TwoEMA"}
             ]
         }
         
@@ -23,30 +23,30 @@
             "time_frame" : "default",
             "pair" : "default",
             "inputs": [
-                {"name": "fast_len", "title": "length of Fast EMA", "type": "int", "value": 40},
-                {"name": "slow_len", "title": "length of Slow EMA", "type": "int", "value": 800},
-                {"name": "sl_percent", "title": "Stop loss", "type": "int", "value": 0.1, "from": 0.1, "to": 0.4, "step": 0.1, "optimized" : false},
-                {"name": "tp_percent", "title": "Takeprofit", "type": "int", "value": 0.3, "from": 0.3, "to": 0.51, "step": 0.1, "optimized" : false}
+                {"name": "fast_len", "title": "length of Fast EMA", "type": "int", "value": 40, "strategy" : "TwoEMA"},
+                {"name": "slow_len", "title": "length of Slow EMA", "type": "int", "value": 800, "strategy" : "TwoEMA"},
+                {"name": "sl_percent", "title": "Stop loss", "type": "int", "value": 0.1, "from": 0.1, "to": 0.4, "step": 0.1, "optimized" : false, "strategy" : "TwoEMA"},
+                {"name": "tp_percent", "title": "Takeprofit", "type": "int", "value": 0.3, "from": 0.3, "to": 0.51, "step": 0.1, "optimized" : false, "strategy" : "TwoEMA"}
             ]
         },
         {
             "time_frame" : "1min",
             "pair" : "BTC-USDT",
             "inputs": [
-                {"name": "fast_len", "title": "length of Fast EMA", "type": "int", "value": 50},
-                {"name": "slow_len", "title": "length of Slow EMA", "type": "int", "value": 100},
-                {"name": "sl_percent", "title": "Stop loss", "type": "int", "value": 0.1, "from": 0.1, "to": 0.4, "step": 0.1, "optimized" : false},
-                {"name": "tp_percent", "title": "Takeprofit", "type": "int", "value": 0.3, "from": 0.3, "to": 0.51, "step": 0.1, "optimized" : false}
+                {"name": "fast_len", "title": "length of Fast EMA", "type": "int", "value": 50, "strategy" : "TwoEMA"},
+                {"name": "slow_len", "title": "length of Slow EMA", "type": "int", "value": 100, "strategy" : "TwoEMA"},
+                {"name": "sl_percent", "title": "Stop loss", "type": "int", "value": 0.1, "from": 0.1, "to": 0.4, "step": 0.1, "optimized" : false, "strategy" : "TwoEMA"},
+                {"name": "tp_percent", "title": "Takeprofit", "type": "int", "value": 0.3, "from": 0.3, "to": 0.51, "step": 0.1, "optimized" : false, "strategy" : "TwoEMA"}
             ]
         },
         {
             "time_frame" : "5min",
             "pair" : "BTC-USDT",
             "inputs": [
-                {"name": "fast_len", "title": "length of Fast EMA", "type": "int", "value": 80},
-                {"name": "slow_len", "title": "length of Slow EMA", "type": "int", "value": 160},
-                {"name": "sl_percent", "title": "Stop loss", "type": "int", "value": 0.1, "from": 0.1, "to": 0.4, "step": 0.1, "optimized" : false},
-                {"name": "tp_percent", "title": "Takeprofit", "type": "int", "value": 0.3, "from": 0.3, "to": 0.51, "step": 0.1, "optimized" : false}
+                {"name": "fast_len", "title": "length of Fast EMA", "type": "int", "value": 80, "strategy" : "TwoEMA"},
+                {"name": "slow_len", "title": "length of Slow EMA", "type": "int", "value": 160, "strategy" : "TwoEMA"},
+                {"name": "sl_percent", "title": "Stop loss", "type": "int", "value": 0.1, "from": 0.1, "to": 0.4, "step": 0.1, "optimized" : false, "strategy" : "TwoEMA"},
+                {"name": "tp_percent", "title": "Takeprofit", "type": "int", "value": 0.3, "from": 0.3, "to": 0.51, "step": 0.1, "optimized" : false, "strategy" : "TwoEMA"}
             ]
         }
     ]

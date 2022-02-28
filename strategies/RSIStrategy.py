@@ -12,10 +12,20 @@ class RSIStrategy(Strategy):
         self.marketData = []
         currentInput = list(chain.from_iterable(currentInput))
         self.df = ""
-        self.rsiLength = next((x.value for x in currentInput if x.name == "len"), None)
-        self.rsiMidLine = next((x.value for x in currentInput if x.name == "mid_line"), None)
-        self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
-        self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
+        if currentInput[0].type == tuple:
+            for i in currentInput:
+                if i[0].strategy == "TwoEMA":
+                    self.rsiLength = next((x.value for x in i if x.name == "len"), None)
+                    self.rsiMidLine = next((x.value for x in i if x.name == "mid_line"), None)
+                    self.stopLoss = next((x.value for x in i if x.name == "sl_percent"), 0.3)
+                    self.takeProfit = next((x.value for x in i if x.name == "tp_percent"), 0.5)
+                    break
+        else:
+            self.rsiLength = next((x.value for x in currentInput if x.name == "len"), None)
+            self.rsiMidLine = next((x.value for x in currentInput if x.name == "mid_line"), None)
+            self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
+            self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
+        
 
     def longEnter(self):
         if self.rsi.iloc[-1] > self.rsiMidLine:

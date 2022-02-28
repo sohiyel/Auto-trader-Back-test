@@ -20,8 +20,8 @@ import pandas as pd
 
 pair =  "BTC-USDT"
 timeFrame = "4hour"
-strategyName = "RSIStrategy"
-botName = "Bot01"
+strategyName = "OneEMA"
+botName = ""
 startAt = "2021-01-01 00:00:00"
 endAt = "2021-09-01 00:00:00"
 volume = 1
@@ -32,6 +32,7 @@ optimization = True
 userInput = UserInput(pair, timeFrame, strategyName, botName, optimization)
 print("Number of steps: " + str(len(userInput.inputs)))
 print(userInput.getCurrentInput())
+results = []
 for i in range(len(userInput.inputs)):
     userInput.step = i
     currentInput = userInput.getCurrentInput()
@@ -47,3 +48,12 @@ for i in range(len(userInput.inputs)):
                     volume = volume,
                     currentInput = currentInput,
                     optimization = optimization)
+    results.append(trader.mainloop())
+
+if optimization:
+    results = pd.concat(results)
+    if botName:
+        path = "optimizations/" + pair + "_" + timeFrame + "_" + botName +".csv"
+    else:
+        path = "optimizations/" + pair + "_" + timeFrame + "_" + strategyName +".csv"
+    results.to_csv(path)

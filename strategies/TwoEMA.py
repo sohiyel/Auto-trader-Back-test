@@ -10,12 +10,19 @@ class TwoEMA(Strategy):
         self.pair = pair
         self.marketData = []
         self.df = ""
-        currentInput = list(chain.from_iterable(currentInput))
-        print(currentInput)
-        self.fastEMALength = next((x.value for x in currentInput if x.name == "fast_len"), None)
-        self.slowEMALength = next((x.value for x in currentInput if x.name == "slow_len"), None)
-        self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
-        self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
+        if currentInput[0].type == tuple:
+            for i in currentInput:
+                if i[0].strategy == "TwoEMA":
+                    self.fastEMALength = next((x.value for x in i if x.name == "fast_len"), None)
+                    self.slowEMALength = next((x.value for x in i if x.name == "slow_len"), None)
+                    self.stopLoss = next((x.value for x in i if x.name == "sl_percent"), 0.3)
+                    self.takeProfit = next((x.value for x in i if x.name == "tp_percent"), 0.5)
+                    break
+        else:
+            self.fastEMALength = next((x.value for x in currentInput if x.name == "fast_len"), None)
+            self.slowEMALength = next((x.value for x in currentInput if x.name == "slow_len"), None)
+            self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
+            self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
 
     def longEnter(self):
         if self.fastEMA.iloc[-1] > self.slowEMA.iloc[-1]:

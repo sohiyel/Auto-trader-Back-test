@@ -11,10 +11,17 @@ class OneEMA(Strategy):
         self.pair = pair
         self.marketData = []
         self.df = ""
-        currentInput = list(chain.from_iterable(currentInput))
-        self.emaLength = next((x.value for x in currentInput if x.name == "len"), None)
-        self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
-        self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
+        if currentInput[0].type == tuple:
+            for i in currentInput:
+                if i[0].strategy == "OneEMA":
+                    self.emaLength = next((x.value for x in i if x.name == "len"), None)
+                    self.stopLoss = next((x.value for x in i if x.name == "sl_percent"), 0.3)
+                    self.takeProfit = next((x.value for x in i if x.name == "tp_percent"), 0.5)
+                    break
+        else:
+            self.emaLength = next((x.value for x in currentInput if x.name == "len"), None)
+            self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
+            self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
 
     def longEnter(self):
         if self.df.iloc[-1]['close'] > self.ema.iloc[-1]:
