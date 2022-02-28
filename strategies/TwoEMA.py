@@ -10,7 +10,7 @@ class TwoEMA(Strategy):
         self.pair = pair
         self.marketData = []
         self.df = ""
-        if currentInput[0].type == tuple:
+        if type(currentInput[0]) == tuple:
             for i in currentInput:
                 if i[0].strategy == "TwoEMA":
                     self.fastEMALength = next((x.value for x in i if x.name == "fast_len"), None)

@@ -21,7 +21,7 @@ import pandas as pd
 pair =  "BTC-USDT"
 timeFrame = "4hour"
 strategyName = "OneEMA"
-botName = ""
+botName = "Bot01"
 startAt = "2021-01-01 00:00:00"
 endAt = "2021-09-01 00:00:00"
 volume = 1

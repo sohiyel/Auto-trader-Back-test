@@ -10,9 +10,9 @@ class RSIStrategy(Strategy):
         super().__init__()
         self.pair = pair
         self.marketData = []
-        currentInput = list(chain.from_iterable(currentInput))
+        
         self.df = ""
-        if currentInput[0].type == tuple:
+        if type(currentInput[0]) == tuple:
             for i in currentInput:
                 if i[0].strategy == "TwoEMA":
                     self.rsiLength = next((x.value for x in i if x.name == "len"), None)
