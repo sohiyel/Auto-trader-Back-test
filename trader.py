@@ -132,7 +132,7 @@ class Trader():
                 "Number of lose trades" : [self.portfolioManager.numLosses],
                 "Sum amount of profits" : [self.portfolioManager.profit],
                 "Sum amount of loss" : [self.portfolioManager.loss],
-                "Profit Factor" : [self.portfolioManager.profit / self.portfolioManager.loss],
+                "Profit Factor" : [self.portfolioManager.profit / self.portfolioManager.loss * -1],
                 "Current Balance" : [self.portfolioManager.balance],
                 "Net profit percent" : [netProfitPercent],
                 "Min of equity" : [min(self.equities)],
