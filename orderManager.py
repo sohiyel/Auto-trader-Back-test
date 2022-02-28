@@ -3,12 +3,12 @@ from signals.signalManager import SignalManager
 
 
 class OrderManager():
-    def __init__(self, initialCapital, strategyName, botName, currentInput) -> None:
+    def __init__(self, initialCapital, strategyName, botName, currentInput, pair) -> None:
         self.initialCapital = initialCapital
         self.equity = initialCapital
         self.positionSize = 0
         self.positionAveragePrice = 0
-        self.signalManager = SignalManager(strategyName, botName, currentInput)
+        self.signalManager = SignalManager(strategyName, botName, currentInput, pair)
         self.lastSignal = 0
 
     def decider(self, marketData, equity, initialCapital, positionAveragePrice, positionSize):

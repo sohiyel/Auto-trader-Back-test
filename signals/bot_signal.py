@@ -3,7 +3,7 @@ import json
 import importlib
 
 class BotSignal():
-    def __init__(self, botName, timeFrame="default", pair="default") -> None:
+    def __init__(self, botName, currentInput, timeFrame="default", pair="default") -> None:
         self.lastSignal = 0
         self.marketData = []
         self.timeFrame = timeFrame
@@ -23,7 +23,7 @@ class BotSignal():
         for s in self.strategyNames:
             strategies = importlib.import_module("strategies."+s)
             StrategyClass = getattr(strategies, s)
-            self.strategies.append(StrategyClass(self.timeFrame, self.pair))
+            self.strategies.append(StrategyClass(currentInput, self.pair))
         json_data_file.close()
         self.slPercent = self.params["exits"]["sl_percent"]
         self.tpPercent = self.params["exits"]["tp_percent"]

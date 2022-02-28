@@ -21,7 +21,7 @@ class Trader():
         self.lastState = self.dataService.startAtTs
         self.initialCapital = initialCapital
         self.strategyName = strategyName
-        self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput)
+        self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput, pair)
         self.positionManager = PositionManager()
         self.portfolioManager = PortfolioManager(initialCapital)
         self.timeFrame = timeFrame

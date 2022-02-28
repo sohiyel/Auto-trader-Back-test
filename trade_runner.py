@@ -21,13 +21,13 @@ import pandas as pd
 pair =  "BTC-USDT"
 timeFrame = "4hour"
 strategyName = "RSIStrategy"
-botName = ""
+botName = "Bot01"
 startAt = "2021-01-01 00:00:00"
 endAt = "2021-09-01 00:00:00"
 volume = 1
 initialCapital = 100000
 market = "spot"
-optimization = False
+optimization = True
 
 userInput = UserInput(pair, timeFrame, strategyName, botName, optimization)
 print("Number of steps: " + str(len(userInput.inputs)))
