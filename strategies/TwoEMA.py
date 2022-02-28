@@ -3,13 +3,14 @@ import json
 from signalClass import SignalClass
 import pandas as pd
 import pandas_ta as ta
-
+from itertools import chain
 class TwoEMA(Strategy):
     def __init__(self, currentInput, pair) -> None:
         super().__init__()
         self.pair = pair
         self.marketData = []
         self.df = ""
+        currentInput = list(chain.from_iterable(currentInput))
         print(currentInput)
         self.fastEMALength = next((x.value for x in currentInput if x.name == "fast_len"), None)
         self.slowEMALength = next((x.value for x in currentInput if x.name == "slow_len"), None)

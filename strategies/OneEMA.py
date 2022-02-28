@@ -3,6 +3,7 @@ import json
 from signalClass import SignalClass
 import pandas as pd
 import pandas_ta as ta
+from itertools import chain
 
 class OneEMA(Strategy):
     def __init__(self, currentInput, pair) -> None:
@@ -10,6 +11,7 @@ class OneEMA(Strategy):
         self.pair = pair
         self.marketData = []
         self.df = ""
+        currentInput = list(chain.from_iterable(currentInput))
         self.emaLength = next((x.value for x in currentInput if x.name == "len"), None)
         self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
         self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)

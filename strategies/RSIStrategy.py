@@ -3,12 +3,14 @@ import json
 from signalClass import SignalClass
 import pandas as pd
 import pandas_ta as ta
+from itertools import chain
 
 class RSIStrategy(Strategy):
     def __init__(self, currentInput, pair) -> None:
         super().__init__()
         self.pair = pair
         self.marketData = []
+        currentInput = list(chain.from_iterable(currentInput))
         self.df = ""
         self.rsiLength = next((x.value for x in currentInput if x.name == "len"), None)
         self.rsiMidLine = next((x.value for x in currentInput if x.name == "mid_line"), None)

@@ -31,6 +31,7 @@ optimization = True
 
 userInput = UserInput(pair, timeFrame, strategyName, botName, optimization)
 print("Number of steps: " + str(len(userInput.inputs)))
+print(userInput.getCurrentInput())
 for i in range(len(userInput.inputs)):
     userInput.step = i
     currentInput = userInput.getCurrentInput()
