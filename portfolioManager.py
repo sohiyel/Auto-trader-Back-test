@@ -1,6 +1,7 @@
 
 class PortfolioManager():
     def __init__(self, initialCapital) -> None:
+        self.initialCapital = initialCapital
         self.balance = initialCapital
         self.equity = initialCapital
         self.profit = 0.0
@@ -8,6 +9,8 @@ class PortfolioManager():
         self.pol = 0.0
         self.numProfits = 0
         self.numLosses = 0
+        self.balances = []
+        self.equities = []
         
     def calcPoL(self):
         if self.loss != 0:
@@ -43,3 +46,50 @@ class PortfolioManager():
     def updateEquity(self, lastPrice):
         self.equity = self.balance + lastPrice
         return self.equity
+
+    def report(self, closedPositions):
+        numOfTrades = len(closedPositions)
+        numOfLongs = 0
+        numOfShorts = 0
+        sumOfLongs = 0
+        sumOfShorts = 0
+        numOfWinLongs = 0
+        numOfWinShorts = 0
+        sumOfWinLongs = 0
+        sumOfWinShorts = 0
+        sumOfLossLongs = 0
+        sumOfLossShorts = 0
+        for p in closedPositions:
+            if p.type == "LONG":
+                sumOfLongs += p.profit
+                numOfLongs += 1
+                if p.profit > 0:
+                    numOfWinLongs += 1
+                    sumOfWinLongs += p.profit
+                else:
+                    sumOfLossLongs += p.profit
+            else:
+                sumOfShorts += p.profit
+                numOfShorts += 1
+                if p.profit > 0:
+                    numOfWinShorts += 1
+                    sumOfWinShorts += p.profit
+                else:
+                    sumOfLossShorts += p.profit
+        return {
+            "netProfit" : self.balance - self.initialCapital,
+            "netProfitPercent" : self.balance - self.initialCapital / self.initialCapital * 100,
+            "netProfitPercentLongs" : sumOfLongs / self.initialCapital * 100,
+            "netProfitPercentShorts" : sumOfShorts / self.initialCapital * 100,
+            "percentProfitable" : self.numProfits / numOfTrades * 100,
+            "percentProfitableLongs" : numOfWinLongs / numOfTrades * 100,
+            "percentProfitableShorts" : numOfWinShorts / numOfTrades * 100,
+            "profitFactor" : self.profit / self.loss * -1,
+            "profitFactorLongs" : sumOfWinLongs / sumOfLossLongs * -1,
+            "profitFactorShorts" : sumOfWinShorts / sumOfLossShorts * -1,
+            "totalClosedTrades": numOfTrades,
+            "totalLongTrades" : numOfLongs,
+            "totalShortTrades" : numOfShorts,
+            "maxDrawDown": (self.initialCapital - min(self.equities)) / self.initialCapital,
+            "maxDrawDownPercent" : (self.initialCapital - min(self.equities)) / self.initialCapital * 100,
+        }

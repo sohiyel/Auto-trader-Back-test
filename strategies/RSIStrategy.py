@@ -14,7 +14,7 @@ class RSIStrategy(Strategy):
         self.df = ""
         if type(currentInput[0]) == tuple:
             for i in currentInput:
-                if i[0].strategy == "TwoEMA":
+                if i[0].strategy == "RSIStrategy":
                     self.rsiLength = next((x.value for x in i if x.name == "len"), None)
                     self.rsiMidLine = next((x.value for x in i if x.name == "mid_line"), None)
                     self.stopLoss = next((x.value for x in i if x.name == "sl_percent"), 0.3)

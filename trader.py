@@ -16,19 +16,20 @@ class Trader():
     def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization):
         self.pair = pair
         self.dataService = DataService(market, pair, timeFrame, startAt, endAt)
-        self.startAt = self.dataService.startAtTs
-        self.endAt = self.dataService.endAtTs
+        self.startAt = startAt,
+        self.endAt = endAt,
+        self.startAtTS = self.dataService.startAtTs
+        self.endAtTS = self.dataService.endAtTs
         self.lastState = self.dataService.startAtTs
         self.initialCapital = initialCapital
         self.strategyName = strategyName
+        self.botName = botName
         self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput, pair)
         self.positionManager = PositionManager()
         self.portfolioManager = PortfolioManager(initialCapital)
         self.timeFrame = timeFrame
-        self.plotter =  Plotter(self.pair + "_" + str(self.startAt) + "_" + str(self.endAt) + "_" + self.timeFrame + ".csv" )
+        self.plotter =  Plotter(self.pair + "_" + str(self.startAtTS) + "_" + str(self.endAtTS) + "_" + self.timeFrame + ".csv" )
         self.lastCandle = ""
-        self.balances = []
-        self.equities = []
         self.volume = volume
         self.currentInput = currentInput
         self.optimization = optimization
@@ -50,7 +51,7 @@ class Trader():
                 else:
                     self.portfolioManager.addLoss(self.positionManager.closedPositions[-1].profit)
                 
-                self.balances.append(self.portfolioManager.balance)
+                self.portfolioManager.balances.append(self.portfolioManager.balance)
                 if self.portfolioManager.openPosition(signal.volume, signal.price, commission):
                     self.positionManager.openPosition(signal, self.lastState)
                 
@@ -63,7 +64,7 @@ class Trader():
                 self.portfolioManager.addProfit(self.positionManager.closedPositions[-1].profit)
             else:
                 self.portfolioManager.addLoss(self.positionManager.closedPositions[-1].profit)
-            self.balances.append(self.portfolioManager.balance)
+            self.portfolioManager.balances.append(self.portfolioManager.balance)
 
     def processOrders(self, choice, signal, commission ):
         if choice == 0:
@@ -85,7 +86,7 @@ class Trader():
 
         if len(self.positionManager.openPositions) > 0:
             lastPrice = self.positionManager.calcEquity()
-            self.equities.append(self.portfolioManager.updateEquity(lastPrice))
+            self.portfolioManager.equities.append(self.portfolioManager.updateEquity(lastPrice))
 
 
 
@@ -121,34 +122,66 @@ class Trader():
             # print(df)
 
         self.processOrders(4, None, 0.0006)
-        netProfitPercent = (self.portfolioManager.balance - self.initialCapital)/self.initialCapital * 100
-        numberOfDays = ((self.endAt - self.startAt)/(1440 * 60))
-        numberOfTrades = len(self.positionManager.closedPositions)
 
-        result = pd.DataFrame(
-            {
-                "Number of trades" : [numberOfTrades],
+        report = self.portfolioManager.report(self.positionManager.closedPositions)
+        numberOfDays = ((self.endAtTS - self.startAtTS)/(1440 * 60))
+        buyAndHold = self.dataService.dataFrame.iloc[-1]["close"] - self.dataService.dataFrame.iloc[0]["close"]
+        sellAndHold = buyAndHold * -1
+        reportDict = {
+                "Net profit percent" : [report["netProfitPercent"]],
+                "Net profit per day" : [report["netProfitPercent"] / numberOfDays],
+                "Net profit percent long" : [report["netProfitPercentLongs"]],
+                "Net profit percent long per day" : [report["netProfitPercentLongs"] / numberOfDays],
+                "Net profit percent short" : [report["netProfitPercentShorts"]],
+                "Net profit percent short per day" : [report["netProfitPercentShorts"] / numberOfDays],
+                "Percent profitable" : [report["percentProfitable"]],
+                "Percent profitable long" : [report["percentProfitableLongs"]],
+                "Percent profitable short" : [report["percentProfitableShorts"]],
+                "Profit factor" : [report["profitFactor"]],
+                "Profit factor long" : [report["profitFactorLongs"]],
+                "Profit factor short" : [report["profitFactorShorts"]],
+                "Number of trades" : [report["totalClosedTrades"]],
+                "Number of long trades" : [report["totalLongTrades"]],
+                "Number of short trades" : [report["totalShortTrades"]],
+                "Maximum drawdown" : [report["maxDrawDown"]],
+                "Maximum drawdown percent" : [report["maxDrawDownPercent"]],
                 "Number of win trade" : [self.portfolioManager.numProfits],
                 "Number of lose trades" : [self.portfolioManager.numLosses],
                 "Sum amount of profits" : [self.portfolioManager.profit],
                 "Sum amount of loss" : [self.portfolioManager.loss],
-                "Profit Factor" : [self.portfolioManager.profit / self.portfolioManager.loss * -1],
                 "Current Balance" : [self.portfolioManager.balance],
-                "Net profit percent" : [netProfitPercent],
-                "Min of equity" : [min(self.equities)],
-                "Min of balance" : [min(self.balances)],
-                "Net profit per day" : [netProfitPercent/numberOfDays],
-                "Number of days per trade" : [numberOfDays/numberOfTrades],
-                "Percent profitable" : [self.portfolioManager.numProfits / numberOfTrades * 100],
-                "Maximum drawdown" : [(self.initialCapital - min(self.equities)) / self.initialCapital]
+                "Min of equity" : [min(self.portfolioManager.equities)],
+                "Min of balance" : [min(self.portfolioManager.balances)],
+                "Number of days per trade" : [numberOfDays / report["netProfitPercent"]],
+                "Buy and hold return" : [buyAndHold],
+                "Buy and hold return percent" : [buyAndHold / self.initialCapital * 100],
+                "Buy and hold return percent per day" : [buyAndHold / self.initialCapital * 100 / numberOfDays],
+                "Sell and hold return" : [sellAndHold],
+                "Sell and hold return percent" : [sellAndHold / self.initialCapital * 100],
+                "Sell and hold return percent per day" : [sellAndHold / self.initialCapital * 100 / numberOfDays],
+                "Net profit / Buy and hold" : [report["netProfit"] / buyAndHold],
+                "Net profit / Sell and hold" : [report["netProfit"] / sellAndHold],
+                "Start time" : self.startAt,
+                "End time" : self.endAt,
+                "Duration" : numberOfDays
             }
+
+        if self.botName:
+            for i in self.currentInput:
+                for pi in i:
+                    reportDict[pi.strategy + "_" +pi.name] = pi.value
+        else:
+            for pi in self.currentInput:
+                reportDict[pi.name] = pi.value
+        result = pd.DataFrame(
+            reportDict
         )
 
         print(result)
 
         if not self.optimization:
             df = pd.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
-            df['Balance'] = self.balances
+            df['Balance'] = self.portfolioManager.balances
             print(df)
 
             self.plotter.writeDFtoFile(df)
