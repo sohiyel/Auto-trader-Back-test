@@ -4,37 +4,29 @@ from trader import Trader
 from userInput import UserInput
 import pandas as pd
 from pprint import pprint
-
-# spotData = DataService('spot', "BTC-USDT", "1min", "2021-01-01 00:00:00", "2021-01-04 00:00:00")
-#futuresData = DataService('futures', ".KXBT", 240, "2021-01-01", "2022-01-01")
-
-"""trader = Trader(market = "spot",
-                pair = "ETH-USDT",
-                timeFrame = "4hour",
-                startAt = "2021-01-01 00:00:00",
-                endAt = "2021-09-01 00:00:00",
-                initialCapital = 100000,
-                strategyName = "RSIStrategy",
-                botName= "Bot02",
-                volume = 1)"""
-# trader = Trader("spot", "BTC-USDT", "1min", "2021-01-01 00:00:00", "2021-01-04 00:00:00", 100000, [])
+import time
 
 pair =  "BTC-USDT"
 timeFrame = "4hour"
 strategyName = "OneEMA"
-botName = "Bot01"
+botName = "Bot02"
 startAt = "2021-01-01 00:00:00"
 endAt = "2021-09-01 00:00:00"
 volume = 1
 initialCapital = 100000
 market = "spot"
 optimization = True
+randomInputs = True
+numberOfInputs = 5
 
-userInput = UserInput(pair, timeFrame, strategyName, botName, optimization)
+userInput = UserInput(pair, timeFrame, strategyName, botName, optimization, randomInputs)
 print("Number of steps: " + str(len(userInput.inputs)))
 
 results = []
-for i in range(len(userInput.inputs)):
+if not randomInputs:
+    numberOfInputs = len(userInput.inputs)
+
+for i in range(numberOfInputs):
     userInput.step = i
     currentInput = userInput.getCurrentInput()
     
@@ -53,8 +45,9 @@ for i in range(len(userInput.inputs)):
 
 if optimization:
     results = pd.concat(results)
+    timestr = time.strftime("%Y-%m-%d_%H-%M-%S")
     if botName:
-        path = "optimizations/" + pair + "_" + timeFrame + "_" + botName +".csv"
+        path = "optimizations/" + timestr + "_" + pair + "_" + timeFrame + "_" + botName +".csv"
     else:
-        path = "optimizations/" + pair + "_" + timeFrame + "_" + strategyName +".csv"
+        path = "optimizations/" + timestr + "_" + pair + "_" + timeFrame + "_" + strategyName +".csv"
     results.to_csv(path)

@@ -2,9 +2,10 @@ import json
 from paramInput import ParamInput
 import itertools
 import numpy as np
+from random import shuffle
 
 class UserInput():
-    def __init__(self, pair, timeFrame, strategyName, botName, optimization = False) -> None:
+    def __init__(self, pair, timeFrame, strategyName, botName, optimization = False, randomInput = False) -> None:
         self.pair = pair
         self.timeFrame = timeFrame
         self.strategyName = strategyName
@@ -12,10 +13,13 @@ class UserInput():
         self.optimization = optimization
         self.step = 0
         self.inputs = []
+        self.randomInput = randomInput
         if botName:
             self.inputs= self.getBotInputs(botName)
         else:
             self.inputs = self.getStrategyInputs(strategyName)
+        if randomInput:
+            shuffle(self.inputs)
 
 
     def getStrategyInputs(self, strategyName):
