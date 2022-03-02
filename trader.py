@@ -152,7 +152,7 @@ class Trader():
                 "Current Balance" : [self.portfolioManager.balance],
                 "Min of equity" : [min(self.portfolioManager.equities)],
                 "Min of balance" : [min(self.portfolioManager.balances)],
-                "Number of days per trade" : [numberOfDays / report["netProfitPercent"]],
+                "Number of days per trade" : [numberOfDays / report["totalClosedTrades"]],
                 "Buy and hold return" : [buyAndHold],
                 "Buy and hold return percent" : [buyAndHold / self.initialCapital * 100],
                 "Buy and hold return percent per day" : [buyAndHold / self.initialCapital * 100 / numberOfDays],
@@ -163,7 +163,7 @@ class Trader():
                 "Net profit / Sell and hold" : [report["netProfit"] / sellAndHold],
                 "Start time" : self.startAt,
                 "End time" : self.endAt,
-                "Duration" : numberOfDays
+                "Duration days" : numberOfDays
             }
 
         if self.botName:

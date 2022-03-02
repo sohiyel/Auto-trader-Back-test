@@ -22,7 +22,7 @@ from pprint import pprint
 pair =  "BTC-USDT"
 timeFrame = "4hour"
 strategyName = "OneEMA"
-botName = "Bot02"
+botName = "Bot01"
 startAt = "2021-01-01 00:00:00"
 endAt = "2021-09-01 00:00:00"
 volume = 1

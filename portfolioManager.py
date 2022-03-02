@@ -59,6 +59,8 @@ class PortfolioManager():
         sumOfWinShorts = 0
         sumOfLossLongs = 0
         sumOfLossShorts = 0
+        numOfLossLong = 0
+        numOfLossShort = 0
         for p in closedPositions:
             if p.type == "LONG":
                 sumOfLongs += p.profit
@@ -67,6 +69,7 @@ class PortfolioManager():
                     numOfWinLongs += 1
                     sumOfWinLongs += p.profit
                 else:
+                    numOfLossLong += 1
                     sumOfLossLongs += p.profit
             else:
                 sumOfShorts += p.profit
@@ -75,21 +78,22 @@ class PortfolioManager():
                     numOfWinShorts += 1
                     sumOfWinShorts += p.profit
                 else:
+                    numOfLossShort += 1
                     sumOfLossShorts += p.profit
         return {
             "netProfit" : self.balance - self.initialCapital,
-            "netProfitPercent" : self.balance - self.initialCapital / self.initialCapital * 100,
+            "netProfitPercent" : (self.balance - self.initialCapital) / self.initialCapital * 100,
             "netProfitPercentLongs" : sumOfLongs / self.initialCapital * 100,
             "netProfitPercentShorts" : sumOfShorts / self.initialCapital * 100,
-            "percentProfitable" : self.numProfits / numOfTrades * 100,
-            "percentProfitableLongs" : numOfWinLongs / numOfTrades * 100,
-            "percentProfitableShorts" : numOfWinShorts / numOfTrades * 100,
+            "percentProfitable" : self.numProfits / self.numLosses * 100,
+            "percentProfitableLongs" : numOfWinLongs / numOfLossLong * 100,
+            "percentProfitableShorts" : numOfWinShorts / numOfLossShort * 100,
             "profitFactor" : self.profit / self.loss * -1,
             "profitFactorLongs" : sumOfWinLongs / sumOfLossLongs * -1,
             "profitFactorShorts" : sumOfWinShorts / sumOfLossShorts * -1,
             "totalClosedTrades": numOfTrades,
             "totalLongTrades" : numOfLongs,
             "totalShortTrades" : numOfShorts,
-            "maxDrawDown": (self.initialCapital - min(self.equities)) / self.initialCapital,
+            "maxDrawDown": self.initialCapital - min(self.equities),
             "maxDrawDownPercent" : (self.initialCapital - min(self.equities)) / self.initialCapital * 100,
         }
