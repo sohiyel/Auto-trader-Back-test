@@ -1,8 +1,6 @@
 class ParamInput():
-    def __init__(self, name, title, type, value, minValue = 0, maxValue = 0, step = 0, optimization = False, strategy = "") -> None:
+    def __init__(self, name, value, strategy, minValue = 0, maxValue = 0, step = 0, optimization = False) -> None:
         self.name = name
-        self.title = title
-        self.type = type
         self.value = value
         self.minValue = minValue
         self.maxValue = maxValue
@@ -13,13 +11,11 @@ class ParamInput():
     def to_dict(self):
         return {
             'name' : self.name,
-            'title': self.title,
-            'type': self.type,
             'value': self.value,
+            'strategy' : self.strategy,
             'minValue': self.minValue,
             'maxValue': self.maxValue,
             'step': self.step,
-            'optimization': self.optimization,
-            'strategy' : self.strategy
+            'optimization': self.optimization
         }
         

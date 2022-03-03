@@ -9,14 +9,14 @@ import time
 pair =  "BTC-USDT"
 timeFrame = "4hour"
 strategyName = "OneEMA"
-botName = "Bot02"
+botName = "Bot01"
 startAt = "2021-01-01 00:00:00"
 endAt = "2021-09-01 00:00:00"
 volume = 1
 initialCapital = 100000
 market = "spot"
 optimization = True
-randomInputs = True
+randomInputs = False
 numberOfInputs = 5
 
 userInput = UserInput(pair, timeFrame, strategyName, botName, optimization, randomInputs)
@@ -46,6 +46,13 @@ for i in range(numberOfInputs):
 if optimization:
     results = pd.concat(results)
     timestr = time.strftime("%Y-%m-%d_%H-%M-%S")
+    results = results.sort_values(by = 'Net profit per day', ascending = False)
+    optimumResult = results.iloc[0]
+    # print(optimumResult["TwoEMA_slow_len"])
+    userInput.writeOptimizedValues(optimumResult)
+    
+
+    print (results)
     if botName:
         path = "optimizations/" + timestr + "_" + pair + "_" + timeFrame + "_" + botName +".csv"
     else:

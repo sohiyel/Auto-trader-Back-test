@@ -15,9 +15,9 @@ class UserInput():
         self.inputs = []
         self.randomInput = randomInput
         if botName:
-            self.inputs= self.getBotInputs(botName)
+            self.inputs= self.getBotInputs()
         else:
-            self.inputs = self.getStrategyInputs(strategyName)
+            self.inputs = self.getStrategyInputs()
         if randomInput:
             shuffle(self.inputs)
 
@@ -33,11 +33,11 @@ class UserInput():
                     params = p
             
             for i in params["inputs"]:
-                pi = ParamInput(i["name"], i["title"], i["type"], i["value"], i["from"], i["to"], i["step"], i["optimized"], i["strategy"])
+                pi = ParamInput(i["name"], i["value"], i["strategy"], i["from"], i["to"], i["step"], i["optimized"])
                 if pi.optimization:
                     strategyInputs = []
                     for i in np.arange(pi.minValue, pi.maxValue, pi.step):
-                        strategyInputs.append(ParamInput(pi.name, pi.title, pi.type, i, pi.minValue, pi.maxValue, pi.step, pi.optimization, pi.strategy))
+                        strategyInputs.append(ParamInput(pi.name, i, pi.strategy , pi.minValue, pi.maxValue, pi.step, pi.optimization))
                     inputs.append(strategyInputs)
                 else:
                     inputs.append([pi])
@@ -47,20 +47,15 @@ class UserInput():
                 if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
                     params = p
             for i in params["inputs"]:
-                pi = ParamInput(i["name"], i["title"], i["type"], i["value"],i["strategy"])
+                pi = ParamInput(i["name"], i["value"],i["strategy"])
                 inputs.append([pi])
         
         json_data_file.close()
         return list( itertools.product( *inputs ) )
 
-    def getBotInputs(self, botName):
-        strategyNames = []
+    def getBotInputs(self):
         inputs = []
-        json_data_file = open("signals/{jsonName}.json".format(jsonName = botName))
-        jsonFile = json.load(json_data_file)
-        for s in jsonFile["strategies"]:
-            strategyNames.append(s["strategy"])
-        json_data_file.close()
+        strategyNames = self.getStrategyNames()
         for strategy in strategyNames:
             inputs.append( self.getStrategyInputs(strategy) )
         
@@ -68,3 +63,77 @@ class UserInput():
 
     def getCurrentInput(self):
         return self.inputs[self.step]
+
+    def getStrategyNames(self):
+        strategyNames = []
+        json_data_file = open("signals/{jsonName}.json".format(jsonName = self.botName))
+        jsonFile = json.load(json_data_file)
+        for s in jsonFile["strategies"]:
+            strategyNames.append(s["strategy"])
+        json_data_file.close()
+        return strategyNames
+
+    def getInputNames(self, strategyName):
+        names = []
+        json_data_file = open("strategies/{jsonName}.json".format(jsonName = strategyName))
+        jsonFile = json.load(json_data_file)
+        params = jsonFile["params"][0]
+        for i in params["inputs"]:
+            names.append( i["name"] )
+        json_data_file.close()
+        return names
+
+    def writeOptimizedValues(self, report):
+        inputNames = []
+        if self.botName:
+            strategyNames = self.getStrategyNames()
+            with open("signals/{jsonName}.json".format(jsonName = self.botName), 'r+') as json_data_file:
+                jsonFile = json.load(json_data_file)
+            pairExist = False
+            for p in jsonFile["optimization"]:
+                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
+                    pairExist = True
+                    for strategyName in strategyNames:
+                        inputNames = self.getInputNames(strategyName)
+                        for n in inputNames:
+                            if n == "sl_percent" or n == "tp_percent":
+                                continue
+                            value = float(report[strategyName + "_" + n])
+                            inputExist = False
+                            for i in p["inputs"]:
+                                if i["name"] == n:
+                                    i["value"] = value
+                                    inputExist = True
+                                    break
+                            if not inputExist:
+                                newInput = ParamInput(n, value, strategyName)
+                                p["inputs"].append(newInput.to_dict())
+                        break
+            if not pairExist:
+                newPair = {}
+                newPair["time_frame"] = self.timeFrame
+                newPair["pair"] = self.pair
+                newPair["inputs"] = []
+                for strategyName in strategyNames:
+                    inputNames = self.getInputNames(strategyName)
+                    for n in inputNames:
+                        if n == "sl_percent" or n == "tp_percent":
+                            continue
+                        inputName = strategyName + "_" + n
+                        print(inputName)
+                        value = float(report[inputName])
+                        print("Value: " + str(value))
+                        newInput = ParamInput(n, value, strategyName)
+                        newPair["inputs"].append(newInput.to_dict())
+                jsonFile["optimization"].append(newPair)
+
+            with open("signals/{jsonName}.json".format(jsonName = self.botName), 'w') as json_data_file:
+                json.dump(jsonFile, json_data_file)
+
+        else:
+            inputNames = self.getInputNames(self.strategyName)
+            for n in inputNames:
+                value = report.iloc[0][strategyName + "_" + n]
+                inputNames.append( ParamInput(n,value, strategyName) )
+            return inputNames
+
