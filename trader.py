@@ -172,7 +172,7 @@ class Trader():
                     reportDict[pi.strategy + "_" +pi.name] = pi.value
         else:
             for pi in self.currentInput:
-                reportDict[pi.name] = pi.value
+                reportDict[self.strategyName + "_" +pi.name] = pi.value
         result = pd.DataFrame(
             reportDict
         )
