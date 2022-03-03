@@ -1,30 +1,101 @@
 {
     "long_name": "bot 1 one ema and two ema",
     "description": "When bot 1 one ema and two ema .....",
-    "strategies" : [
-        {"strategy": "TwoEMA"},
-        {"strategy": "OneEMA"}
-    ],
-    "and_or_strategies" : {
-        "enter_strategies_and" : true,
-        "exit_strategies_and" : false
+    "strategies": [{
+        "strategy": "TwoEMA"
+    }, {
+        "strategy": "OneEMA"
+    }],
+    "and_or_strategies": {
+        "enter_strategies_and": true,
+        "exit_strategies_and": false
     },
-    "params": [
-        {
-            "time_frame" : "default",
-            "pair" : "default",
-            "exits": {
-                "sl_percent": 0.3,
-                "tp_percent": 0.6
-            }
-        },
-        {
-            "time_frame" : "1min",
-            "pair" : "BTC-USDT",
-            "exits": {
-                "sl_percent": 0.4,
-                "tp_percent": 0.8
-            }
+    "optimization": [{
+        "time_frame": "4hour",
+        "pair": "ETH-USDT",
+        "inputs": [{
+            "name": "fast_len",
+            "title": "length of Fast EMA",
+            "type": "int",
+            "value": 40,
+            "from": 20,
+            "to": 31,
+            "step": 10,
+            "optimized": true,
+            "strategy": "TwoEMA"
+        }, {
+            "name": "slow_len",
+            "title": "length of Slow EMA",
+            "type": "int",
+            "value": 100,
+            "from": 50,
+            "to": 101,
+            "step": 50,
+            "optimized": false,
+            "strategy": "TwoEMA"
+        }, {
+            "name": "sl_percent",
+            "title": "Stop loss",
+            "type": "int",
+            "value": 0.1,
+            "from": 0.1,
+            "to": 0.4,
+            "step": 0.1,
+            "optimized": false,
+            "strategy": "TwoEMA"
+        }, {
+            "name": "tp_percent",
+            "title": "Takeprofit",
+            "type": "int",
+            "value": 0.3,
+            "from": 0.3,
+            "to": 0.51,
+            "step": 0.1,
+            "optimized": false,
+            "strategy": "TwoEMA"
+        }]
+    }, {
+        "time_frame": "4hour",
+        "pair": "BTC-USDT",
+        "inputs": [{
+            "name": "fast_len",
+            "value": 20.0,
+            "strategy": "TwoEMA",
+            "minValue": 0,
+            "maxValue": 0,
+            "step": 0,
+            "optimization": false
+        }, {
+            "name": "slow_len",
+            "value": 100.0,
+            "strategy": "TwoEMA",
+            "minValue": 0,
+            "maxValue": 0,
+            "step": 0,
+            "optimization": false
+        }, {
+            "name": "len",
+            "value": 250.0,
+            "strategy": "OneEMA",
+            "minValue": 0,
+            "maxValue": 0,
+            "step": 0,
+            "optimization": false
+        }]
+    }],
+    "params": [{
+        "time_frame": "default",
+        "pair": "default",
+        "exits": {
+            "sl_percent": 0.3,
+            "tp_percent": 0.6
         }
-    ]
+    }, {
+        "time_frame": "1min",
+        "pair": "BTC-USDT",
+        "exits": {
+            "sl_percent": 0.4,
+            "tp_percent": 0.8
+        }
+    }]
 }
