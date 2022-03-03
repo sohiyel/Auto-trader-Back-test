@@ -166,13 +166,8 @@ class Trader():
                 "Duration days" : numberOfDays
             }
 
-        if self.botName:
-            for i in self.currentInput:
-                for pi in i:
-                    reportDict[pi.strategy + "_" +pi.name] = pi.value
-        else:
-            for pi in self.currentInput:
-                reportDict[self.strategyName + "_" +pi.name] = pi.value
+        for pi in self.currentInput:
+            reportDict[pi.strategy + "_" +pi.name] = pi.value
         result = pd.DataFrame(
             reportDict
         )

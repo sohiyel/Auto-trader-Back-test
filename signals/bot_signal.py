@@ -12,10 +12,6 @@ class BotSignal():
         self.strategies = []
         json_data_file = open("signals/"+botName+".json")
         botJson = json.load(json_data_file)
-        self.params = botJson["params"][0]
-        for p in botJson["params"]:
-            if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                self.params = p
         
         for s in botJson["strategies"]:
             self.strategyNames.append(s["strategy"])
@@ -25,8 +21,6 @@ class BotSignal():
             StrategyClass = getattr(strategies, s)
             self.strategies.append(StrategyClass(currentInput, self.pair))
         json_data_file.close()
-        self.slPercent = self.params["exits"]["sl_percent"]
-        self.tpPercent = self.params["exits"]["tp_percent"]
         
         
     def decider(self, marketData):
@@ -42,8 +36,8 @@ class BotSignal():
                             signals[0].price,
                             signals[0].stopLoss,
                             signals[0].takeProfit,
-                            self.slPercent,
-                            self.tpPercent,
+                            signals[0].slPercent,
+                            signals[0].tpPercent,
                             '-'.join(s.comment for s in signals),
                             all (s.longEnter == 1 for s in signals),
                             all (s.longExit == 1 for s in signals),
