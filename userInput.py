@@ -3,6 +3,7 @@ from paramInput import ParamInput
 import itertools
 import numpy as np
 from random import shuffle
+import time
 
 class UserInput():
     def __init__(self, pair, timeFrame, strategyName, botName, optimization = False, randomInput = False) -> None:
@@ -27,12 +28,7 @@ class UserInput():
         jsonFile = json.load(json_data_file)
         inputs = []
         if self.optimization:
-            params = jsonFile["optimization"][0]
-            for p in jsonFile["optimization"]:
-                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                    params = p
-            
-            for i in params["inputs"]:
+            for i in jsonFile["optimization"]["inputs"]:
                 pi = ParamInput(i["name"], i["value"], i["strategy"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
                 if pi.optimization:
                     strategyInputs = []
@@ -58,12 +54,7 @@ class UserInput():
         jsonFile = json.load(json_data_file)
         inputs = []
         if self.optimization:
-            params = jsonFile["optimization"][0]
-            for p in jsonFile["optimization"]:
-                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                    params = p
-            
-            for i in params["inputs"]:
+            for i in jsonFile["optimization"]["inputs"]:
                 pi = ParamInput(i["name"], i["value"], i["strategy"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
                 if pi.optimization:
                     strategyInputs = []
@@ -96,91 +87,69 @@ class UserInput():
         json_data_file.close()
         return strategyNames
 
-    def getInputNames(self, strategyName):
+    def getInputNames(self):
         names = []
-        json_data_file = open("strategies/{jsonName}.json".format(jsonName = strategyName))
-        jsonFile = json.load(json_data_file)
+        if self.botName:
+            with open("signals/{jsonName}.json".format(jsonName = self.botName), 'r+') as json_data_file:
+                jsonFile = json.load(json_data_file)
+        else:
+            with open("strategies/{jsonName}.json".format(jsonName = self.strategyName), 'r+') as json_data_file:
+                jsonFile = json.load(json_data_file)
+
         params = jsonFile["params"][0]
         for i in params["inputs"]:
-            names.append( i["name"] )
+            names.append( (i["name"],i["strategy"]) )
         json_data_file.close()
         return names
 
     def writeOptimizedValues(self, report):
         inputNames = []
         if self.botName:
-            strategyNames = self.getStrategyNames()
             with open("signals/{jsonName}.json".format(jsonName = self.botName), 'r+') as json_data_file:
                 jsonFile = json.load(json_data_file)
-            pairExist = False
-            for idx,p in enumerate(jsonFile["optimization"]):
-                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                    pairExist = True
-                    for strategyName in strategyNames:
-                        inputNames = self.getInputNames(strategyName)
-                        for n in inputNames:
-                            if (n == "sl_percent" or n == "tp_percent") and strategyName != self.botName:
-                                continue
-                            value = float(report[strategyName + "_" + n])
-                            inputExist = False
-                            for i in range(len(jsonFile["optimization"][idx]["inputs"])):
-                                if jsonFile["optimization"][idx]["inputs"][i]["name"] == n:
-                                    jsonFile["optimization"][idx]["inputs"][i]["value"] = value
-                                    inputExist = True
-                                    break
-                            if not inputExist:
-                                newInput = ParamInput(n, value, strategyName)
-                                jsonFile["optimization"][idx]["inputs"].append(newInput.to_dict())
-            if not pairExist:
-                newPair = {}
-                newPair["time_frame"] = self.timeFrame
-                newPair["pair"] = self.pair
-                newPair["inputs"] = []
-                for strategyName in strategyNames:
-                    inputNames = self.getInputNames(strategyName)
-                    for n in inputNames:
-                        inputName = strategyName + "_" + n
-                        value = float(report[inputName])
-                        newInput = ParamInput(n, value, strategyName)
-                        newPair["inputs"].append(newInput.to_dict())
-                jsonFile["optimization"].append(newPair)
-
-            with open("signals/{jsonName}.json".format(jsonName = self.botName), 'w') as json_data_file:
-                json.dump(jsonFile, json_data_file)
-
         else:
             with open("strategies/{jsonName}.json".format(jsonName = self.strategyName), 'r+') as json_data_file:
                 jsonFile = json.load(json_data_file)
-            pairExist = False
-            for idx,p in enumerate(jsonFile["optimization"]):
-                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                    pairExist = True
-                    inputNames = self.getInputNames(self.strategyName)
-                    for n in inputNames:
-                        value = float(report[self.strategyName + "_" + n])
-                        inputExist = False
-                        for i in range(len(p["inputs"])):
-                            if jsonFile["optimization"][idx]["inputs"][i]["name"] == n:
-                                jsonFile["optimization"][idx]["inputs"][i]["value"] = value
-                                inputExist = True
-                                break
-                        if not inputExist:
-                            newInput = ParamInput(n, value, strategyName)
-                            jsonFile["optimization"][idx]["inputs"].append(newInput.to_dict())
-                    break
-            if not pairExist:
-                newPair = {}
-                newPair["time_frame"] = self.timeFrame
-                newPair["pair"] = self.pair
-                newPair["inputs"] = []
-                inputNames = self.getInputNames(self.strategyName)
-                for n in inputNames:
-                    inputName = self.strategyName + "_" + n
-                    value = float(report[inputName])
-                    newInput = ParamInput(n, value, self.strategyName)
-                    newPair["inputs"].append(newInput.to_dict())
-                jsonFile["optimization"].append(newPair)    
+        inputNames = self.getInputNames()
 
+        paramExist = False
+        for idx,param in enumerate(jsonFile["params"]):
+            if param["time_frame"] == self.timeFrame and param["pair"] == self.pair:
+                paramExist = True
+                for n in inputNames:
+                    value = float(report[n[1] + "_" + n[0]])
+                    inputExist = False
+                    for i in range(len(jsonFile["params"][idx]["inputs"])):
+                        if jsonFile["params"][idx]["inputs"][i]["name"] == n[0]:
+                            jsonFile["params"][idx]["inputs"][i]["value"] = value
+                            inputExist = True
+                            break
+                    if not inputExist:
+                        newInput = ParamInput(n[0], value, n[1])
+                        jsonFile["params"][idx]["inputs"].append(newInput.to_dict())
+
+        if not paramExist:
+            newParam = {}
+            newParam["time_frame"] = self.timeFrame
+            newParam["pair"] = self.pair
+            newParam["inputs"] = []
+            for n in inputNames:
+                value = float(report[n[1] + "_" + n[0]])
+                newParam["inputs"].append(ParamInput(n[0], value, n[1]).to_dict())
+            jsonFile["params"].append(newParam)
+
+        jsonFile["optimization"]["optimization_date"] = time.strftime("%Y-%m-%d_%H:%M:%S")
+
+        if self.botName:
+            with open("signals/{jsonName}.json".format(jsonName = self.botName), 'w') as json_data_file:
+                json.dump(jsonFile, json_data_file)
+        else:
             with open("strategies/{jsonName}.json".format(jsonName = self.strategyName), 'w') as json_data_file:
                 json.dump(jsonFile, json_data_file)
+        
+        
+
+        
+
+            
 

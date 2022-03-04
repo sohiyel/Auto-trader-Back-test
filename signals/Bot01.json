@@ -10,77 +10,32 @@
         "enter_strategies_and": true,
         "exit_strategies_and": false
     },
-    "optimization": [{
-        "time_frame": "4hour",
-        "pair": "ETH-USDT",
+    "optimization": {
+        "optimization_date": "2022-03-04_18:46:26",
         "inputs": [{
-            "name": "fast_len",
-            "title": "length of Fast EMA",
-            "type": "int",
-            "value": 40,
-            "from": 20,
-            "to": 31,
-            "step": 10,
-            "optimized": true,
-            "strategy": "TwoEMA"
-        }, {
-            "name": "slow_len",
-            "title": "length of Slow EMA",
-            "type": "int",
-            "value": 100,
-            "from": 50,
-            "to": 101,
-            "step": 50,
-            "optimized": false,
-            "strategy": "TwoEMA"
-        }, {
-            "name": "sl_percent",
-            "title": "Stop loss",
-            "type": "int",
-            "value": 0.1,
-            "from": 0.1,
-            "to": 0.4,
-            "step": 0.1,
-            "optimized": false,
-            "strategy": "TwoEMA"
-        }, {
-            "name": "tp_percent",
-            "title": "Takeprofit",
-            "type": "int",
-            "value": 0.3,
-            "from": 0.3,
-            "to": 0.51,
-            "step": 0.1,
-            "optimized": false,
-            "strategy": "TwoEMA"
-        }]
-    }, {
-        "time_frame": "4hour",
-        "pair": "BTC-USDT",
-        "inputs": [{
-            "name": "fast_len",
-            "value": 13.0,
-            "strategy": "TwoEMA",
-            "minValue": 10,
-            "maxValue": 14,
-            "step": 3,
-            "optimization": true
-        }, {
-            "name": "slow_len",
-            "value": 25.0,
-            "strategy": "TwoEMA",
-            "minValue": 20,
-            "maxValue": 26,
-            "step": 5,
-            "optimization": true
-        }, {
             "name": "len",
-            "value": 50.0,
-            "strategy": "OneEMA",
+            "value": 250.0,
+            "minValue": 150,
+            "maxValue": 251,
+            "step": 100,
+            "optimization": true,
+            "strategy": "OneEMA"
+        }, {
+            "name": "fast_len",
+            "value": 20.0,
+            "minValue": 20,
+            "maxValue": 31,
+            "step": 10,
+            "optimization": true,
+            "strategy": "TwoEMA"
+        }, {
+            "name": "slow_len",
+            "value": 100.0,
             "minValue": 50,
             "maxValue": 101,
             "step": 50,
-            "optimization": true
+            "optimization": false,
+            "strategy": "TwoEMA"
         }, {
             "name": "sl_percent",
             "value": 0.1,
@@ -98,20 +53,54 @@
             "optimization": false,
             "strategy": "Bot01"
         }]
-    }],
+    },
     "params": [{
         "time_frame": "default",
         "pair": "default",
-        "exits": {
-            "sl_percent": 0.3,
-            "tp_percent": 0.6
-        }
+        "inputs": [{
+            "name": "len",
+            "value": 250.0,
+            "strategy": "OneEMA"
+        }, {
+            "name": "fast_len",
+            "value": 40,
+            "strategy": "TwoEMA"
+        }, {
+            "name": "slow_len",
+            "value": 100,
+            "strategy": "TwoEMA"
+        }, {
+            "name": "sl_percent",
+            "value": 0.1,
+            "strategy": "Bot01"
+        }, {
+            "name": "tp_percent",
+            "value": 0.3,
+            "strategy": "Bot01"
+        }]
     }, {
-        "time_frame": "1min",
+        "time_frame": "4hour",
         "pair": "BTC-USDT",
-        "exits": {
-            "sl_percent": 0.4,
-            "tp_percent": 0.8
-        }
+        "inputs": [{
+            "name": "len",
+            "value": 250.0,
+            "strategy": "OneEMA"
+        }, {
+            "name": "fast_len",
+            "value": 20.0,
+            "strategy": "TwoEMA"
+        }, {
+            "name": "slow_len",
+            "value": 100.0,
+            "strategy": "TwoEMA"
+        }, {
+            "name": "sl_percent",
+            "value": 0.1,
+            "strategy": "Bot01"
+        }, {
+            "name": "tp_percent",
+            "value": 0.3,
+            "strategy": "Bot01"
+        }]
     }]
 }

@@ -12,10 +12,6 @@ class ParamInput():
         return {
             'name' : self.name,
             'value': self.value,
-            'strategy' : self.strategy,
-            'minValue': self.minValue,
-            'maxValue': self.maxValue,
-            'step': self.step,
-            'optimization': self.optimization
+            'strategy' : self.strategy
         }
         
