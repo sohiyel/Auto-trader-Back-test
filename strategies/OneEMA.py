@@ -11,6 +11,7 @@ class OneEMA(Strategy):
         self.pair = pair
         self.marketData = []
         self.df = ""
+        print(currentInput)
         if type(currentInput[0]) == tuple:
             for i in currentInput:
                 if i[0].strategy == "OneEMA":
@@ -43,14 +44,13 @@ class OneEMA(Strategy):
         if len(marketData) < self.emaLength:
             return SignalClass()
         
-        self.marketData = marketData[-self.emaLength:]
         self.decisions = {
             'longEnt' : 0,
             'shortEnt' : 0,
             'longExt' : 0,
             'shortExt' : 0,
         }
-        self.df = pd.DataFrame(self.marketData)
+        self.df = pd.DataFrame(marketData)
         self.ema = ta.ema(self.df["close"], length=self.emaLength)
         self.longEnter()
         self.longExit()

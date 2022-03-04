@@ -15,7 +15,7 @@ endAt = "2021-09-01 00:00:00"
 volume = 1
 initialCapital = 100000
 market = "spot"
-optimization = True
+optimization = False
 randomInputs = False
 numberOfInputs = 5
 
