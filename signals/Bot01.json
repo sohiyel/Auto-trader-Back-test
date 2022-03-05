@@ -11,7 +11,6 @@
         "exit_strategies_and": false
     },
     "optimization": {
-        "optimization_date": "2022-03-04_18:46:26",
         "inputs": [{
             "name": "len",
             "value": 250.0,
@@ -83,11 +82,11 @@
         "pair": "BTC-USDT",
         "inputs": [{
             "name": "len",
-            "value": 250.0,
+            "value": 150.0,
             "strategy": "OneEMA"
         }, {
             "name": "fast_len",
-            "value": 20.0,
+            "value": 30.0,
             "strategy": "TwoEMA"
         }, {
             "name": "slow_len",

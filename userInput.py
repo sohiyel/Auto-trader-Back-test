@@ -127,18 +127,18 @@ class UserInput():
                     if not inputExist:
                         newInput = ParamInput(n[0], value, n[1])
                         jsonFile["params"][idx]["inputs"].append(newInput.to_dict())
+                jsonFile["params"][idx]["optimization_date"] = time.strftime("%Y-%m-%d_%H:%M:%S")
 
         if not paramExist:
             newParam = {}
             newParam["time_frame"] = self.timeFrame
             newParam["pair"] = self.pair
+            newParam["optimization_date"] = time.strftime("%Y-%m-%d_%H:%M:%S")
             newParam["inputs"] = []
             for n in inputNames:
                 value = float(report[n[1] + "_" + n[0]])
                 newParam["inputs"].append(ParamInput(n[0], value, n[1]).to_dict())
             jsonFile["params"].append(newParam)
-
-        jsonFile["optimization"]["optimization_date"] = time.strftime("%Y-%m-%d_%H:%M:%S")
 
         if self.botName:
             with open("signals/{jsonName}.json".format(jsonName = self.botName), 'w') as json_data_file:

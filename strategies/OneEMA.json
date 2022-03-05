@@ -2,7 +2,7 @@
     "long_name": "EMA Cross Price",
     "description": "When Price Cross Over EMA .....",
     "optimization": {
-        "optimization_date": "2022-03-04_18:44:33",
+        "optimization_date": "2022-03-04_19:02:09",
         "inputs": [{
             "name": "len",
             "value": 250.0,
@@ -92,6 +92,7 @@
             "name": "tp_percent",
             "value": 0.3,
             "strategy": "OneEMA"
-        }]
+        }],
+        "optimization_date": "2022-03-05_16:16:09"
     }]
 }

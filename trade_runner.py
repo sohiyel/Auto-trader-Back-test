@@ -9,13 +9,13 @@ import time
 pair =  "BTC-USDT"
 timeFrame = "4hour"
 strategyName = "OneEMA"
-botName = "Bot01"
+botName = ""
 startAt = "2021-01-01 00:00:00"
 endAt = "2021-09-01 00:00:00"
 volume = 1
 initialCapital = 100000
 market = "spot"
-optimization = False
+optimization = True
 randomInputs = False
 numberOfInputs = 5
 
