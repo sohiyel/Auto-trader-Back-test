@@ -163,7 +163,8 @@ class Trader():
                 "Net profit / Sell and hold" : [report["netProfit"] / sellAndHold],
                 "Start time" : self.startAt,
                 "End time" : self.endAt,
-                "Duration days" : numberOfDays
+                "Duration days" : numberOfDays,
+                "Initial deposit" : self.initialCapital
             }
 
         for pi in self.currentInput:

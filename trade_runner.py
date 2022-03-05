@@ -8,8 +8,8 @@ import time
 
 pair =  "BTC-USDT"
 timeFrame = "4hour"
-strategyName = "OneEMA"
-botName = ""
+strategyName = "RSIStrategy"
+botName = "Bot02"
 startAt = "2021-01-01 00:00:00"
 endAt = "2021-09-01 00:00:00"
 volume = 1

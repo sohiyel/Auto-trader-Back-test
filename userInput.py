@@ -120,7 +120,7 @@ class UserInput():
                     value = float(report[n[1] + "_" + n[0]])
                     inputExist = False
                     for i in range(len(jsonFile["params"][idx]["inputs"])):
-                        if jsonFile["params"][idx]["inputs"][i]["name"] == n[0]:
+                        if jsonFile["params"][idx]["inputs"][i]["name"] == n[0] and jsonFile["params"][idx]["inputs"][i]["strategy"] == n[1]:
                             jsonFile["params"][idx]["inputs"][i]["value"] = value
                             inputExist = True
                             break
