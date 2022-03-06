@@ -11,7 +11,7 @@ class OneEMA(Strategy):
         self.pair = pair
         self.marketData = []
         self.df = ""
-        print(currentInput)
+        # print(currentInput)
         if type(currentInput[0]) == tuple:
             for i in currentInput:
                 if i[0].strategy == "OneEMA":

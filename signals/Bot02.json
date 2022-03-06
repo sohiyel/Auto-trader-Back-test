@@ -106,7 +106,7 @@
     }, {
         "time_frame": "4hour",
         "pair": "BTC-USDT",
-        "optimization_date": "2022-03-05_17:05:32",
+        "optimization_date": "2022-03-06_20:09:16",
         "inputs": [{
             "name": "len",
             "value": 14.0,

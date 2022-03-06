@@ -5,6 +5,8 @@ from userInput import UserInput
 import pandas as pd
 from pprint import pprint
 import time
+from datetime import datetime
+import concurrent.futures
 
 pair =  "BTC-USDT"
 timeFrame = "4hour"
@@ -19,17 +21,11 @@ optimization = True
 randomInputs = False
 numberOfInputs = 5
 
-userInput = UserInput(pair, timeFrame, strategyName, botName, optimization, randomInputs)
-print("Number of steps: " + str(len(userInput.inputs)))
 
-results = []
-if not randomInputs:
-    numberOfInputs = len(userInput.inputs)
 
-for i in range(numberOfInputs):
-    userInput.step = i
-    currentInput = userInput.getCurrentInput()
-    
+
+def run_trader(currentInput):
+    print  ("--------- New process started ---------")
     trader = Trader(market = market,
                     pair = pair,
                     timeFrame = timeFrame,
@@ -41,19 +37,37 @@ for i in range(numberOfInputs):
                     volume = volume,
                     currentInput = currentInput,
                     optimization = optimization)
-    results.append(trader.mainloop())
+    result = trader.mainloop()
+    print  ("--------- A process has finished! ---------")
+    return result
 
-if optimization:
-    results = pd.concat(results)
-    timestr = time.strftime("%Y-%m-%d_%H-%M-%S")
-    results = results.sort_values(by = 'Net profit per day', ascending = False)
-    optimumResult = results.iloc[0]
-    # print(optimumResult["TwoEMA_slow_len"])
-    print (results)
-    if botName:
-        path = "optimizations/" + timestr + "_" + pair + "_" + timeFrame + "_" + botName +".csv"
-    else:
-        path = "optimizations/" + timestr + "_" + pair + "_" + timeFrame + "_" + strategyName +".csv"
-    results.to_csv(path)
-    userInput.writeOptimizedValues(optimumResult)
-    
+
+start_time = time.time()
+userInput = UserInput(pair, timeFrame, strategyName, botName, optimization, randomInputs)
+print("Number of steps: " + str(len(userInput.inputs)))
+
+if __name__ == '__main__':
+    results = []
+    if not randomInputs:
+        numberOfInputs = len(userInput.inputs)
+
+    with concurrent.futures.ProcessPoolExecutor() as executer:
+        results = executer.map( run_trader, userInput.inputs)
+        
+
+    if optimization:
+        results = pd.concat(results)
+        timestr = time.strftime("%Y-%m-%d_%H-%M-%S")
+        results = results.sort_values(by = 'Net profit per day', ascending = False)
+        optimumResult = results.iloc[0]
+        # print(optimumResult["TwoEMA_slow_len"])
+        print (results)
+        if botName:
+            path = "optimizations/" + timestr + "_" + pair + "_" + timeFrame + "_" + botName +".csv"
+        else:
+            path = "optimizations/" + timestr + "_" + pair + "_" + timeFrame + "_" + strategyName +".csv"
+        results.to_csv(path)
+        userInput.writeOptimizedValues(optimumResult)
+            
+        print("--- End of optimization: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
+        print("--- Duration: %s seconds ---" % (time.time() - start_time))
