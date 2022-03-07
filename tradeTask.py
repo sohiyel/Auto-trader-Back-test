@@ -2,19 +2,20 @@ import json
 import time
 class TradeTask():
     def __init__(self) -> None:
-        self.pair = "BTC-USDT"
-        self.timeFrame = "4hour"
-        self.strategyName = "RSIStrategy"
-        self.botName = "Bot02"
-        self.startAt = "2021-01-01 00:00:00"
-        self.endAt = "2021-09-01 00:00:00"
-        self.volume = 1
-        self.initialCapital = 100000
-        self.market = "spot"
-        self.optimization = False
-        self.randomInputs = False
-        self.numberOfInputs = 1
-        self.jsonFile = ""
+        with open("tasks.json", "r") as json_data_file:
+            self.jsonFile = json.load(json_data_file)
+            self.pair = self.jsonFile["default"]["pair"]
+            self.timeFrame = self.jsonFile["default"]["timeFrame"]
+            self.strategyName = self.jsonFile["default"]["strategyName"]
+            self.botName = self.jsonFile["default"]["botName"]
+            self.startAt = self.jsonFile["default"]["startAt"]
+            self.endAt = self.jsonFile["default"]["endAt"]
+            self.volume = self.jsonFile["default"]["volume"]
+            self.initialCapital = self.jsonFile["default"]["initialCapital"]
+            self.market = self.jsonFile["default"]["market"]
+            self.optimization = self.jsonFile["default"]["optimization"]
+            self.randomInputs = self.jsonFile["default"]["randomInputs"]
+            self.numberOfInputs = self.jsonFile["default"]["numberOfInputs"]
 
     def read_toDo(self):
         with open("tasks.json", "r") as json_data_file:
@@ -32,9 +33,11 @@ class TradeTask():
                 self.optimization = self.jsonFile["To_Do"][0]["optimization"]
                 self.randomInputs = self.jsonFile["To_Do"][0]["randomInputs"]
                 self.numberOfInputs = self.jsonFile["To_Do"][0]["numberOfInputs"]
+                return True
 
             else:
                 print("There is no tasks in the queue!")
+                return False
 
     def done_task(self):
         task = {}
