@@ -13,11 +13,11 @@
         "randomInputs": false,
         "numberOfInputs": 5
     },
-    "To_DO": [{
+    "To_Do": [{
         "pair": "BTC-USDT",
         "timeFrame": "4hour",
-        "strategyName": "RSIStrategy",
-        "botName": "Bot02",
+        "strategyName": "OneEMA",
+        "botName": "",
         "startAt": "2021-01-01 00:00:00",
         "endAt": "2021-09-01 00:00:00",
         "volume": 1,
