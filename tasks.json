@@ -1,0 +1,31 @@
+{
+    "default":{
+        "pair": "BTC-USDT",
+        "timeFrame": "4hour",
+        "strategyName": "RSIStrategy",
+        "botName": "Bot02",
+        "startAt": "2021-01-01 00:00:00",
+        "endAt": "2021-09-01 00:00:00",
+        "volume": 1,
+        "initialCapital": 100000,
+        "market": "spot",
+        "optimization": true,
+        "randomInputs": false,
+        "numberOfInputs": 5
+    },
+    "To_DO": [{
+        "pair": "BTC-USDT",
+        "timeFrame": "4hour",
+        "strategyName": "RSIStrategy",
+        "botName": "Bot02",
+        "startAt": "2021-01-01 00:00:00",
+        "endAt": "2021-09-01 00:00:00",
+        "volume": 1,
+        "initialCapital": 100000,
+        "market": "spot",
+        "optimization": true,
+        "randomInputs": false,
+        "numberOfInputs": 5
+    }],
+    "Done": []
+}
