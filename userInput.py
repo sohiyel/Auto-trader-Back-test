@@ -4,7 +4,7 @@ import itertools
 import numpy as np
 from random import shuffle
 import time
-
+from tfMap import tfMap
 class UserInput():
     def __init__(self, pair, timeFrame, strategyName, botName, optimization = False, randomInput = False) -> None:
         self.pair = pair
@@ -29,11 +29,11 @@ class UserInput():
         inputs = []
         if self.optimization:
             for i in jsonFile["optimization"]["inputs"]:
-                pi = ParamInput(i["name"], i["value"], i["strategy"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
+                pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
                 if pi.optimization:
                     strategyInputs = []
                     for i in np.arange(pi.minValue, pi.maxValue, pi.step):
-                        strategyInputs.append(ParamInput(pi.name, i, pi.strategy , pi.minValue, pi.maxValue, pi.step, pi.optimization))
+                        strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded , pi.minValue, pi.maxValue, pi.step, pi.optimization))
                     inputs.append(strategyInputs)
                 else:
                     inputs.append([pi])
@@ -43,7 +43,7 @@ class UserInput():
                 if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
                     params = p
             for i in params["inputs"]:
-                pi = ParamInput(i["name"], i["value"],i["strategy"])
+                pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"])
                 inputs.append([pi])
         
         json_data_file.close()
@@ -55,11 +55,11 @@ class UserInput():
         inputs = []
         if self.optimization:
             for i in jsonFile["optimization"]["inputs"]:
-                pi = ParamInput(i["name"], i["value"], i["strategy"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
+                pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
                 if pi.optimization:
                     strategyInputs = []
                     for i in np.arange(pi.minValue, pi.maxValue, pi.step):
-                        strategyInputs.append(ParamInput(pi.name, i, pi.strategy , pi.minValue, pi.maxValue, pi.step, pi.optimization))
+                        strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded, pi.minValue, pi.maxValue, pi.step, pi.optimization))
                     inputs.append(strategyInputs)
                 else:
                     inputs.append([pi])
@@ -69,7 +69,7 @@ class UserInput():
                 if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
                     params = p
             for i in params["inputs"]:
-                pi = ParamInput(i["name"], i["value"],i["strategy"])
+                pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"])
                 inputs.append([pi])
         
         json_data_file.close()
@@ -146,6 +146,14 @@ class UserInput():
         else:
             with open("strategies/{jsonName}.json".format(jsonName = self.strategyName), 'w') as json_data_file:
                 json.dump(jsonFile, json_data_file)
+
+    def calc_history_needed(self):
+        max = 0
+        for i in self.inputs[0]:
+            if i.historyNeeded:
+                if i.value > max:
+                    max = i.value
+        return max * tfMap.array[self.timeFrame] * 60
         
         
 

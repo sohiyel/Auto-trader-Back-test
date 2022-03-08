@@ -9,7 +9,7 @@ from tfMap import tfMap
 
 class DataService():
 
-    def __init__(self, market, symbol, timeFrame, startTime, endTime):
+    def __init__(self, market, symbol, timeFrame, startTime, endTime, historyNeeded = 0):
         self.symbol = symbol
         self.timeFrame = timeFrame
         self.startTime = startTime
@@ -19,6 +19,8 @@ class DataService():
         self.market = market
         self.startAtTs = self.convertTime(startTime)
         self.endAtTs = self.convertTime(endTime)
+        self.historyNeeded = int(historyNeeded)
+        self.state = 0
         if market == 'futures':
             self.limit = 200
             self.client = KucoinFutures(market, timeFrame)
@@ -34,7 +36,7 @@ class DataService():
         return int(datetime.timestamp(utc_time))
 
     async def fetchKlines(self):
-        fileName = "./data/"+self.market+"/"+self.symbol+"_"+str(self.startAtTs)+"_"+str(self.endAtTs)+".csv"
+        fileName = "./data/"+self.market+"/"+self.symbol+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
         if ( os.path.exists(fileName)):
             self.dataFrame = pd.read_csv(fileName)
             print(fileName + " has been read from disk")
@@ -43,7 +45,7 @@ class DataService():
         
     async def getKlines(self):
         print(self.startAtTs, self.endAtTs)
-        self.klines = await self.client.get_klines_data(self.symbol, self.timeFrame, self.startAtTs, self.endAtTs)
+        self.klines = await self.client.get_klines_data(self.symbol, self.timeFrame, self.startAtTs - self.historyNeeded, self.endAtTs)
         self.makeDataFrame()
                         
     def makeDataFrame(self):
@@ -62,7 +64,7 @@ class DataService():
         asyncio.create_task(self.writeToCSV())
         
     async def writeToCSV(self):
-        fileName = "./data/"+self.market+"/"+self.symbol+"_"+str(self.startAtTs)+"_"+str(self.endAtTs)+".csv"
+        fileName = "./data/"+self.market+"/"+self.symbol+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
         if ( os.path.exists(fileName)):
             return
         else:
@@ -73,7 +75,9 @@ class DataService():
 
     def getCurrentData(self, lastState):
         if lastState <= self.endAtTs:
+            # print(lastState,  self.convertTime(self.dataFrame.iloc[0]["timestamp"]))
             dt_object = datetime.fromtimestamp(lastState, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
+            # print(dt_object, self.dataFrame.iloc[0]["timestamp"])
             return self.dataFrame.loc[self.dataFrame['timestamp'] == dt_object]
         else:
             "<----------End of this dataset!---------->"

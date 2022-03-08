@@ -14,6 +14,7 @@ class TradeRunner():
         self.multiProcess = multiProcess
         self.task = TradeTask()
         self.userInput = UserInput(self.task.pair, self.task.timeFrame, self.task.strategyName, self.task.botName, self.task.optimization, self.task.randomInputs)
+        self.historyNeeded = self.userInput.calc_history_needed()
 
     def run_trader(self, currentInput):
         print  ("--------- New process started ---------")
@@ -27,7 +28,8 @@ class TradeRunner():
                         botName= self.task.botName,
                         volume = self.task.volume,
                         currentInput = currentInput,
-                        optimization = self.task.optimization)
+                        optimization = self.task.optimization,
+                        historyNeeded = self.historyNeeded)
         result = trader.mainloop()
         print  ("--------- A process has finished! ---------")
         return result
@@ -35,6 +37,8 @@ class TradeRunner():
     def start_task(self):
         if self.task.read_toDo():
             self.userInput = UserInput(self.task.pair, self.task.timeFrame, self.task.strategyName, self.task.botName, self.task.optimization, self.task.randomInputs)
+            self.historyNeeded = self.userInput.calc_history_needed()
+            print(f'Number of history needed in secnds: {self.historyNeeded}')
             start_time = time.time()
             print("Number of steps: " + str(len(self.userInput.inputs)))
             results = []
@@ -68,7 +72,7 @@ class TradeRunner():
         print("--- End of optimization: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
 
 if __name__ == '__main__':
-    tradeRunner = TradeRunner(True)
+    tradeRunner = TradeRunner(multiProcess = False)
     while True:
         tradeRunner.start_task()
         time.sleep(5)

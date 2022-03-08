@@ -13,9 +13,9 @@ import time
 
 
 class Trader():
-    def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization):
+    def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization, historyNeeded):
         self.pair = pair
-        self.dataService = DataService(market, pair, timeFrame, startAt, endAt)
+        self.dataService = DataService(market, pair, timeFrame, startAt, endAt, historyNeeded)
         self.startAt = startAt,
         self.endAt = endAt,
         self.startAtTS = self.dataService.startAtTs
@@ -33,6 +33,7 @@ class Trader():
         self.volume = volume
         self.currentInput = currentInput
         self.optimization = optimization
+        self.historyNeeded = int(historyNeeded)
 
 
     def openPosition(self, signal, commission):
@@ -94,14 +95,15 @@ class Trader():
         global balances
         start_time = time.time()
         print("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
-        for i in range(self.dataService.startAtTs,self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
+        for i in range(self.dataService.startAtTs - self.historyNeeded,self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
                 self.processOrders(4, None, 0.0006)
                 self.portfolioManager.balance = 0
                 break
             self.lastState = i
+            # print(i)
             self.lastCandle = self.dataService.getCurrentData(i)
-            # print(self.lastCandle['close'].values[0])
+            # print(self.lastCandle)
             checkContinue = self.positionManager.updatePositions(self.lastCandle['close'].values[0], self.lastState)
             if not checkContinue :
                 self.processOrders(4, None, 0.00060)
