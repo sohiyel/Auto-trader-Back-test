@@ -1,0 +1,33 @@
+{
+    "settings": {
+        "initial_state": "running", //  or "Stopped"
+        "process_throttle_secs": 3600,
+        "heartbeat_interval": 60, //Print heartbeat message every X seconds
+        "logfile": "syslog:/dev/log",
+        "max_open_trades": 3,
+        "cancel_open_orders_on_exit": false,
+        "order_time_in_force": "gtc", //	GTC (Good Till Canceled)	/	FOK (Fill Or Kill)	/	IOC (Immediate Or Canceled)
+        "unfilled_timeout": 10,
+        "unfilled_timeout_unit": "minutes",
+        "refresh_trade_json": 18000000
+    },
+    "tardes": [{
+        "user_name": "maysam1",
+        "sandbox": false,
+        "pts": [{
+            "pair": "BTCUSDT",
+            "tf": "15m",
+            "strategy": "TwoEma",
+            "long_short": "both",
+            "stake_amount": 0.05, //0 for disable
+            "tradable_balance_ratio": 0, //use stake_amount or tradable_balance_ratio - 0 for disable
+        }, {
+            "pair": "ETHUSDT",
+            "tf": "15m",
+            "strategy": "TwoEma",
+            "long_short": "both",
+            "stake_amount": 0, //0 for disable
+            "tradable_balance_ratio": 0.99, //use stake_amount or tradable_balance_ratio - 0 for disable
+        }]
+    }]
+}
