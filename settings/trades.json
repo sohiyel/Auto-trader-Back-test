@@ -1,12 +1,12 @@
 {
     "settings": {
-        "initial_state": "running", //  or "Stopped"
+        "initial_state": "running",
         "process_throttle_secs": 3600,
-        "heartbeat_interval": 60, //Print heartbeat message every X seconds
+        "heartbeat_interval": 60,
         "logfile": "syslog:/dev/log",
         "max_open_trades": 3,
         "cancel_open_orders_on_exit": false,
-        "order_time_in_force": "gtc", //	GTC (Good Till Canceled)	/	FOK (Fill Or Kill)	/	IOC (Immediate Or Canceled)
+        "order_time_in_force": "gtc",
         "unfilled_timeout": 10,
         "unfilled_timeout_unit": "minutes",
         "refresh_trade_json": 18000000
@@ -18,16 +18,18 @@
             "pair": "BTCUSDT",
             "tf": "15m",
             "strategy": "TwoEma",
+            "bot": "",
             "long_short": "both",
-            "stake_amount": 0.05, //0 for disable
-            "tradable_balance_ratio": 0, //use stake_amount or tradable_balance_ratio - 0 for disable
+            "stake_amount": 0.05,
+            "tradable_balance_ratio": 0
         }, {
             "pair": "ETHUSDT",
             "tf": "15m",
             "strategy": "TwoEma",
+            "bot": "",
             "long_short": "both",
-            "stake_amount": 0, //0 for disable
-            "tradable_balance_ratio": 0.99, //use stake_amount or tradable_balance_ratio - 0 for disable
+            "stake_amount": 0,
+            "tradable_balance_ratio": 0.99
         }]
     }]
 }

@@ -6,11 +6,14 @@ from random import shuffle
 import time
 from tfMap import tfMap
 class UserInput():
-    def __init__(self, pair, timeFrame, strategyName, botName, optimization = False, randomInput = False) -> None:
+    def __init__(self, pair, timeFrame, strategyName, botName, side = "both", amount = 1 , ratioAmount = 0, optimization = False, randomInput = False) -> None:
         self.pair = pair
         self.timeFrame = timeFrame
         self.strategyName = strategyName
         self.botName = botName
+        self.side = side
+        self.amount = amount
+        self.ratioAmount = ratioAmount
         self.optimization = optimization
         self.step = 0
         self.inputs = []

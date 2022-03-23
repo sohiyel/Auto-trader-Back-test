@@ -1,6 +1,6 @@
 import json
 import time
-class TradeTask():
+class BackTestTask():
     def __init__(self) -> None:
         with open("tasks.json", "r") as json_data_file:
             self.jsonFile = json.load(json_data_file)

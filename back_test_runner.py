@@ -7,13 +7,18 @@ from pprint import pprint
 import time
 from datetime import datetime
 import concurrent.futures
-from tradeTask import TradeTask
+from backTestTask import BackTestTask
 
 class BackTestRunner():
     def __init__(self, multiProcess) -> None:
         self.multiProcess = multiProcess
-        self.task = TradeTask()
-        self.userInput = UserInput(self.task.pair, self.task.timeFrame, self.task.strategyName, self.task.botName, self.task.optimization, self.task.randomInputs)
+        self.task = BackTestTask()
+        self.userInput = UserInput(pair = self.task.pair,
+                                  timeFrame = self.task.timeFrame,
+                                  strategyName = self.task.strategyName,
+                                  botName = self.task.botName,
+                                  optimization = self.task.optimization,
+                                  randomInput = self.task.randomInputs)
         self.historyNeeded = self.userInput.calc_history_needed()
 
     def run_back_test(self, currentInput):
@@ -36,7 +41,12 @@ class BackTestRunner():
 
     def start_task(self):
         if self.task.read_toDo():
-            self.userInput = UserInput(self.task.pair, self.task.timeFrame, self.task.strategyName, self.task.botName, self.task.optimization, self.task.randomInputs)
+            self.userInput = UserInput(pair = self.task.pair,
+                                  timeFrame = self.task.timeFrame,
+                                  strategyName = self.task.strategyName,
+                                  botName = self.task.botName,
+                                  optimization = self.task.optimization,
+                                  randomInput = self.task.randomInputs)
             self.historyNeeded = self.userInput.calc_history_needed()
             print(f'Number of history needed in secnds: {self.historyNeeded}')
             start_time = time.time()
