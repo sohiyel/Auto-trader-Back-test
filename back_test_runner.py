@@ -1,6 +1,6 @@
 from pprint import isreadable
 from data import DataService
-from trader import Trader
+from back_test import BackTest
 from userInput import UserInput
 import pandas as pd
 from pprint import pprint
@@ -9,16 +9,16 @@ from datetime import datetime
 import concurrent.futures
 from tradeTask import TradeTask
 
-class TradeRunner():
+class BackTestRunner():
     def __init__(self, multiProcess) -> None:
         self.multiProcess = multiProcess
         self.task = TradeTask()
         self.userInput = UserInput(self.task.pair, self.task.timeFrame, self.task.strategyName, self.task.botName, self.task.optimization, self.task.randomInputs)
         self.historyNeeded = self.userInput.calc_history_needed()
 
-    def run_trader(self, currentInput):
+    def run_back_test(self, currentInput):
         print  ("--------- New process started ---------")
-        trader = Trader(market = self.task.market,
+        trader = BackTest(market = self.task.market,
                         pair = self.task.pair,
                         timeFrame = self.task.timeFrame,
                         startAt = self.task.startAt,
@@ -46,10 +46,10 @@ class TradeRunner():
                 numberOfInputs = len(self.userInput.inputs)
             if self.multiProcess:
                 with concurrent.futures.ProcessPoolExecutor() as executer:
-                    results = executer.map( self.run_trader, self.userInput.inputs)
+                    results = executer.map( self.run_back_test, self.userInput.inputs)
             else:
                 for i in self.userInput.inputs:
-                    results.append(self.run_trader(i))
+                    results.append(self.run_back_test(i))
             self.task.done_task()
             if self.task.optimization:
                 self.write_optimization_output(results)
@@ -72,7 +72,7 @@ class TradeRunner():
         print("--- End of optimization: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
 
 if __name__ == '__main__':
-    tradeRunner = TradeRunner(multiProcess = False)
+    tradeRunner = BackTestRunner(multiProcess = False)
     while True:
         tradeRunner.start_task()
         time.sleep(5)

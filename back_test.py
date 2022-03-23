@@ -12,7 +12,7 @@ from plotter import Plotter
 import time
 
 
-class Trader():
+class BackTest():
     def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization, historyNeeded):
         self.pair = pair
         self.dataService = DataService(market, pair, timeFrame, startAt, endAt, historyNeeded)
