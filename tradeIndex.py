@@ -4,7 +4,7 @@ from userInput import UserInput
 class TradeIndex():
     def __init__(self) -> None:
         self.indexes = []
-        with open("settings/trades.js","r") as json_data_file:
+        with open("settings/trades.json","r") as json_data_file:
             self.jsonFile = json.load(json_data_file)
             ptss = self.jsonFile["trades"]["pts"]
             for pts in ptss:

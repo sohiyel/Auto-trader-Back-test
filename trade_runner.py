@@ -17,6 +17,7 @@ class TradeRunner():
             print  (f"--------- start check on :{index.pair} ---------")
             trader = Trader(index)
             print  (f"--------- end check on :{index.pair} ---------")
+            time.sleep(1)
 
 if __name__ == '__main__':
     tradeRunner = TradeRunner()

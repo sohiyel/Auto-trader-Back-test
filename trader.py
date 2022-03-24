@@ -1,3 +1,3 @@
 class Trader:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, index) -> None:
+        print(index.pair)
