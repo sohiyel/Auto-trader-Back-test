@@ -50,7 +50,7 @@
             "historyNeeded": true
         }, {
             "name": "slow_len",
-            "value": 800,
+            "value": 100,
             "strategy": "TwoEMA",
             "historyNeeded": true
         }, {
@@ -98,7 +98,7 @@
             "historyNeeded": true
         }, {
             "name": "slow_len",
-            "value": 160,
+            "value": 100,
             "strategy": "TwoEMA",
             "historyNeeded": true
         }, {

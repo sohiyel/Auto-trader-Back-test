@@ -1,6 +1,6 @@
 
 class PortfolioManager():
-    def __init__(self, initialCapital) -> None:
+    def __init__(self, initialCapital, exchange="") -> None:
         self.initialCapital = initialCapital
         self.balance = initialCapital
         self.equity = initialCapital
@@ -11,12 +11,13 @@ class PortfolioManager():
         self.numLosses = 0
         self.balances = []
         self.equities = []
+        self.exchange = exchange
         
-    def calcPoL(self):
+    def calc_poL(self):
         if self.loss != 0:
             self.pol = abs( self.profit / self.loss )
 
-    def openPosition(self, volume, price, commission):
+    def open_position(self, volume, price, commission):
         if volume * price *  ( 1 + commission ) < self.balance:
             self.balance -= volume * price
             return True
@@ -24,18 +25,18 @@ class PortfolioManager():
             print ("Insufficent balance!", self.balance, price * volume)
             return False
 
-    def closePosition(self, lastPrice, commission):
+    def close_position(self, lastPrice, commission):
         self.balance += lastPrice
 
-    def addProfit(self, profit):
+    def add_profit(self, profit):
         self.profit += profit
         self.numProfits += 1
 
-    def addLoss(self, loss):
+    def add_loss(self, loss):
         self.loss += loss
         self.numLosses += 1
 
-    def addVolume(self, volume, price, commission):
+    def add_volume(self, volume, price, commission):
         if volume * price *  ( 1 + commission ) < self.balance:
             self.balance -= volume * price *  ( 1 + commission )
             return True
@@ -43,9 +44,24 @@ class PortfolioManager():
             print ("Insufficent balance!")
             return False
 
-    def updateEquity(self, lastPrice):
+    def update_equity(self, lastPrice):
         self.equity = self.balance + lastPrice
         return self.equity
+
+    def get_equity(self):
+        if self.exchange:
+            response = self.exchange.fetch_balance()
+            if response['info']['code'] == '200000':
+                print(response)
+                self.equity = response['info']['data']['accountEquity']
+                return self.equity
+            else:
+                print("Problem in getting account equity!")
+                print (response)
+                return False
+        else:
+            print("Exchange is not defined!")
+            return False
 
     def report(self, closedPositions):
         numOfTrades = len(closedPositions)

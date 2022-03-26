@@ -1,12 +1,24 @@
 from kucoin import Kucoin
 import requests
 import asyncio
-
-
+import configparser
+import ccxt as ccxt
 class KucoinSpot(Kucoin):
-    def __init__(self, market, timeFrame):
-        super().__init__(market, timeFrame)
+    def __init__(self, sandBox = True):
+        super().__init__(sandBox)
         self.baseUrl = 'https://api.kucoin.com'
+        self.exchange = ccxt.kucoin()
+        self.exchange.set_sandbox_mode(sandBox)
+
+    def authorize(self):
+        cfg = configparser.ConfigParser()
+        if self.sandBox:
+            cfg.read('api_sandbox.cfg')
+        else:
+            cfg.read('api.cfg')
+        self.exchange.apiKey = cfg.get('KEYS','api_key')
+        self.exchange.secret = cfg.get('KEYS', 'api_secret')
+        self.exchange.password = cfg.get('KEYS', 'api_passphrase')
 
     def get_klines(self, symbol, timeFrame, startAt, endAt):
         kLineURL = '/api/v1/market/candles?'
@@ -23,12 +35,12 @@ class KucoinSpot(Kucoin):
         else:
             print("Something went wrong. Error: "+ str(response.status_code))
 
-    async def get_klines_data(self, symbol, timeFrame, startAt, endAt):
+    async def get_klines_data(self, symbol, timeFrame, startAt, endAt, limit):
         klines = []
-        for i in range(startAt,endAt,self.limit):
+        for i in range(startAt,endAt,limit):
             temp = []
-            if (i+self.limit < endAt):
-                temp.extend(self.get_klines(symbol, timeFrame, i, i+self.limit))
+            if (i+limit < endAt):
+                temp.extend(self.get_klines(symbol, timeFrame, i, i+limit))
             else:
                 temp.extend(self.get_klines(symbol, timeFrame, i, endAt))
             if temp:

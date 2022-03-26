@@ -23,10 +23,10 @@ class DataService():
         self.state = 0
         if market == 'futures':
             self.limit = 200
-            self.client = KucoinFutures(market, timeFrame)
+            self.client = KucoinFutures()
         else:
             self.limit = 1440
-            self.client = KucoinSpot(market, timeFrame)
+            self.client = KucoinSpot()
         
         asyncio.run(self.fetchKlines())
 
@@ -45,7 +45,8 @@ class DataService():
         
     async def getKlines(self):
         print(self.startAtTs, self.endAtTs)
-        self.klines = await self.client.get_klines_data(self.symbol, self.timeFrame, self.startAtTs - self.historyNeeded, self.endAtTs)
+        limit = 1440 * tfMap.array[self.timeFrame] * 60
+        self.klines = await self.client.get_klines_data(self.symbol, self.timeFrame, self.startAtTs - self.historyNeeded, self.endAtTs, limit)
         self.makeDataFrame()
                         
     def makeDataFrame(self):

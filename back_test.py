@@ -38,33 +38,33 @@ class BackTest():
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
-            if self.portfolioManager.openPosition(signal.volume, signal.price, commission):
+            if self.portfolioManager.open_position(signal.volume, signal.price, commission):
                 self.positionManager.openPosition(signal, self.lastState)
         elif len( self.positionManager.openPositions ) == 1:
             if self.positionManager.openPositions[0].type == signal.type:
-                if self.portfolioManager.addVolume(signal.volume, signal.price, commission):
+                if self.portfolioManager.add_volume(signal.volume, signal.price, commission):
                     self.positionManager.addVolume(signal.price, signal.volume)
             else:
                 lastPrice = self.positionManager.closePosition(self.lastState)
-                self.portfolioManager.closePosition(lastPrice, commission)
+                self.portfolioManager.close_position(lastPrice, commission)
                 if self.positionManager.closedPositions[-1].profit > 0:
-                    self.portfolioManager.addProfit(self.positionManager.closedPositions[-1].profit)
+                    self.portfolioManager.add_profit(self.positionManager.closedPositions[-1].profit)
                 else:
-                    self.portfolioManager.addLoss(self.positionManager.closedPositions[-1].profit)
+                    self.portfolioManager.add_loss(self.positionManager.closedPositions[-1].profit)
                 
                 self.portfolioManager.balances.append(self.portfolioManager.balance)
-                if self.portfolioManager.openPosition(signal.volume, signal.price, commission):
+                if self.portfolioManager.open_position(signal.volume, signal.price, commission):
                     self.positionManager.openPosition(signal, self.lastState)
                 
 
     def closePosition(self, commission):
         if len(self.positionManager.openPositions) > 0:
             lastPrice = self.positionManager.closePosition(self.lastState)
-            self.portfolioManager.closePosition(lastPrice, commission)
+            self.portfolioManager.close_position(lastPrice, commission)
             if self.positionManager.closedPositions[-1].profit > 0:
-                self.portfolioManager.addProfit(self.positionManager.closedPositions[-1].profit)
+                self.portfolioManager.add_profit(self.positionManager.closedPositions[-1].profit)
             else:
-                self.portfolioManager.addLoss(self.positionManager.closedPositions[-1].profit)
+                self.portfolioManager.add_loss(self.positionManager.closedPositions[-1].profit)
             self.portfolioManager.balances.append(self.portfolioManager.balance)
 
     def processOrders(self, choice, signal, commission ):
@@ -87,7 +87,7 @@ class BackTest():
 
         if len(self.positionManager.openPositions) > 0:
             lastPrice = self.positionManager.calcEquity()
-            self.portfolioManager.equities.append(self.portfolioManager.updateEquity(lastPrice))
+            self.portfolioManager.equities.append(self.portfolioManager.update_equity(lastPrice))
 
 
 
@@ -113,7 +113,7 @@ class BackTest():
             self.processOrders(choice, signal, 0.00060)
             # print(self.portfolioManager.balance)
 
-            self.portfolioManager.calcPoL()
+            self.portfolioManager.calc_poL()
 
             # clear = lambda: os.system('cls')
             # clear()
