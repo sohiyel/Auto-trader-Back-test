@@ -15,16 +15,16 @@
         "user_name": "maysam1",
         "sandbox": false,
         "pts": [{
-            "pair": "BTC/USDT:USDT",
-            "tf": "15m",
+            "pair": "BTC-USDT",
+            "tf": "15min",
             "strategy": "TwoEMA",
             "bot": "",
             "long_short": "both",
             "stake_amount": 0.05,
             "tradeable_balance_ratio": 0
         }, {
-            "pair": "ETH/USDT:USDT",
-            "tf": "15m",
+            "pair": "ETH-USDT",
+            "tf": "15min",
             "strategy": "TwoEMA",
             "bot": "",
             "long_short": "both",

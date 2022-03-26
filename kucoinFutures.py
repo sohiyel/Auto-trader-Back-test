@@ -27,6 +27,7 @@ class KucoinFutures(Kucoin):
         startAt = startAt * 1000
         endAt = endAt * 1000
         step = self.limit * granularity
+        print(startAt, endAt, step)
         for i in range(startAt,endAt,step):
             temp = []
             if (i+step < endAt):
