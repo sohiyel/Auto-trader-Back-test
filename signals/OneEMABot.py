@@ -8,7 +8,7 @@ class OneEMABot():
         self.pair = pair
         
     def decider(self, marketData):
-        self.marketData.append(marketData)
+        self.marketData.extend(marketData)
         strategy = OneEMA(self.timeFrame, self.pair)
         signal = strategy.decider(self.marketData)
         # print(self.marketData[-1])

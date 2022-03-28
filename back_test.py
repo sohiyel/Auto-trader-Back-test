@@ -109,7 +109,7 @@ class BackTest():
                 self.processOrders(4, None, 0.00060)
                 continue
 
-            choice, signal = self.orderManager.decider(self.lastCandle.iloc[0], self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.positionAveragePrice(), self.positionManager.positionSize())
+            choice, signal = self.orderManager.decider([self.lastCandle.iloc[0]], self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.positionAveragePrice(), self.positionManager.positionSize())
             self.processOrders(choice, signal, 0.00060)
             # print(self.portfolioManager.balance)
 

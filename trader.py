@@ -26,14 +26,19 @@ class Trader():
         self.lastState = self.dataService.startAtTs
         self.strategyName = index.strategyName
         self.botName = index.botName
-        initialCapital = 1
-        self.orderManager = OrderManager(initialCapital, index.strategyName, index.botName, index.inputs, index.pair)
+        self.portfolioManager = PortfolioManager(1,exchange)
+        self.initialCapital = self.portfolioManager.get_balance()
+        self.orderManager = OrderManager(self.initialCapital, index.strategyName, index.botName, index.inputs, index.pair)
         self.positionManager = PositionManager()
-        self.portfolioManager = PortfolioManager(initialCapital,exchange)
         self.timeFrame = index.timeFrame
         self.lastCandle = ""
         self.volume = index.amount
         self.currentInput = index
+        choice, signal = self.orderManager.decider(self.dataService.dataFrame.iloc[:],
+                                                        self.portfolioManager.equity,
+                                                        self.portfolioManager.balance,
+                                                        self.positionManager.positionAveragePrice(),
+                                                        self.positionManager.positionSize())
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
@@ -97,7 +102,13 @@ class Trader():
                     self.processOrders(4, None, 0.0006)
                     self.portfolioManager.balance = 0
                     break
-            time.sleep(5)
+            choice, signal = self.orderManager.decider(self.lastCandle.iloc[0],
+                                                        self.portfolioManager.equity,
+                                                        self.portfolioManager.balance,
+                                                        self.positionManager.positionAveragePrice(),
+                                                        self.positionManager.positionSize())
+            time.sleep(tfMap.array[self.timeFrame]*60)
+
             # self.lastState = i
             # self.lastCandle = self.dataService.getCurrentData(i)
             # checkContinue = self.positionManager.updatePositions(self.lastCandle['close'].values[0], self.lastState)

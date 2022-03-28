@@ -1,6 +1,6 @@
 
 class PortfolioManager():
-    def __init__(self, initialCapital, exchange="") -> None:
+    def __init__(self, initialCapital=1, exchange="") -> None:
         self.initialCapital = initialCapital
         self.balance = initialCapital
         self.equity = initialCapital
@@ -57,6 +57,21 @@ class PortfolioManager():
                 return self.equity
             else:
                 print("Problem in getting account equity!")
+                print (response)
+                return False
+        else:
+            print("Exchange is not defined!")
+            return False
+
+    def get_balance(self):
+        if self.exchange:
+            response = self.exchange.fetch_balance()
+            if response['info']['code'] == '200000':
+                print(response)
+                self.balance = response['info']['data']['marginBalance']
+                return self.balance
+            else:
+                print("Problem in getting account balance!")
                 print (response)
                 return False
         else:
