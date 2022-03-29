@@ -1,0 +1,10 @@
+{
+    "tables": [
+        {
+            "pair": "BTC_USDT",
+            "tf": "15m"
+        }, {
+            "pair": "ETH_USDT",
+            "tf": "15m"
+        }]
+}

@@ -15,7 +15,7 @@
         "user_name": "maysam1",
         "sandbox": false,
         "pts": [{
-            "pair": "BTC-USDT",
+            "pair": "BTC/USDT:USDT",
             "tf": "15min",
             "strategy": "TwoEMA",
             "bot": "",
@@ -23,7 +23,7 @@
             "stake_amount": 0.05,
             "tradeable_balance_ratio": 0
         }, {
-            "pair": "ETH-USDT",
+            "pair": "ETH/USDT:USDT",
             "tf": "15min",
             "strategy": "TwoEMA",
             "bot": "",
