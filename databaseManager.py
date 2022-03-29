@@ -5,6 +5,7 @@ import configparser
 class DatabaseManager():
     def __init__(self) -> None:
         self.conn = None
+        self.connect_to_db()
         self.tables = []
 
     def connect_to_db(self):
@@ -51,6 +52,5 @@ class DatabaseManager():
 
 if __name__ == '__main__':
     dbManager = DatabaseManager()
-    dbManager.connect_to_db()
     dbManager.set_up_tables()
     dbManager.conn.close()
