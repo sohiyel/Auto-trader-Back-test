@@ -2,9 +2,13 @@
     "tables": [
         {
             "pair": "BTC_USDT",
-            "tf": "15m"
+            "tf": "1h"
         }, {
             "pair": "ETH_USDT",
-            "tf": "15m"
+            "tf": "1h"
+        },
+        {
+            "pair": "BTC_USDT",
+            "tf": "1m"
         }]
 }

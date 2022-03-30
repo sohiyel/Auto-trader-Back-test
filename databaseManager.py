@@ -27,7 +27,7 @@ class DatabaseManager():
         cur = self.conn.cursor()
         try:
             cur.execute('''CREATE TABLE IF NOT EXISTS {} (
-                        dt timestamp PRIMARY KEY,
+                        dt numeric PRIMARY KEY,
                         open numeric NOT NULL,
                         high numeric NOT NULL,
                         low numeric NOT NULL,
@@ -49,6 +49,27 @@ class DatabaseManager():
                 self.tables.append( (pts["pair"], pts["tf"]))
         for i in self.tables:
             self.create_table(i[0], i[1])
+
+    def store_klines(self, klines, tableName):
+        for index, k in klines.iterrows():
+            cur = self.conn.cursor()
+            try:
+                cur.execute(f"INSERT into {tableName} (dt, open, high, low, close, volume)\
+                            VALUES ({k['timestamp']},{k['open']},{k['high']},{k['low']},{k['close']},{k['volume']});")
+            except:
+                self.conn.commit() 
+                cur.close()
+                cur = self.conn.cursor()
+                try:
+                    cur.execute(f"UPDATE {tableName}\
+                                SET open = {k['open']}, high = {k['high']}, low = {k['low']}, close = {k['close']}, volume = {k['volume']}\
+                                WHERE dt={k['timestamp']};")
+                except:
+                    print (f"Cannot write this data to {tableName}")
+                    print (k)
+
+            self.conn.commit() 
+            cur.close()
 
 if __name__ == '__main__':
     dbManager = DatabaseManager()
