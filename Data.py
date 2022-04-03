@@ -18,8 +18,8 @@ class DataService():
         self.klines = []
         self.dataFrame = ""
         self.market = market
-        self.startAtTs = self.convertTime(startTime)
-        self.endAtTs = self.convertTime(endTime)
+        self.startAtTs = self.convert_time(startTime)
+        self.endAtTs = self.convert_time(endTime)
         self.historyNeeded = int(historyNeeded)
         self.state = 0
         if market == 'futures':
@@ -29,28 +29,28 @@ class DataService():
             self.limit = 1440
             self.client = KucoinSpot()
         
-        asyncio.run(self.fetchKlines())
+        asyncio.run(self.fetch_klines())
 
-    def convertTime(self, ttime):
+    def convert_time(self, ttime):
         date_time_obj = datetime.strptime(ttime, '%Y-%m-%d %H:%M:%S')
         utc_time = date_time_obj.replace(tzinfo=timezone('utc'))
         return int(datetime.timestamp(utc_time))
 
-    async def fetchKlines(self):
+    async def fetch_klines(self):
         fileName = "./data/"+self.market+"/"+self.symbol+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
         if ( os.path.exists(fileName)):
             self.dataFrame = pd.read_csv(fileName)
             print(fileName + " has been read from disk")
         else:
-            await self.getKlines()
+            await self.get_klines()
         
-    async def getKlines(self):
+    async def get_klines(self):
         print(self.startAtTs, self.endAtTs)
         limit = 1440 * tfMap.array[self.timeFrame] * 60
         self.klines = await self.client.get_klines_data(self.symbol, self.timeFrame, self.startAtTs - self.historyNeeded, self.endAtTs, limit)
-        self.makeDataFrame()
+        self.make_data_frame()
                         
-    def makeDataFrame(self):
+    def make_data_frame(self):
         if self.market == "futures":
             columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
             dataFrame = pd.DataFrame(self.klines, columns = columns)
@@ -63,9 +63,9 @@ class DataService():
         dataFrame.set_index('timestamp', inplace=True)
         dataFrame.sort_index(inplace=True)
         self.dataFrame = dataFrame
-        asyncio.create_task(self.writeToCSV())
+        asyncio.create_task(self.write_to_CSV())
         
-    async def writeToCSV(self):
+    async def write_to_CSV(self):
         fileName = "./data/"+self.market+"/"+self.symbol+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
         if ( os.path.exists(fileName)):
             return
@@ -75,7 +75,7 @@ class DataService():
             print(fileName + " has been read from disk")
 
 
-    def getCurrentData(self, lastState):
+    def get_current_data(self, lastState):
         if lastState <= self.endAtTs:
             # print(lastState,  self.convertTime(self.dataFrame.iloc[0]["timestamp"]))
             dt_object = datetime.fromtimestamp(lastState, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
@@ -84,3 +84,5 @@ class DataService():
         else:
             "<----------End of this dataset!---------->"
             return False
+
+    # def read_data_from_db(self):

@@ -24,15 +24,7 @@ class DataDownloader():
         return df
 
     def find_new_data(self, klines):
-        try:
-            cur = self.db.conn.cursor()
-            cur.execute(f"SELECT * FROM {self.tableName} ORDER BY dt DESC LIMIT 200;")
-            query = cur.fetchall()
-        except:
-            print (f"Cannot find table {self.tableName}!")
-            query = pd.DataFrame([], columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-        self.db.conn.commit() 
-        cur.close()
+        query = self.db.read_klines(self.pair, self.timeFrame, 200)
         df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
         diff = klines.merge(df, how = 'outer', indicator = True).loc[ lambda x : x['_merge'] == 'left_only']
         return diff

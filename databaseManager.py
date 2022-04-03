@@ -1,6 +1,8 @@
 import psycopg2
 import json
 import configparser
+from tfMap import tfMap
+import pandas as pd
 
 class DatabaseManager():
     def __init__(self) -> None:
@@ -70,6 +72,20 @@ class DatabaseManager():
 
             self.conn.commit() 
             cur.close()
+
+    def read_klines(self, pair, timeFrame, limit):
+        cur = self.conn.cursor()
+        tableName = tfMap.get_db_format(pair) + "_" + timeFrame
+        try:
+            cur.execute(f"SELECT * FROM {tableName} ORDER BY dt DESC LIMIT {limit};")
+            query = cur.fetchall()
+            cur.close()
+            return query
+        except:
+            cur.close()
+            print (f"Cannot find table {tableName}!")
+            query = []
+            return query
 
 if __name__ == '__main__':
     dbManager = DatabaseManager()
