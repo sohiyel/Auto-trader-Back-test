@@ -102,7 +102,7 @@ class BackTest():
                 break
             self.lastState = i
             # print(i)
-            self.lastCandle = self.dataService.getCurrentData(i)
+            self.lastCandle = self.dataService.get_current_data(i)
             # print(self.lastCandle)
             checkContinue = self.positionManager.updatePositions(self.lastCandle['close'].values[0], self.lastState)
             if not checkContinue :
