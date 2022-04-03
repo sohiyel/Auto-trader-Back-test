@@ -102,22 +102,23 @@ class Trader():
                     self.processOrders(4, None, 0.0006)
                     self.portfolioManager.balance = 0
                     break
-            choice, signal = self.orderManager.decider(self.lastCandle.iloc[0],
+
+            self.lastState = time.time()
+            df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState)
+            df = df.sort_values(by='timestamp', ascending=True)
+            self.lastCandle = df.iloc[-1]
+            checkContinue = self.positionManager.updatePositions(self.lastCandle['close'].values[0], self.lastState)
+            if not checkContinue :
+                self.processOrders(4, None, 0.00060)
+                continue
+            choice, signal = self.orderManager.decider(df,
                                                         self.portfolioManager.equity,
                                                         self.portfolioManager.balance,
                                                         self.positionManager.positionAveragePrice(),
                                                         self.positionManager.positionSize())
-            time.sleep(tfMap.array[self.timeFrame]*60)
-
-            # self.lastState = i
-            # self.lastCandle = self.dataService.getCurrentData(i)
-            # checkContinue = self.positionManager.updatePositions(self.lastCandle['close'].values[0], self.lastState)
-            # if not checkContinue :
-            #     self.processOrders(4, None, 0.00060)
-            #     continue
-
-            # choice, signal = self.orderManager.decider(self.lastCandle.iloc[0], self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.positionAveragePrice(), self.positionManager.positionSize())
-            # self.processOrders(choice, signal, 0.00060)
-            # self.portfolioManager.calc_poL()
+            self.processOrders(choice, signal, 0.00060)
+            self.portfolioManager.calc_poL()
+                        
+            time.sleep(tfMap.array[self.tsimeFrame]*60)
 
         # self.processOrders(4, None, 0.0006)

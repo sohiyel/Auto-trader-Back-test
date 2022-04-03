@@ -24,7 +24,7 @@ class BotSignal():
         
         
     def decider(self, marketData):
-        self.marketData.extend(marketData)
+        self.marketData = marketData
         signals = []
 
         for s in self.strategies:

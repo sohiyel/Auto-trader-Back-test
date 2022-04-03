@@ -18,7 +18,7 @@ class PortfolioManager():
             self.pol = abs( self.profit / self.loss )
 
     def open_position(self, volume, price, commission):
-        if volume * price *  ( 1 + commission ) < self.balance:
+        if volume * float(price) *  ( 1 + commission ) < self.balance:
             self.balance -= volume * price
             return True
         else:
@@ -111,6 +111,15 @@ class PortfolioManager():
                 else:
                     numOfLossShort += 1
                     sumOfLossShorts += p.profit
+        if numOfLossShort > 0:
+            percentProfitableShorts = numOfWinShorts / numOfLossShort * 100
+        else:
+            percentProfitableShorts = "infinite"
+        if sumOfLossShorts > 0:
+            profitFactorShorts = sumOfWinShorts / sumOfLossShorts * -1
+        else:
+            profitFactorShorts = "infinite"
+        
         return {
             "netProfit" : self.balance - self.initialCapital,
             "netProfitPercent" : (self.balance - self.initialCapital) / self.initialCapital * 100,
@@ -118,10 +127,10 @@ class PortfolioManager():
             "netProfitPercentShorts" : sumOfShorts / self.initialCapital * 100,
             "percentProfitable" : self.numProfits / self.numLosses * 100,
             "percentProfitableLongs" : numOfWinLongs / numOfLossLong * 100,
-            "percentProfitableShorts" : numOfWinShorts / numOfLossShort * 100,
+            "percentProfitableShorts" : percentProfitableShorts,
             "profitFactor" : self.profit / self.loss * -1,
             "profitFactorLongs" : sumOfWinLongs / sumOfLossLongs * -1,
-            "profitFactorShorts" : sumOfWinShorts / sumOfLossShorts * -1,
+            "profitFactorShorts" : profitFactorShorts,
             "totalClosedTrades": numOfTrades,
             "totalLongTrades" : numOfLongs,
             "totalShortTrades" : numOfShorts,

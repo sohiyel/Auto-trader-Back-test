@@ -9,8 +9,11 @@ class tfMap:
                 return pair
             else:
                 return pair + ":USDT"
-        else:
+        elif "_" in pair:
             pairs = pair.split("_")
+            return pairs[0] + "/" + pairs[1] + ":USDT"
+        elif "-" in pair:
+            pairs = pair.split("-")
             return pairs[0] + "/" + pairs[1] + ":USDT"
 
     def get_db_format(pair):
@@ -19,7 +22,10 @@ class tfMap:
                 return pair.split(":")[0]
             else:
                 return pair
-        else:
+        elif "/" in pair:
             pairs = pair.split("/")
+            return pairs[0] + "_" + pairs[1]
+        elif "-" in pair:
+            pairs = pair.split("-")
             return pairs[0] + "_" + pairs[1]
 

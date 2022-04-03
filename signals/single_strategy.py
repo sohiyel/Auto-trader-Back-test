@@ -9,7 +9,7 @@ class SingleStrategy():
         self.strategy = self.StrategyClass(currentInput, pair)
         
     def decider(self, marketData):
-        self.marketData.extend(marketData)
+        self.marketData = marketData
         signal = self.strategy.decider(self.marketData)
         # print(self.marketData[-1])
         return signal

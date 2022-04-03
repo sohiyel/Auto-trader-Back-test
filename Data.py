@@ -7,12 +7,15 @@ from pytz import timezone
 from kucoinFutures import KucoinFutures
 from kucoinSpot import KucoinSpot
 from tfMap import tfMap
+from databaseManager import DatabaseManager
 
 class DataService():
 
-    def __init__(self, market, symbol, timeFrame, startTime, endTime, historyNeeded = 0):
-        self.symbol = symbol
+    def __init__(self, market, pair, timeFrame, startTime, endTime, historyNeeded = 0):
+        self.pair = pair
+        pair = tfMap.get_db_format(self.pair)
         self.timeFrame = timeFrame
+        self.tableName = pair + "_" + self.timeFrame
         self.startTime = startTime
         self.endTime = endTime
         self.klines = []
@@ -22,6 +25,7 @@ class DataService():
         self.endAtTs = self.convert_time(endTime)
         self.historyNeeded = int(historyNeeded)
         self.state = 0
+        self.db = DatabaseManager()
         if market == 'futures':
             self.limit = 200
             self.client = KucoinFutures()
@@ -37,7 +41,7 @@ class DataService():
         return int(datetime.timestamp(utc_time))
 
     async def fetch_klines(self):
-        fileName = "./data/"+self.market+"/"+self.symbol+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
+        fileName = "./data/"+self.market+"/"+self.pair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
         if ( os.path.exists(fileName)):
             self.dataFrame = pd.read_csv(fileName)
             print(fileName + " has been read from disk")
@@ -47,7 +51,7 @@ class DataService():
     async def get_klines(self):
         print(self.startAtTs, self.endAtTs)
         limit = 1440 * tfMap.array[self.timeFrame] * 60
-        self.klines = await self.client.get_klines_data(self.symbol, self.timeFrame, self.startAtTs - self.historyNeeded, self.endAtTs, limit)
+        self.klines = await self.client.get_klines_data(self.pair, self.timeFrame, self.startAtTs - self.historyNeeded, self.endAtTs, limit)
         self.make_data_frame()
                         
     def make_data_frame(self):
@@ -59,6 +63,8 @@ class DataService():
             columns = ['timestamp', 'open', 'close', 'high', 'low', 'volume', 'amount']
             dataFrame = pd.DataFrame(self.klines, columns = columns)
             dataFrame['timestamp'] = dataFrame['timestamp'].astype(float)*1000
+        self.db.create_table(self.pair, self.timeFrame)
+        self.db.store_klines(dataFrame, self.tableName)
         dataFrame['timestamp'] = pd.to_datetime(dataFrame['timestamp'], unit='ms')
         dataFrame.set_index('timestamp', inplace=True)
         dataFrame.sort_index(inplace=True)
@@ -66,7 +72,7 @@ class DataService():
         asyncio.create_task(self.write_to_CSV())
         
     async def write_to_CSV(self):
-        fileName = "./data/"+self.market+"/"+self.symbol+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
+        fileName = "./data/"+self.market+"/"+self.pair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
         if ( os.path.exists(fileName)):
             return
         else:
@@ -85,4 +91,5 @@ class DataService():
             "<----------End of this dataset!---------->"
             return False
 
-    # def read_data_from_db(self):
+    def read_data_from_db(self, limit, lastState):
+        return self.db.read_klines(self.pair, self.timeFrame, limit, lastState)

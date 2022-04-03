@@ -26,6 +26,7 @@ class DatabaseManager():
             print ("Cannot read db config file!")
 
     def create_table(self, pair, timeFrame):
+        pair = tfMap.get_db_format(pair)
         cur = self.conn.cursor()
         try:
             cur.execute('''CREATE TABLE IF NOT EXISTS {} (
@@ -73,19 +74,21 @@ class DatabaseManager():
             self.conn.commit() 
             cur.close()
 
-    def read_klines(self, pair, timeFrame, limit):
+    def read_klines(self, pair, timeFrame, limit, lastState):
         cur = self.conn.cursor()
         tableName = tfMap.get_db_format(pair) + "_" + timeFrame
         try:
             cur.execute(f"SELECT * FROM {tableName} ORDER BY dt DESC LIMIT {limit};")
             query = cur.fetchall()
+            df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'], dtype=float)
             cur.close()
-            return query
+            return df
         except:
             cur.close()
             print (f"Cannot find table {tableName}!")
             query = []
-            return query
+            df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+            return df
 
 if __name__ == '__main__':
     dbManager = DatabaseManager()

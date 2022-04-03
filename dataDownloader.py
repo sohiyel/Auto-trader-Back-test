@@ -24,8 +24,7 @@ class DataDownloader():
         return df
 
     def find_new_data(self, klines):
-        query = self.db.read_klines(self.pair, self.timeFrame, 200)
-        df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+        df = self.db.read_klines(self.pair, self.timeFrame, 200, time.time())
         diff = klines.merge(df, how = 'outer', indicator = True).loc[ lambda x : x['_merge'] == 'left_only']
         return diff
 

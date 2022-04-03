@@ -95,21 +95,21 @@ class BackTest():
         global balances
         start_time = time.time()
         print("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
-        for i in range(self.dataService.startAtTs - self.historyNeeded,self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
+        for i in range(self.dataService.startAtTs,self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
                 self.processOrders(4, None, 0.0006)
                 self.portfolioManager.balance = 0
                 break
             self.lastState = i
-            # print(i)
-            self.lastCandle = self.dataService.get_current_data(i)
-            # print(self.lastCandle)
-            checkContinue = self.positionManager.updatePositions(self.lastCandle['close'].values[0], self.lastState)
+            df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState * 1000)
+            df = df.sort_values(by='timestamp', ascending=True)
+            self.lastCandle = df.iloc[-1]
+            checkContinue = self.positionManager.updatePositions(self.lastCandle['close'], self.lastState)
             if not checkContinue :
                 self.processOrders(4, None, 0.00060)
                 continue
 
-            choice, signal = self.orderManager.decider([self.lastCandle.iloc[0]], self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.positionAveragePrice(), self.positionManager.positionSize())
+            choice, signal = self.orderManager.decider(df, self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.positionAveragePrice(), self.positionManager.positionSize())
             self.processOrders(choice, signal, 0.00060)
             # print(self.portfolioManager.balance)
 
