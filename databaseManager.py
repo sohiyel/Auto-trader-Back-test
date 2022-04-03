@@ -78,7 +78,7 @@ class DatabaseManager():
         cur = self.conn.cursor()
         tableName = tfMap.get_db_format(pair) + "_" + timeFrame
         try:
-            cur.execute(f"SELECT * FROM {tableName} ORDER BY dt DESC LIMIT {limit};")
+            cur.execute(f"SELECT * FROM {tableName} WHERE dt < {lastState} ORDER BY dt DESC LIMIT {limit};")
             query = cur.fetchall()
             df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'], dtype=float)
             cur.close()

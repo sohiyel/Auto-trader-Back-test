@@ -42,6 +42,7 @@ class OneEMA(Strategy):
 
     def decider(self, marketData):
         if len(marketData) < self.emaLength:
+            print ("-----------Low amount of Data!-----------")
             return SignalClass()
         
         self.decisions = {

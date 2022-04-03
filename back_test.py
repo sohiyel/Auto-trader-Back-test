@@ -95,7 +95,7 @@ class BackTest():
         global balances
         start_time = time.time()
         print("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
-        for i in range(self.dataService.startAtTs,self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
+        for i in range(self.dataService.startAtTs, self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
                 self.processOrders(4, None, 0.0006)
                 self.portfolioManager.balance = 0
