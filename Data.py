@@ -12,8 +12,7 @@ from databaseManager import DatabaseManager
 class DataService():
 
     def __init__(self, market, pair, timeFrame, startTime, endTime, historyNeeded = 0):
-        self.pair = pair
-        pair = tfMap.get_db_format(self.pair)
+        self.pair = tfMap.get_db_format(pair)
         self.timeFrame = timeFrame
         self.tableName = pair + "_" + self.timeFrame
         self.startTime = startTime

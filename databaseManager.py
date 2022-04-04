@@ -26,7 +26,7 @@ class DatabaseManager():
             print ("Cannot read db config file!")
 
     def create_table(self, pair, timeFrame):
-        pair = tfMap.get_db_format(pair)
+        dbPair = tfMap.get_db_format(pair)
         cur = self.conn.cursor()
         try:
             cur.execute('''CREATE TABLE IF NOT EXISTS {} (
@@ -36,9 +36,9 @@ class DatabaseManager():
                         low numeric NOT NULL,
                         close numeric NOT NULL,
                         volume numeric NOT NULL
-                        );'''.format(pair+"_"+timeFrame))
+                        );'''.format(dbPair+"_"+timeFrame))
         except:
-            print ("Cannot create {} table!".format(pair+"_"+timeFrame))
+            print ("Cannot create {} table!".format(dbPair+"_"+timeFrame))
 
         self.conn.commit()
         cur.close()

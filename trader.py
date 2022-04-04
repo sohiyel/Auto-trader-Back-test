@@ -13,12 +13,12 @@ import time
 
 
 class Trader():
-    def __init__ (self, index, exchange, market = 'spot'):
+    def __init__ (self, index, exchange, market = 'futures'):
         self.exchange = exchange
         self.pair = index.pair
         self.startAt = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        self.endAt = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         historyNeeded = index.calc_history_needed()
+        self.endAt = datetime.fromtimestamp(time.time() - historyNeeded, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
         self.historyNeeded = int(historyNeeded)
         self.dataService = DataService(market, index.pair, index.timeFrame, self.startAt, self.endAt, historyNeeded)
         self.startAtTS = self.dataService.startAtTs
@@ -26,10 +26,10 @@ class Trader():
         self.lastState = self.dataService.startAtTs
         self.strategyName = index.strategyName
         self.botName = index.botName
-        self.portfolioManager = PortfolioManager(1,exchange)
-        self.initialCapital = self.portfolioManager.get_balance()
+        self.initialCapital = 1000000 #self.portfolioManager.get_balance() TODO:remove this
+        self.portfolioManager = PortfolioManager(self.initialCapital,exchange)
         self.orderManager = OrderManager(self.initialCapital, index.strategyName, index.botName, index.inputs, index.pair)
-        self.positionManager = PositionManager()
+        self.positionManager = PositionManager(exchange)
         self.timeFrame = index.timeFrame
         self.lastCandle = ""
         self.volume = index.amount
@@ -37,19 +37,19 @@ class Trader():
         choice, signal = self.orderManager.decider(self.dataService.dataFrame.iloc[:],
                                                         self.portfolioManager.equity,
                                                         self.portfolioManager.balance,
-                                                        self.positionManager.positionAveragePrice(),
-                                                        self.positionManager.positionSize())
+                                                        self.positionManager.position_average_price(),
+                                                        self.positionManager.position_size())
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
             if self.portfolioManager.open_position(signal.volume, signal.price, commission):
-                self.positionManager.openPosition(signal, self.lastState)
+                self.positionManager.open_position(signal, self.lastState)
         elif len( self.positionManager.openPositions ) == 1:
             if self.positionManager.openPositions[0].type == signal.type:
                 if self.portfolioManager.add_volume(signal.volume, signal.price, commission):
-                    self.positionManager.addVolume(signal.price, signal.volume)
+                    self.positionManager.add_volume(signal.price, signal.volume)
             else:
-                lastPrice = self.positionManager.closePosition(self.lastState)
+                lastPrice = self.positionManager.close_position(self.lastState)
                 self.portfolioManager.close_position(lastPrice, commission)
                 if self.positionManager.closedPositions[-1].profit > 0:
                     self.portfolioManager.add_profit(self.positionManager.closedPositions[-1].profit)
@@ -58,12 +58,12 @@ class Trader():
                 
                 self.portfolioManager.balances.append(self.portfolioManager.balance)
                 if self.portfolioManager.open_position(signal.volume, signal.price, commission):
-                    self.positionManager.openPosition(signal, self.lastState)
+                    self.positionManager.open_position(signal, self.lastState)
                 
 
     def closePosition(self, commission):
         if len(self.positionManager.openPositions) > 0:
-            lastPrice = self.positionManager.closePosition(self.lastState)
+            lastPrice = self.positionManager.close_position(self.lastState)
             self.portfolioManager.close_position(lastPrice, commission)
             if self.positionManager.closedPositions[-1].profit > 0:
                 self.portfolioManager.add_profit(self.positionManager.closedPositions[-1].profit)
@@ -90,35 +90,35 @@ class Trader():
             self.closePosition(commission)
 
         if len(self.positionManager.openPositions) > 0:
-            lastPrice = self.positionManager.calcEquity()
+            lastPrice = self.positionManager.calc_equity()
             self.portfolioManager.equities.append(self.portfolioManager.update_equity(lastPrice))
 
 
 
     def mainloop(self):
-        while True:
-            if self.portfolioManager.get_equity():
-                if self.portfolioManager.equity <= 0:
-                    self.processOrders(4, None, 0.0006)
-                    self.portfolioManager.balance = 0
-                    break
+        # if self.portfolioManager.get_equity():
+        #     if self.portfolioManager.equity <= 0:
+        #         self.processOrders(4, None, 0.0006)
+        #         self.portfolioManager.balance = 0
+        #         return
 
-            self.lastState = time.time()
-            df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState)
-            df = df.sort_values(by='timestamp', ascending=True)
-            self.lastCandle = df.iloc[-1]
-            checkContinue = self.positionManager.updatePositions(self.lastCandle['close'].values[0], self.lastState)
-            if not checkContinue :
-                self.processOrders(4, None, 0.00060)
-                continue
-            choice, signal = self.orderManager.decider(df,
-                                                        self.portfolioManager.equity,
-                                                        self.portfolioManager.balance,
-                                                        self.positionManager.positionAveragePrice(),
-                                                        self.positionManager.positionSize())
-            self.processOrders(choice, signal, 0.00060)
-            self.portfolioManager.calc_poL()
-                        
-            time.sleep(tfMap.array[self.tsimeFrame]*60)
+        self.lastState = time.time() * 1000
+        df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState)
+        df = df.sort_values(by='timestamp', ascending=True)
+        self.lastCandle = df.iloc[-1]
+        checkContinue = self.positionManager.update_positions(self.lastCandle['close'], self.lastState)
+        if not checkContinue :
+            self.processOrders(4, None, 0.00060)
+            return
+        choice, signal = self.orderManager.decider(df,
+                                                    self.portfolioManager.equity,
+                                                    self.portfolioManager.balance,
+                                                    self.positionManager.position_average_price(),
+                                                    self.positionManager.position_size())
+        print ( f"Current choice is:{choice}")
+        self.processOrders(choice, signal, 0.00060)
+        self.portfolioManager.calc_poL()
+                    
+        time.sleep(tfMap.array[self.timeFrame]*60)
 
         # self.processOrders(4, None, 0.0006)

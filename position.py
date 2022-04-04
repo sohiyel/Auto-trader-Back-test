@@ -8,10 +8,10 @@ class Position():
         self.currentPrice = openPrice
         self.openAt = openAt
         if slPercent > 0 and tpPercent > 0:
-            if type == "LONG":
+            if type == "buy":
                 self.stopLoss = (1 - slPercent ) * openPrice
                 self.takeProfit = (1 + tpPercent) * openPrice
-            elif type == "SHORT":
+            elif type == "sell":
                 self.stopLoss = (1 + slPercent) * openPrice
                 self.takeProfit = (1 - tpPercent) * openPrice
         elif stopLoss > 0 and takeProfit > 0:
@@ -24,9 +24,9 @@ class Position():
         
 
     def calcProfit(self):
-        if self.type == "LONG":
+        if self.type == "buy":
             self.profit = (self.currentPrice - self.openPrice) * self.volume - self.commission
-        elif self.type == "SHORT":
+        elif self.type == "sell":
             self.profit = (self.openPrice - self.currentPrice) * self.volume - self.commission
         return self.profit
 

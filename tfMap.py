@@ -23,9 +23,13 @@ class tfMap:
             else:
                 return pair
         elif "/" in pair:
+            if ":" in pair:
+                pair = pair.split(":")[0]
             pairs = pair.split("/")
             return pairs[0] + "_" + pairs[1]
         elif "-" in pair:
+            if ":" in pair:
+                pair = pair.split(":")[0]
             pairs = pair.split("-")
             return pairs[0] + "_" + pairs[1]
 
