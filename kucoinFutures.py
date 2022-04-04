@@ -7,7 +7,7 @@ import configparser
 from tfMap import tfMap
 
 class KucoinFutures(Kucoin):
-    def __init__(self, sandBox = True):
+    def __init__(self, sandBox = False):
         super().__init__(sandBox)
         self.baseUrl = 'https://api-futures.kucoin.com/'
         self.exchange = ccxt.kucoinfutures()

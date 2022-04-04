@@ -26,8 +26,8 @@ class Trader():
         self.lastState = self.dataService.startAtTs
         self.strategyName = index.strategyName
         self.botName = index.botName
-        self.initialCapital = 1000000 #self.portfolioManager.get_balance() TODO:remove this
-        self.portfolioManager = PortfolioManager(self.initialCapital,exchange)
+        self.portfolioManager = PortfolioManager(1,exchange)
+        self.initialCapital = self.portfolioManager.get_balance()
         self.orderManager = OrderManager(self.initialCapital, index.strategyName, index.botName, index.inputs, index.pair)
         self.positionManager = PositionManager(exchange)
         self.timeFrame = index.timeFrame
@@ -96,11 +96,11 @@ class Trader():
 
 
     def mainloop(self):
-        # if self.portfolioManager.get_equity():
-        #     if self.portfolioManager.equity <= 0:
-        #         self.processOrders(4, None, 0.0006)
-        #         self.portfolioManager.balance = 0
-        #         return
+        if self.portfolioManager.get_equity():
+            if self.portfolioManager.equity <= 0:
+                self.processOrders(4, None, 0.0006)
+                self.portfolioManager.balance = 0
+                return
 
         self.lastState = time.time() * 1000
         df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState)
@@ -118,7 +118,5 @@ class Trader():
         print ( f"Current choice is:{choice}")
         self.processOrders(choice, signal, 0.00060)
         self.portfolioManager.calc_poL()
-                    
-        time.sleep(tfMap.array[self.timeFrame]*60)
 
         # self.processOrders(4, None, 0.0006)

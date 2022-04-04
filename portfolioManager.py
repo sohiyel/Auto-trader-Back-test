@@ -18,11 +18,11 @@ class PortfolioManager():
             self.pol = abs( self.profit / self.loss )
 
     def open_position(self, volume, price, commission):
-        if volume * float(price) *  ( 1 + commission ) < self.balance:
-            self.balance -= volume * price
+        if volume * float(price) *  ( 1 + commission ) * 0.001 < self.balance:
+            self.balance -= volume * price * 0.001
             return True
         else:
-            print ("Insufficent balance!", self.balance, price * volume)
+            print ("Insufficent balance!", self.balance, price * volume * 0.001)
             return False
 
     def close_position(self, lastPrice, commission):
@@ -37,8 +37,8 @@ class PortfolioManager():
         self.numLosses += 1
 
     def add_volume(self, volume, price, commission):
-        if volume * price *  ( 1 + commission ) < self.balance:
-            self.balance -= volume * price *  ( 1 + commission )
+        if volume * price *  ( 1 + commission ) * 0.001 < self.balance:
+            self.balance -= volume * price *  ( 1 + commission ) * 0.001
             return True
         else:
             print ("Insufficent balance!")
@@ -50,7 +50,7 @@ class PortfolioManager():
 
     def get_equity(self):
         if self.exchange:
-            response = self.exchange.fetch_balance()
+            response = self.exchange.fetch_balance(params={"currency":"USDT"})
             if response['info']['code'] == '200000':
                 print(response)
                 self.equity = response['info']['data']['accountEquity']
@@ -65,9 +65,9 @@ class PortfolioManager():
 
     def get_balance(self):
         if self.exchange:
-            response = self.exchange.fetch_balance()
+            response = self.exchange.fetch_balance(params={"currency":"USDT"})
+            print(response)
             if response['info']['code'] == '200000':
-                print(response)
                 self.balance = response['info']['data']['marginBalance']
                 return self.balance
             else:

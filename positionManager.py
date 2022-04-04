@@ -10,10 +10,10 @@ class PositionManager():
     def open_position(self, signal, lastState):
         if self.exchange:
             self.exchange.create_market_order(signal.pair, signal.type, signal.volume)
-            print ( f"-------- Open {signal.type} position on {self.openPositions[0].pair}--------")
         positionId = uuid.uuid4()
         newPosition = Position(positionId, signal.pair, signal.type, signal.volume, signal.price, lastState, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
         self.openPositions.append(newPosition)
+        print ( f"-------- Open {signal.type} position on {self.openPositions[0].pair}--------")
 
     def close_position(self, timestamp):
         if len(self.openPositions) > 0:
@@ -23,7 +23,7 @@ class PositionManager():
                     print ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
                 elif self.openPositions[0].type == "sell":
                     self.exchange.create_market_order(self.openPositions[0].pair, "buy", self.openPositions[0].volume)
-                    print ( f"-------- close sell position on {self.openPositions[0].pair}--------")
+                    print ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
             lastPrice = self.openPositions[0].closePosition(timestamp)
             self.closedPositions.append(self.openPositions[0])
             self.openPositions = []

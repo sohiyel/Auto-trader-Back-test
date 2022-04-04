@@ -17,7 +17,7 @@ class TradeRunner():
     def __init__(self) -> None:
         self.tradeIndexList = TradeIndex().indexes
         self.indexes = []
-        self.exchange = KucoinFutures(sandBox = True)
+        self.exchange = KucoinFutures(sandBox = False)
         self.exchange.authorize()
 
     def initialize_indexes(self, index):
