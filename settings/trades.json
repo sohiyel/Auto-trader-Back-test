@@ -19,6 +19,7 @@
             "tf": "1m",
             "strategy": "TwoEMA",
             "bot": "",
+            "leverage": 1,
             "long_short": "both",
             "stake_amount": 0.05,
             "tradeable_balance_ratio": 0

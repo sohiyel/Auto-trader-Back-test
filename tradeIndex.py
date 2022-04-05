@@ -13,6 +13,7 @@ class TradeIndex():
                                                 strategyName = pts["strategy"],
                                                 botName = pts["bot"],
                                                 side = pts["long_short"],
+                                                leverage = pts["leverage"],
                                                 amount = pts["stake_amount"],
                                                 ratioAmount = pts["tradeable_balance_ratio"]))
             

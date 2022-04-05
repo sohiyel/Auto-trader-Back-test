@@ -6,12 +6,13 @@ from random import shuffle
 import time
 from tfMap import tfMap
 class UserInput():
-    def __init__(self, pair, timeFrame, strategyName, botName, side = "both", amount = 1 , ratioAmount = 0, optimization = False, randomInput = False) -> None:
+    def __init__(self, pair, timeFrame, strategyName, botName, side = "both", leverage = 1, amount = 1 , ratioAmount = 0, optimization = False, randomInput = False) -> None:
         self.pair = pair
         self.timeFrame = timeFrame
         self.strategyName = strategyName
         self.botName = botName
         self.side = side
+        self.leverage = leverage
         self.amount = amount
         self.ratioAmount = ratioAmount
         self.optimization = optimization
@@ -19,14 +20,14 @@ class UserInput():
         self.inputs = []
         self.randomInput = randomInput
         if botName:
-            self.inputs= self.getBotInputs()
+            self.inputs= self.get_bot_inputs()
         else:
-            self.inputs = self.getStrategyInputs(strategyName)
+            self.inputs = self.get_strategy_inputs(strategyName)
         if randomInput:
             shuffle(self.inputs)
 
 
-    def getStrategyInputs(self, strategyName):
+    def get_strategy_inputs(self, strategyName):
         json_data_file = open("strategies/{jsonName}.json".format(jsonName = strategyName))
         jsonFile = json.load(json_data_file)
         inputs = []
@@ -52,7 +53,7 @@ class UserInput():
         json_data_file.close()
         return list( itertools.product( *inputs ) )
 
-    def getBotInputs(self):
+    def get_bot_inputs(self):
         json_data_file = open("signals/{jsonName}.json".format(jsonName = self.botName))
         jsonFile = json.load(json_data_file)
         inputs = []
@@ -78,10 +79,10 @@ class UserInput():
         json_data_file.close()
         return list( itertools.product( *inputs ) )
 
-    def getCurrentInput(self):
+    def get_current_input(self):
         return self.inputs[self.step]
 
-    def getStrategyNames(self):
+    def get_strategy_names(self):
         strategyNames = []
         json_data_file = open("signals/{jsonName}.json".format(jsonName = self.botName))
         jsonFile = json.load(json_data_file)
@@ -90,7 +91,7 @@ class UserInput():
         json_data_file.close()
         return strategyNames
 
-    def getInputNames(self):
+    def get_input_names(self):
         names = []
         if self.botName:
             with open("signals/{jsonName}.json".format(jsonName = self.botName), 'r+') as json_data_file:
@@ -105,7 +106,7 @@ class UserInput():
         json_data_file.close()
         return names
 
-    def writeOptimizedValues(self, report):
+    def write_optimized_values(self, report):
         inputNames = []
         if self.botName:
             with open("signals/{jsonName}.json".format(jsonName = self.botName), 'r+') as json_data_file:
@@ -113,7 +114,7 @@ class UserInput():
         else:
             with open("strategies/{jsonName}.json".format(jsonName = self.strategyName), 'r+') as json_data_file:
                 jsonFile = json.load(json_data_file)
-        inputNames = self.getInputNames()
+        inputNames = self.get_input_names()
 
         paramExist = False
         for idx,param in enumerate(jsonFile["params"]):

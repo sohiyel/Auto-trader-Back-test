@@ -77,7 +77,7 @@ class BackTestRunner():
         else:
             path = "optimizations/" + timestr + "_" + self.task.pair + "_" + self.task.timeFrame + "_" + self.task.strategyName +".csv"
         results.to_csv(path)
-        self.userInput.writeOptimizedValues(optimumResult)
+        self.userInput.write_optimized_values(optimumResult)
             
         print("--- End of optimization: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
 

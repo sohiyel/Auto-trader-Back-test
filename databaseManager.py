@@ -3,7 +3,7 @@ import json
 import configparser
 from tfMap import tfMap
 import pandas as pd
-
+import time
 class DatabaseManager():
     def __init__(self) -> None:
         self.conn = None
@@ -25,7 +25,7 @@ class DatabaseManager():
         except:
             print ("Cannot read db config file!")
 
-    def create_table(self, pair, timeFrame):
+    def create_ohlcv_table(self, pair, timeFrame):
         dbPair = tfMap.get_db_format(pair)
         cur = self.conn.cursor()
         try:
@@ -43,6 +43,29 @@ class DatabaseManager():
         self.conn.commit()
         cur.close()
 
+    def create_positions_table(self):
+        cur = self.conn.cursor()
+        try:
+            cur.execute('''CREATE TABLE IF NOT EXISTS positions (
+                        id text PRIMARY KEY,
+                        pair text NOT NULL,
+                        side text NOT NULL,
+                        volume numeric NOT NULL,
+                        entryPrice numeric NOT NULL,
+                        openAt numeric NOT NULL,
+                        closeAt numeric,
+                        leverage numeric NOT NULL,
+                        isOpen boolean NOT NULL,
+                        timeFrame text NOT NULL,
+                        strategyName text NOT NULL,
+                        botName text 
+                        );''')
+        except:
+            print ("Cannot create positions table!")
+
+        self.conn.commit()
+        cur.close()
+
     def set_up_tables(self):
         self.tables = []
         with open("settings/database_indexes.json","r") as json_data_file:
@@ -51,7 +74,8 @@ class DatabaseManager():
             for pts in ptss:
                 self.tables.append( (pts["pair"], pts["tf"]))
         for i in self.tables:
-            self.create_table(i[0], i[1])
+            self.create_ohlcv_table(i[0], i[1])
+        self.create_positions_table()
 
     def store_klines(self, klines, tableName):
         for index, k in klines.iterrows():
@@ -89,6 +113,53 @@ class DatabaseManager():
             query = []
             df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
             return df
+
+    def get_open_positions(self, pair):
+        cur = self.conn.cursor()
+        try:
+            SQL = "SELECT * FROM positions WHERE pair = '{0}' AND isopen = True;".format(pair)
+            cur.execute(SQL)
+            query = cur.fetchall()
+            df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice',
+                                                'openAt', 'closeAt', 'leverage', 'isOpen', 'timeFrame',
+                                                'strategyName', 'botName'])
+            self.conn.commit()
+            cur.close()
+            return df
+        except:
+            self.conn.commit()
+            cur.close()
+            print (f"Cannot get open positions!")
+            query = []
+            df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice',
+                                             'openAt', 'closeAt', 'leverage, isOpen', 'timeFrame',
+                                             'strategyName', 'botName'])
+            return df
+
+    def add_position(self, id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyName, botName):
+        cur = self.conn.cursor()
+        try:
+            SQL = "INSERT into positions (id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyname, botname)\
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+            data = (id,pair,side,volume,entryPrice,openAt,leverage,isOpen,timeFrame,strategyName,botName)
+            cur.execute(SQL, data)
+        except:
+            print (f"Cannot add new position to database!")
+
+        self.conn.commit() 
+        cur.close()
+
+    def close_position(self, id):
+        cur = self.conn.cursor()
+        # try:
+        cur.execute(f"UPDATE positions\
+                    SET isopen = False, closeat = {time.time()}\
+                    WHERE id='{id}';")
+        # except:
+        #     print (f"Cannot close position {id}")
+
+        self.conn.commit() 
+        cur.close()
 
 if __name__ == '__main__':
     dbManager = DatabaseManager()

@@ -62,7 +62,7 @@ class DataService():
             columns = ['timestamp', 'open', 'close', 'high', 'low', 'volume', 'amount']
             dataFrame = pd.DataFrame(self.klines, columns = columns)
             dataFrame['timestamp'] = dataFrame['timestamp'].astype(float)*1000
-        self.db.create_table(self.pair, self.timeFrame)
+        self.db.create_ohlcv_table(self.pair, self.timeFrame)
         self.db.store_klines(dataFrame, self.tableName)
         dataFrame['timestamp'] = pd.to_datetime(dataFrame['timestamp'], unit='ms')
         dataFrame.set_index('timestamp', inplace=True)
