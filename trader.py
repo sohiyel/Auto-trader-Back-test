@@ -47,7 +47,7 @@ class Trader():
             if self.portfolioManager.open_position(signal.volume, signal.price, commission):
                 self.positionManager.open_position(signal, self.lastState)
         elif len( self.positionManager.openPositions ) == 1:
-            if self.positionManager.openPositions[0].type == signal.type:
+            if self.positionManager.openPositions[0].side == signal.side:
                 if self.portfolioManager.add_volume(signal.volume, signal.price, commission):
                     self.positionManager.add_volume(signal.price, signal.volume)
             else:

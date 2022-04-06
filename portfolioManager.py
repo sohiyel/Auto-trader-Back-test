@@ -93,7 +93,7 @@ class PortfolioManager():
         numOfLossLong = 0
         numOfLossShort = 0
         for p in closedPositions:
-            if p.type == "buy":
+            if p.side == "buy":
                 sumOfLongs += p.profit
                 numOfLongs += 1
                 if p.profit > 0:

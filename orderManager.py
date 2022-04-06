@@ -16,32 +16,32 @@ class OrderManager():
         if self.lastSignal == 0 or self.lastSignal == 2 or self.lastSignal == 4:
             if signal.longEnter and not signal.shortEnter:
                 self.lastSignal = 1
-                signal.type = "buy"
+                signal.side = "buy"
                 return [1,signal]
             elif signal.shortEnter and not signal.longEnter:
                 self.lastSignal = 3
-                signal.type = "sell"
+                signal.side = "sell"
                 return [3,signal]
             self.lastSignal = 0
             return [0,signal]
         elif self.lastSignal == 1:
             if signal.shortEnter:
                 self.lastSignal = 3
-                signal.type = "sell"
+                signal.side = "sell"
                 return [3,signal]
             elif signal.longExit:
                 self.lastSignal = 2
-                signal.type = "buyEXIT"
+                signal.side = "buyEXIT"
                 return [2,signal]
             return [0,signal]
         elif self.lastSignal == 3:
             if signal.longEnter:
                 self.lastSignal = 1
-                signal.type = "buy"
+                signal.side = "buy"
                 return [1,signal]
             elif signal.shortExit:
                 self.lastSignal = 4
-                signal.type = "sellEXIT"
+                signal.side = "sellEXIT"
                 return [4,signal]
         return [0,signal]
 

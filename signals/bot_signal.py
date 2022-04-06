@@ -31,7 +31,7 @@ class BotSignal():
             signals.append(s.decider(self.marketData))
 
         signal = SignalClass(signals[0].pair,
-                            signals[0].type,
+                            signals[0].side,
                             signals[0].volume,
                             signals[0].price,
                             signals[0].stopLoss,

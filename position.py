@@ -1,25 +1,27 @@
 class Position():
-    def __init__(self, id, pair, type, volume, openPrice, openAt, timeFrame, strategyName, botName, isOpen = True, leverage = 1, stopLoss = 0, takeProfit = 0, slPercent = 0, tpPercent = 0, comment="") -> None:
+    def __init__(self, id, pair, side, volume, entryPrice, openAt, timeFrame, strategyName, botName, isOpen = True, leverage = 1, stopLoss = 0, takeProfit = 0, slPercent = 0, tpPercent = 0, comment="") -> None:
         self.id = id
         self.pair = pair
-        self.side = type
+        self.side = side
         self.volume = volume
-        self.entryPrice = openPrice
-        self.currentPrice = openPrice
+        self.entryPrice = entryPrice
+        self.currentPrice = entryPrice
         self.openAt = openAt
+        self.takeProfit = 0
+        self.stopLoss = 0
         if slPercent > 0 and tpPercent > 0:
-            if type == "buy":
-                self.stopLoss = (1 - slPercent ) * openPrice
-                self.takeProfit = (1 + tpPercent) * openPrice
-            elif type == "sell":
-                self.stopLoss = (1 + slPercent) * openPrice
-                self.takeProfit = (1 - tpPercent) * openPrice
+            if side == "buy":
+                self.stopLoss = (1 - slPercent ) * entryPrice
+                self.takeProfit = (1 + tpPercent) * entryPrice
+            elif side == "sell":
+                self.stopLoss = (1 + slPercent) * entryPrice
+                self.takeProfit = (1 - tpPercent) * entryPrice
         elif stopLoss > 0 and takeProfit > 0:
             self.takeProfit = takeProfit
             self.stopLoss = stopLoss
         self.closeAt = ""
         self.profit = 0.0
-        self.commission = 0.0006 * openPrice * volume
+        self.commission = 0.0006 * entryPrice * volume
         self.comment = comment
         self.leverage = leverage
         self.isOpen = isOpen
@@ -49,9 +51,9 @@ class Position():
         return {
             'id' : self.id,
             'pair': self.pair,
-            'type': self.side,
+            'side': self.side,
             'volume': self.volume,
-            'openPrice': self.entryPrice,
+            'entryPrice': self.entryPrice,
             'currentPrice': self.currentPrice,
             'openAt': self.openAt,
             'stopLoss': self.stopLoss,
