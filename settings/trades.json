@@ -21,7 +21,7 @@
             "bot": "",
             "leverage": 1,
             "long_short": "both",
-            "stake_amount": 1,
+            "stake_amount": 0.001,
             "tradeable_balance_ratio": 0
         }]
     }
