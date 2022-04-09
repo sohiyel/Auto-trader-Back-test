@@ -54,6 +54,7 @@ class PortfolioManager():
             if response['info']['code'] == '200000':
                 print(response)
                 self.equity = response['info']['data']['accountEquity']
+                self.balance = response['info']['data']['availableBalance']
                 return self.equity
             else:
                 print("Problem in getting account equity!")
@@ -68,7 +69,8 @@ class PortfolioManager():
             response = self.exchange.fetch_balance(params={"currency":"USDT"})
             print(response)
             if response['info']['code'] == '200000':
-                self.balance = response['info']['data']['marginBalance']
+                self.balance = response['info']['data']['availableBalance']
+                self.equity = response['info']['data']['accountEquity']
                 return self.balance
             else:
                 print("Problem in getting account balance!")

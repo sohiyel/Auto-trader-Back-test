@@ -23,6 +23,16 @@
             "long_short": "both",
             "stake_amount": 0.001,
             "tradeable_balance_ratio": 0
+        },
+        {
+            "pair": "ETH/USDT:USDT",
+            "tf": "1m",
+            "strategy": "OneEMA",
+            "bot": "",
+            "leverage": 1,
+            "long_short": "both",
+            "stake_amount": 0.01,
+            "tradeable_balance_ratio": 0
         }]
     }
 }

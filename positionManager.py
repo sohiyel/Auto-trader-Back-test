@@ -4,10 +4,10 @@ from databaseManager import DatabaseManager
 from tfMap import tfMap
 from markets import Markets
 class PositionManager():
-    def __init__(self, balance, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, exchange="") -> None:
+    def __init__(self, initialCapital, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, exchange="") -> None:
         self.openPositions = []
         self.closedPositions = []
-        self.balance = balance
+        self.initialCapital = initialCapital
         self.pair = pair
         self.volume = volume
         self.ratioAmount = ratioAmount
@@ -30,9 +30,9 @@ class PositionManager():
                 print('market price', {'bid': bid, 'ask': ask, 'spread': spread})
                 amount = 0
                 if signal.side == 'buy':
-                    amount = self.ratioAmount * self.balance / ask
+                    amount = self.ratioAmount * self.initialCapital / ask
                 elif signal.side == 'sell':
-                    amount = self.ratioAmount * self.balance / bid
+                    amount = self.ratioAmount * self.initialCapital / bid
                 self.exchange.create_market_order(signal.pair, signal.side, amount / self.contractSize, params={'leverage': self.leverage})        
                 self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName)
                 newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)

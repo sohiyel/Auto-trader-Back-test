@@ -31,8 +31,8 @@ class DataDownloader():
     def main_loop(self):
         while True:
             klines = self.get_klines()
-            diff = self.find_new_data(klines)
             self.db.create_ohlcv_table(self.pair,self.timeFrame)
+            diff = self.find_new_data(klines)
             self.db.store_klines(diff,self.tableName)
             print (f"{diff.shape[0]} new canldes were added to {self.tableName}")
             time.sleep(tfMap.array[self.timeFrame] * 60)
