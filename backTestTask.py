@@ -2,7 +2,7 @@ import json
 import time
 class BackTestTask():
     def __init__(self) -> None:
-        with open("tasks.json", "r") as json_data_file:
+        with open("settings/tasks.json", "r") as json_data_file:
             self.jsonFile = json.load(json_data_file)
             self.pair = self.jsonFile["default"]["pair"]
             self.timeFrame = self.jsonFile["default"]["timeFrame"]
@@ -18,7 +18,7 @@ class BackTestTask():
             self.numberOfInputs = self.jsonFile["default"]["numberOfInputs"]
 
     def read_toDo(self):
-        with open("tasks.json", "r") as json_data_file:
+        with open("settings/tasks.json", "r") as json_data_file:
             self.jsonFile = json.load(json_data_file)
             if len(self.jsonFile["To_Do"]) > 0:
                 self.pair = self.jsonFile["To_Do"][0]["pair"]
@@ -55,7 +55,7 @@ class BackTestTask():
         task["numberOfInputs"] = self.numberOfInputs
         task["doneAt"] = time.strftime("%Y-%m-%d_%H-%M-%S")
 
-        with open("tasks.json", "w") as json_data_file:
+        with open("settings/tasks.json", "w") as json_data_file:
             del self.jsonFile["To_Do"][0]
             self.jsonFile["Done"].append(task)
             json.dump(self.jsonFile, json_data_file)

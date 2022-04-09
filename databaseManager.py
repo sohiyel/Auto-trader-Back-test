@@ -13,7 +13,7 @@ class DatabaseManager():
     def connect_to_db(self):
         try:
             cfg = configparser.ConfigParser()
-            cfg.read('db.cfg')
+            cfg.read('configurations/db.cfg')
             username = cfg.get('KEYS','user')
             password = cfg.get('KEYS', 'password')
             host = cfg.get('KEYS', 'host')

@@ -18,7 +18,7 @@ class KucoinFutures(Kucoin):
         if self.sandBox:
             cfg.read('api_sandbox_future.cfg')
         else:
-            cfg.read('api_future.cfg')
+            cfg.read('configurations/api_future.cfg')
         self.exchange.apiKey = cfg.get('KEYS','api_key')
         self.exchange.secret = cfg.get('KEYS', 'api_secret')
         self.exchange.password = cfg.get('KEYS', 'api_passphrase')

@@ -15,7 +15,7 @@ class KucoinSpot(Kucoin):
         if self.sandBox:
             cfg.read('api_sandbox.cfg')
         else:
-            cfg.read('api.cfg')
+            cfg.read('configurations/api.cfg')
         self.exchange.apiKey = cfg.get('KEYS','api_key')
         self.exchange.secret = cfg.get('KEYS', 'api_secret')
         self.exchange.password = cfg.get('KEYS', 'api_passphrase')
