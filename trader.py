@@ -32,8 +32,9 @@ class Trader():
         self.timeFrame = index.timeFrame
         self.lastCandle = ""
         self.volume = index.amount
+        self.ratioAmount = index.ratioAmount
         self.leverage = index.leverage
-        self.positionManager = PositionManager(self.pair, self.volume, self.timeFrame, self.strategyName, self.botName, self.leverage, exchange)
+        self.positionManager = PositionManager(self.portfolioManager.balance, self.pair, self.volume, self.ratioAmount, self.timeFrame, self.strategyName, self.botName, self.leverage, exchange)
         self.positionManager.sync_positions()
         self.currentInput = index
         choice, signal = self.orderManager.decider(self.dataService.dataFrame.iloc[:],

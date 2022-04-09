@@ -4,11 +4,13 @@ from databaseManager import DatabaseManager
 from tfMap import tfMap
 from markets import Markets
 class PositionManager():
-    def __init__(self, pair, volume, timeFrame, strategyName, botName, leverage, exchange="") -> None:
+    def __init__(self, balance, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, exchange="") -> None:
         self.openPositions = []
         self.closedPositions = []
+        self.balance = balance
         self.pair = pair
         self.volume = volume
+        self.ratioAmount = ratioAmount
         self.timeFrame = timeFrame
         self.strategyName = strategyName
         self.botName = botName
@@ -20,9 +22,24 @@ class PositionManager():
     def open_position(self, signal, lastState):
         positionId = uuid.uuid4().hex
         if self.exchange:
-            self.exchange.create_market_order(signal.pair, signal.side, self.volume / self.contractSize, params={'leverage': self.leverage})
-            self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, self.volume, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName)
-        newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
+            if self.ratioAmount > 0:
+                orderbook = self.exchange.fetch_order_book(signal.pair)
+                bid = orderbook['bids'][0][0] if len (orderbook['bids']) > 0 else None
+                ask = orderbook['asks'][0][0] if len (orderbook['asks']) > 0 else None
+                spread = (ask - bid) if (bid and ask) else None
+                print('market price', {'bid': bid, 'ask': ask, 'spread': spread})
+                amount = 0
+                if signal.side == 'buy':
+                    amount = self.ratioAmount * self.balance / ask
+                elif signal.side == 'sell':
+                    amount = self.ratioAmount * self.balance / bid
+                self.exchange.create_market_order(signal.pair, signal.side, amount / self.contractSize, params={'leverage': self.leverage})        
+                self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName)
+                newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
+            else:
+                self.exchange.create_market_order(signal.pair, signal.side, self.volume / self.contractSize, params={'leverage': self.leverage})
+                self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, self.volume, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName)
+                newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
         self.openPositions.append(newPosition)
         print ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
 
