@@ -33,4 +33,6 @@ class Markets():
 
 
 if __name__ == '__main__':
-    print(Markets().get_contract_size("BTC/USDT"))
+    market = Markets()
+    market.load_market()
+    market.write_to_file()

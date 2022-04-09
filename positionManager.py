@@ -20,7 +20,7 @@ class PositionManager():
     def open_position(self, signal, lastState):
         positionId = uuid.uuid4().hex
         if self.exchange:
-            self.exchange.create_market_order(signal.pair, signal.side, self.volume / self.contractSize)
+            self.exchange.create_market_order(signal.pair, signal.side, self.volume / self.contractSize, params={'leverage': self.leverage})
             self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, self.volume, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName)
         newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
         self.openPositions.append(newPosition)
@@ -30,10 +30,10 @@ class PositionManager():
         if len(self.openPositions) > 0:
             if self.exchange:
                 if self.openPositions[0].side == "buy":
-                    self.exchange.create_market_order(self.openPositions[0].pair, "sell", self.openPositions[0].volume)
+                    self.exchange.create_market_order(self.openPositions[0].pair, "sell", self.openPositions[0].volume, params={'leverage': self.leverage})
                     print ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
                 elif self.openPositions[0].side == "sell":
-                    self.exchange.create_market_order(self.openPositions[0].pair, "buy", self.openPositions[0].volume)
+                    self.exchange.create_market_order(self.openPositions[0].pair, "buy", self.openPositions[0].volume, params={'leverage': self.leverage})
                     print ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
                 self.db.close_position(self.openPositions[0].id)
             lastPrice = self.openPositions[0].closePosition(timestamp)
@@ -117,10 +117,10 @@ class PositionManager():
                 print(f"-------------- Positions in exchange does not match the positions in database! --------------")
                 for i in exchangePositions:
                     if i["side"] == "long":
-                        self.exchange.create_market_order(i["symbol"], "sell", i["contracts"])
+                        self.exchange.create_market_order(i["symbol"], "sell", i["contracts"], params={'leverage': self.leverage})
                         print ( f"-------- Close buy position on {i['symbol']}--------")
                     elif i["side"] == "short":
-                        self.exchange.create_market_order(i["symbol"], "buy", i["contracts"])
+                        self.exchange.create_market_order(i["symbol"], "buy", i["contracts"], params={'leverage': self.leverage})
                         print ( f"-------- Close sell position on {i['symbol']}--------")
                 for index, k in dbPositions.iterrows():
                     print(f"-------------- Closing position {k['id']} in database! --------------")
