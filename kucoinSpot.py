@@ -4,7 +4,7 @@ import asyncio
 import configparser
 import ccxt as ccxt
 class KucoinSpot(Kucoin):
-    def __init__(self, sandBox = True):
+    def __init__(self, sandBox = False):
         super().__init__(sandBox)
         self.baseUrl = 'https://api.kucoin.com'
         self.exchange = ccxt.kucoin()

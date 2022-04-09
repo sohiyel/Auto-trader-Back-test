@@ -40,6 +40,8 @@ class PositionManager():
                 self.exchange.create_market_order(signal.pair, signal.side, self.volume / self.contractSize, params={'leverage': self.leverage})
                 self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, self.volume, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName)
                 newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
+        else:
+            newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
         self.openPositions.append(newPosition)
         print ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
 
@@ -53,7 +55,7 @@ class PositionManager():
                     self.exchange.create_market_order(self.openPositions[0].pair, "buy", self.openPositions[0].volume, params={'leverage': self.leverage})
                     print ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
                 self.db.close_position(self.openPositions[0].id)
-            lastPrice = self.openPositions[0].closePosition(timestamp)
+            lastPrice = self.openPositions[0].close_position(timestamp)
             self.closedPositions.append(self.openPositions[0])
             self.openPositions = []
             return lastPrice

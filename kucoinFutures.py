@@ -25,6 +25,7 @@ class KucoinFutures(Kucoin):
         # print( self.exchange.fetch_balance())
 
     def get_klines(self, symbol, timeFrame, startAt, endAt):
+        symbol = tfMap.get_exchange_format(symbol)
         return self.exchange.fetch_ohlcv(symbol, timeFrame, startAt)
         # kLineURL = 'api/v1/kline/query?'
         # params = {

@@ -25,7 +25,7 @@ class BackTest():
         self.strategyName = strategyName
         self.botName = botName
         self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput, pair)
-        self.positionManager = PositionManager()
+        self.positionManager = PositionManager(initialCapital, pair, volume, 0, timeFrame, strategyName, botName, 1)
         self.portfolioManager = PortfolioManager(initialCapital)
         self.timeFrame = timeFrame
         self.plotter =  Plotter(self.pair + "_" + str(self.startAtTS) + "_" + str(self.endAtTS) + "_" + self.timeFrame + ".csv" )
