@@ -121,17 +121,33 @@ class PortfolioManager():
             profitFactorShorts = sumOfWinShorts / sumOfLossShorts * -1
         else:
             profitFactorShorts = "infinite"
+        if self.numLosses > 0:
+            percentProfitable = self.numProfits / self.numLosses * 100
+        else:
+            percentProfitable = "infinite"
+        if numOfLossLong > 0:
+            percentProfitableLongs = numOfWinLongs / numOfLossLong * 100
+        else:
+            percentProfitableLongs = "infinite"
+        if sumOfLossLongs > 0:
+            profitFactorLongs = sumOfWinLongs / sumOfLossLongs * -1
+        else:
+            profitFactorLongs = "infinite"
+        if self.loss < 0:
+            profitFactor = self.profit / self.loss * -1
+        else:
+            profitFactor = "infinite"
         
         return {
             "netProfit" : self.balance - self.initialCapital,
             "netProfitPercent" : (self.balance - self.initialCapital) / self.initialCapital * 100,
             "netProfitPercentLongs" : sumOfLongs / self.initialCapital * 100,
             "netProfitPercentShorts" : sumOfShorts / self.initialCapital * 100,
-            "percentProfitable" : self.numProfits / self.numLosses * 100,
-            "percentProfitableLongs" : numOfWinLongs / numOfLossLong * 100,
+            "percentProfitable" : percentProfitable,
+            "percentProfitableLongs" : percentProfitableLongs,
             "percentProfitableShorts" : percentProfitableShorts,
-            "profitFactor" : self.profit / self.loss * -1,
-            "profitFactorLongs" : sumOfWinLongs / sumOfLossLongs * -1,
+            "profitFactor" : profitFactor,
+            "profitFactorLongs" : profitFactorLongs,
             "profitFactorShorts" : profitFactorShorts,
             "totalClosedTrades": numOfTrades,
             "totalLongTrades" : numOfLongs,

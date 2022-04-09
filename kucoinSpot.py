@@ -28,6 +28,7 @@ class KucoinSpot(Kucoin):
             'startAt': startAt,
             'endAt': endAt
         }
+        print(params)
         response = requests.get(self.baseUrl+kLineURL,params=params)
         if response.status_code ==  200:
             print(response.json())
@@ -47,7 +48,7 @@ class KucoinSpot(Kucoin):
                 if len(temp) > 0:
                     klines.extend(temp)
                     print(temp[0][0],temp[-1][0])
-                    await asyncio.sleep(2.5)
+                    await asyncio.sleep(5)
             else:
                 break
 

@@ -13,8 +13,9 @@ class DataService():
 
     def __init__(self, market, pair, timeFrame, startTime, endTime, historyNeeded = 0):
         self.pair = pair
+        self.dbPair = tfMap.get_db_format(self.pair)
         self.timeFrame = timeFrame
-        self.tableName = pair + "_" + self.timeFrame
+        self.tableName = self.dbPair + "_" + self.timeFrame
         self.startTime = startTime
         self.endTime = endTime
         self.klines = []
@@ -62,7 +63,8 @@ class DataService():
             columns = ['timestamp', 'open', 'close', 'high', 'low', 'volume', 'amount']
             dataFrame = pd.DataFrame(self.klines, columns = columns)
             dataFrame['timestamp'] = dataFrame['timestamp'].astype(float)*1000
-        self.db.create_ohlcv_table(self.pair, self.timeFrame)
+        
+        self.db.create_ohlcv_table(self.dbPair, self.timeFrame)
         self.db.store_klines(dataFrame, self.tableName)
         dataFrame['timestamp'] = pd.to_datetime(dataFrame['timestamp'], unit='ms')
         dataFrame.set_index('timestamp', inplace=True)
@@ -91,4 +93,4 @@ class DataService():
             return False
 
     def read_data_from_db(self, limit, lastState):
-        return self.db.read_klines(self.pair, self.timeFrame, limit, lastState)
+        return self.db.read_klines(self.dbPair, self.timeFrame, limit, lastState)
