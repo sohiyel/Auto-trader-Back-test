@@ -104,7 +104,8 @@ class PositionManager():
                     print(f"-------------- There is a position with this pts in database!--------------")
                     pos = k
                 volumes += k["volume"]
-            if volumes == ep["contractSize"] * ep["contracts"]:
+            print(volumes, ep["contractSize"] * ep["contracts"])
+            if float(volumes) == float(ep["contractSize"] * ep["contracts"]) and self.leverage == ep["leverage"]:
                 print(f"-------------- Positions in exchange match the positions in database! --------------")
                 side = pos["side"]
                 if pos["side"] == "long":
