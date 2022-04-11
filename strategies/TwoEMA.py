@@ -24,19 +24,19 @@ class TwoEMA(Strategy):
             self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
             self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
 
-    def longEnter(self):
+    def long_enter(self):
         if self.fastEMA.iloc[-1] > self.slowEMA.iloc[-1]:
             self.decisions['longEnt'] = 1
             
 
-    def longExit(self):
+    def long_exit(self):
         pass
 
-    def shortEnt(self):
+    def short_enter(self):
         if self.fastEMA.iloc[-1] < self.slowEMA.iloc[-1]:
             self.decisions['shortEnt'] = 1
 
-    def shortExit(self):
+    def short_exit(self):
         if self.fastEMA.iloc[-1] > self.slowEMA.iloc[-1]:
             self.decisions['shortExt'] = 1
 
@@ -53,10 +53,10 @@ class TwoEMA(Strategy):
         self.df = pd.DataFrame(self.marketData)
         self.fastEMA = ta.ema(self.df["close"], length=self.fastEMALength)
         self.slowEMA = ta.ema(self.df["close"], length=self.slowEMALength)
-        self.longEnter()
-        self.longExit()
-        self.shortEnt()
-        self.shortExit()
+        self.long_enter()
+        self.long_exit()
+        self.short_enter()
+        self.short_exit()
         sig = SignalClass(pair = self.pair,
                         price = self.df.iloc[-1]["close"],
                         slPercent = self.stopLoss,

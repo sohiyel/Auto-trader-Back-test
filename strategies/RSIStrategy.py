@@ -27,19 +27,19 @@ class RSIStrategy(Strategy):
             self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
         
 
-    def longEnter(self):
+    def long_enter(self):
         if self.rsi.iloc[-1] > self.rsiMidLine:
             self.decisions['longEnt'] = 1
             
 
-    def longExit(self):
+    def long_exit(self):
         pass
 
-    def shortEnt(self):
+    def short_enter(self):
         if self.rsi.iloc[-1] < self.rsiMidLine:
             self.decisions['shortEnt'] = 1
 
-    def shortExit(self):
+    def short_exit(self):
         if self.rsi.iloc[-1] > self.rsiMidLine:
             self.decisions['shortExt'] = 1
 
@@ -57,10 +57,10 @@ class RSIStrategy(Strategy):
         self.df = ""
         self.df = pd.DataFrame(self.marketData)
         self.rsi = ta.rsi(self.df["close"], length= self.rsiLength)
-        self.longEnter()
-        self.longExit()
-        self.shortEnt()
-        self.shortExit()
+        self.long_enter()
+        self.long_exit()
+        self.short_enter()
+        self.short_exit()
         sig = SignalClass(pair = self.pair,
                         price = self.df.iloc[-1]["close"],
                         slPercent = self.stopLoss,

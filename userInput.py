@@ -42,13 +42,17 @@ class UserInput():
                 else:
                     inputs.append([pi])
         else:    
-            params = jsonFile["params"][0]
-            for p in jsonFile["params"]:
-                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                    params = p
-            for i in params["inputs"]:
-                pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"])
-                inputs.append([pi])
+            if len(jsonFile["params"]) > 0:
+                params = jsonFile["params"][0]
+                for p in jsonFile["params"]:
+                    if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
+                        params = p
+                for i in params["inputs"]:
+                    pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"])
+                    inputs.append([pi])
+            else:
+                params = ""
+                inputs = []
         
         json_data_file.close()
         return list( itertools.product( *inputs ) )
@@ -152,7 +156,7 @@ class UserInput():
                 json.dump(jsonFile, json_data_file)
 
     def calc_history_needed(self):
-        max = 0
+        max = 1
         for i in self.inputs[0]:
             if i.historyNeeded:
                 if i.value > max:

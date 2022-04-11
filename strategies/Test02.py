@@ -4,47 +4,40 @@ from signalClass import SignalClass
 import pandas as pd
 import pandas_ta as ta
 from itertools import chain
+import time
 
-class OneEMA(Strategy):
+class Test02(Strategy):
     def __init__(self, currentInput, pair) -> None:
         super().__init__()
         self.pair = pair
-        self.marketData = []
-        self.df = ""
-        # print(currentInput)
-        if type(currentInput[0]) == tuple:
-            for i in currentInput:
-                if i[0].strategy == "OneEMA":
-                    self.emaLength = next((x.value for x in i if x.name == "len"), None)
-                    self.stopLoss = next((x.value for x in i if x.name == "sl_percent"), 0.3)
-                    self.takeProfit = next((x.value for x in i if x.name == "tp_percent"), 0.5)
-                    break
-        else:
-            self.emaLength = next((x.value for x in currentInput if x.name == "len"), None)
-            self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
-            self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
+        self.startTime = time.time()
+        self.currentTime = 0
 
     def long_enter(self):
-        if self.df.iloc[-1]['close'] > self.ema.iloc[-1]:
+        longEnters = [1]
+        if self.currentTime in longEnters:
             self.decisions['longEnt'] = 1
-            
 
     def long_exit(self):
-        pass
+        longExits = []
+        if self.currentTime in longExits:
+            self.decisions['longExt'] = 1
 
     def short_enter(self):
-        if self.df.iloc[-1]['close'] < self.ema.iloc[-1]:
+        shortEnters = []
+        if self.currentTime in shortEnters:
             self.decisions['shortEnt'] = 1
 
     def short_exit(self):
-        if self.df.iloc[-1]['close'] > self.ema.iloc[-1]:
+        shortExits = []
+        if self.currentTime in shortExits:
             self.decisions['shortExt'] = 1
 
     def decider(self, marketData):
-        if len(marketData) < self.emaLength:
+        self.currentTime = int((time.time() - self.startTime)  / 60)
+        if len(marketData) < 1:
             print ("-----------Low amount of Data!-----------")
             return SignalClass()
-        
         self.decisions = {
             'longEnt' : 0,
             'shortEnt' : 0,
@@ -52,16 +45,15 @@ class OneEMA(Strategy):
             'shortExt' : 0,
         }
         self.df = pd.DataFrame(marketData)
-        self.ema = ta.ema(self.df["close"], length=self.emaLength)
         self.long_enter()
         self.long_exit()
         self.short_enter()
         self.short_exit()
         sig = SignalClass(pair = self.pair,
                         price = self.df.iloc[-1]["close"],
-                        slPercent = self.stopLoss,
-                        tpPercent = self.takeProfit,
-                        comment= "OneEMA",
+                        slPercent = 0,
+                        tpPercent = 0,
+                        comment= "Test01",
                         longEnter = self.decisions["longEnt"],
                         longExit = self.decisions["longExt"],
                         shortEnter = self.decisions["shortEnt"],

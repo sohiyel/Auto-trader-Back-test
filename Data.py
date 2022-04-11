@@ -41,7 +41,7 @@ class DataService():
         return int(datetime.timestamp(utc_time))
 
     async def fetch_klines(self):
-        fileName = "./data/"+self.market+"/"+self.pair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
+        fileName = "./data/"+self.market+"/"+self.dbPair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
         if ( os.path.exists(fileName)):
             self.dataFrame = pd.read_csv(fileName)
             print(fileName + " has been read from disk")
@@ -73,7 +73,7 @@ class DataService():
         asyncio.create_task(self.write_to_CSV())
         
     async def write_to_CSV(self):
-        fileName = "./data/"+self.market+"/"+self.pair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
+        fileName = "./data/"+self.market+"/"+self.dbPair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv"
         if ( os.path.exists(fileName)):
             return
         else:

@@ -49,10 +49,10 @@ class PositionManager():
         if len(self.openPositions) > 0:
             if self.exchange:
                 if self.openPositions[0].side == "buy":
-                    self.exchange.create_market_order(self.openPositions[0].pair, "sell", self.openPositions[0].volume, params={'leverage': self.leverage})
+                    self.exchange.create_market_order(self.openPositions[0].pair, "sell", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})
                     print ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
                 elif self.openPositions[0].side == "sell":
-                    self.exchange.create_market_order(self.openPositions[0].pair, "buy", self.openPositions[0].volume, params={'leverage': self.leverage})
+                    self.exchange.create_market_order(self.openPositions[0].pair, "buy", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})
                     print ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
                 self.db.close_position(self.openPositions[0].id)
             lastPrice = self.openPositions[0].close_position(timestamp)
@@ -119,7 +119,7 @@ class PositionManager():
             volumes = 0
             pos = ""
             for index, k in dbPositions.iterrows():
-                if k["timeFrame"] == self.timeFrame and k["strategyName"] == self.strategyName and k["botName"] == self.botName:
+                if k["timeFrame"] == self.timeFrame:
                     print(f"-------------- There is a position with this pts in database!--------------")
                     pos = k
                 volumes += k["volume"]
