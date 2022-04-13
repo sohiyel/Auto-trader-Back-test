@@ -16,6 +16,7 @@ class Trader():
     def __init__ (self, index, exchange, market = 'futures'):
         self.exchange = exchange
         self.pair = index.pair
+        self.side = index.side
         self.startAt = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         historyNeeded = index.calc_history_needed()
         self.historyNeeded = int(historyNeeded)
@@ -74,18 +75,26 @@ class Trader():
             pass
 
         elif choice == 1:
-            if signal:
-                self.openPosition(signal, commission)
+            if self.side == "long" or self.side == "both":
+                if signal:
+                    self.openPosition(signal, commission)
             
         elif choice == 2:
-            self.closePosition(commission)
+            if self.side == "long" or self.side == "both":
+                if signal:
+                    self.closePosition(commission)
 
         elif choice == 3:
-            if signal:
-                self.openPosition(signal, commission)
+            if self.side == "short" or self.side == "both":
+                if signal:
+                    self.openPosition(signal, commission)
             
         elif choice == 4:
+            if signal:
+                if self.side == "short" or self.side == "both":
+                    self.closePosition(commission)
             self.closePosition(commission)
+            
 
         if len(self.positionManager.openPositions) > 0:
             lastPrice = self.positionManager.calc_equity()
