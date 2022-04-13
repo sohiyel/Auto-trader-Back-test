@@ -16,7 +16,6 @@ import sys
 class TradeRunner():
     def __init__(self) -> None:
         self.tradeIndexList = TradeIndex().indexes
-        self.indexes = []
         self.exchange = KucoinFutures(sandBox = False)
         self.exchange.authorize()
 
@@ -27,12 +26,8 @@ class TradeRunner():
             trader.mainloop()
             time.sleep(tfMap.array[index.timeFrame] * 60)
 
-    def run_trade(self):
-        pass
-
 if __name__ == '__main__':
     tradeRunner = TradeRunner()
-    print(tradeRunner.tradeIndexList[0].pair)
     # tradeRunner.initialize_indexes(tradeRunner.tradeIndexList[0])
     with concurrent.futures.ThreadPoolExecutor() as executor:        
         executor.map(tradeRunner.initialize_indexes,tradeRunner.tradeIndexList)

@@ -18,8 +18,8 @@ class Trader():
         self.pair = index.pair
         self.startAt = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         historyNeeded = index.calc_history_needed()
-        self.endAt = datetime.fromtimestamp(time.time() - historyNeeded, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
         self.historyNeeded = int(historyNeeded)
+        self.endAt = datetime.fromtimestamp(time.time() - historyNeeded, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
         self.dataService = DataService(market, index.pair, index.timeFrame, self.startAt, self.endAt, historyNeeded)
         self.startAtTS = self.dataService.startAtTs
         self.endAtTS = self.dataService.endAtTs
@@ -37,11 +37,6 @@ class Trader():
         self.positionManager = PositionManager(self.portfolioManager.initialCapital, self.pair, self.volume, self.ratioAmount, self.timeFrame, self.strategyName, self.botName, self.leverage, exchange)
         self.positionManager.sync_positions()
         self.currentInput = index
-        choice, signal = self.orderManager.decider(self.dataService.dataFrame.iloc[:],
-                                                        self.portfolioManager.equity,
-                                                        self.portfolioManager.balance,
-                                                        self.positionManager.position_average_price(),
-                                                        self.positionManager.position_size())
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
