@@ -1,3 +1,4 @@
+from numpy import short
 from signalClass import SignalClass
 import json
 import importlib
@@ -20,16 +21,58 @@ class BotSignal():
             strategies = importlib.import_module("strategies."+s)
             StrategyClass = getattr(strategies, s)
             self.strategies.append(StrategyClass(currentInput, self.pair))
+
+        self.andEnter = botJson["and_or_strategies"]["enter_strategies_and"]
+        self.andExit = botJson["and_or_strategies"]["exit_strategies_and"]
         json_data_file.close()
         
-        
+    
+    def get_final_decision(self, signals):
+        decision = {
+            "longEnter": False,
+            "longExit": False,
+            "shortEnter": False,
+            "shortExit": False
+        }
+        if self.andEnter:
+            if all (s.longEnter == 1 for s in signals):
+                decision["longEnter"] = True
+            else:
+                decision["longEnter"] = False
+            if all (s.shortEnter == 1 for s in signals):
+                decision["shortEnter"] = True
+            else:
+                decision["shortEnter"] = False
+        else:
+            for s in signals:
+                if s.longEnter:
+                    decision["longEnter"] = True
+                if s.shortEnter:
+                    decision["shortEnter"] = True
+        if self.andExit:
+            if all (s.longExit == 1 for s in signals):
+                decision["longExit"] = True
+            else:
+                decision["longExit"] = False
+            if all (s.shortExit == 1 for s in signals):
+                decision["shortExit"] = True
+            else:
+                decision["shortExit"] = False
+        else:
+            for s in signals:
+                if s.longExit:
+                    decision["longExit"] = True
+                if s.shortExit:
+                    decision["shortExit"] = True
+        return decision
+
     def decider(self, marketData):
         self.marketData = marketData
         signals = []
 
         for s in self.strategies:
             signals.append(s.decider(self.marketData))
-
+        decision = self.get_final_decision(signals)
         signal = SignalClass(signals[0].pair,
                             signals[0].side,
                             signals[0].volume,
@@ -39,9 +82,9 @@ class BotSignal():
                             signals[0].slPercent,
                             signals[0].tpPercent,
                             '-'.join(s.comment for s in signals),
-                            all (s.longEnter == 1 for s in signals),
-                            all (s.longExit == 1 for s in signals),
-                            all (s.shortEnter == 1 for s in signals),
-                            all (s.shortExit == 1 for s in signals))
+                            decision["longEnter"],
+                            decision["longExit"],
+                            decision["shortEnter"],
+                            decision["shortExit"])
         # print(self.marketData[-1])
         return signal
