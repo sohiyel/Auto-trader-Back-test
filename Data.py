@@ -8,6 +8,7 @@ from kucoinFutures import KucoinFutures
 from kucoinSpot import KucoinSpot
 from tfMap import tfMap
 from databaseManager import DatabaseManager
+from settings.settings import Settings
 
 class DataService():
 
@@ -27,10 +28,10 @@ class DataService():
         self.state = 0
         self.db = DatabaseManager()
         if market == 'futures':
-            self.limit = 200
+            self.limit = Settings.constantNumbers["data_limit_future"]
             self.client = KucoinFutures()
         else:
-            self.limit = 1440
+            self.limit = Settings.constantNumbers["data_limit_spot"]
             self.client = KucoinSpot()
         
         asyncio.run(self.fetch_klines())

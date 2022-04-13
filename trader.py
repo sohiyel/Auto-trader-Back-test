@@ -10,6 +10,7 @@ from pytz import timezone
 import os
 from plotter import Plotter
 import time
+from settings.settings import Settings
 
 
 class Trader():
@@ -27,7 +28,7 @@ class Trader():
         self.lastState = self.dataService.startAtTs
         self.strategyName = index.strategyName
         self.botName = index.botName
-        self.portfolioManager = PortfolioManager(1,exchange)
+        self.portfolioManager = PortfolioManager(index.pair,1,exchange)
         self.initialCapital = self.portfolioManager.get_equity()
         self.orderManager = OrderManager(self.initialCapital, index.strategyName, index.botName, index.inputs, index.pair)
         self.timeFrame = index.timeFrame
@@ -93,7 +94,8 @@ class Trader():
             if signal:
                 if self.side == "short" or self.side == "both":
                     self.closePosition(commission)
-            self.closePosition(commission)
+            else:
+                self.closePosition(commission)
             
 
         if len(self.positionManager.openPositions) > 0:
@@ -105,7 +107,7 @@ class Trader():
     def mainloop(self):
         if self.portfolioManager.get_equity():
             if self.portfolioManager.equity <= 0:
-                self.processOrders(4, None, 0.0006)
+                self.processOrders(4, None, Settings.constantNumbers["commission"])
                 self.portfolioManager.balance = 0
                 return
 
@@ -115,7 +117,7 @@ class Trader():
         self.lastCandle = df.iloc[-1]
         checkContinue = self.positionManager.update_positions(self.lastCandle['close'], self.lastState)
         if not checkContinue :
-            self.processOrders(4, None, 0.00060)
+            self.processOrders(4, None, Settings.constantNumbers["commission"])
             return
         choice, signal = self.orderManager.decider(df,
                                                     self.portfolioManager.equity,
@@ -123,7 +125,5 @@ class Trader():
                                                     self.positionManager.position_average_price(),
                                                     self.positionManager.position_size())
         print ( f"Current choice is:{choice}")
-        self.processOrders(choice, signal, 0.00060)
+        self.processOrders(choice, signal, Settings.constantNumbers["commission"])
         self.portfolioManager.calc_poL()
-
-        # self.processOrders(4, None, 0.0006)

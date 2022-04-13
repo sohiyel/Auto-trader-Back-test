@@ -30,7 +30,7 @@
             "strategy": "Test02",
             "bot": "",
             "leverage": 1,
-            "long_short": "both",
+            "long_short": "long",
             "stake_amount": 0.001,
             "tradeable_balance_ratio": 0
         }]

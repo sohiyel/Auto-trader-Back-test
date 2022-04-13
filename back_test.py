@@ -10,6 +10,7 @@ from pytz import timezone
 import os
 from plotter import Plotter
 import time
+from settings.settings import Settings
 
 
 class BackTest():
@@ -26,7 +27,7 @@ class BackTest():
         self.botName = botName
         self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput, pair)
         self.positionManager = PositionManager(initialCapital, pair, volume, 0, timeFrame, strategyName, botName, 1)
-        self.portfolioManager = PortfolioManager(initialCapital)
+        self.portfolioManager = PortfolioManager(pair, initialCapital)
         self.timeFrame = timeFrame
         self.plotter =  Plotter(self.pair + "_" + str(self.startAtTS) + "_" + str(self.endAtTS) + "_" + self.timeFrame + ".csv" )
         self.lastCandle = ""
@@ -97,7 +98,7 @@ class BackTest():
         print("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
         for i in range(self.dataService.startAtTs, self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
-                self.processOrders(4, None, 0.0006)
+                self.processOrders(4, None, Settings.constantNumbers["commission"])
                 self.portfolioManager.balance = 0
                 break
             self.lastState = i
@@ -106,11 +107,11 @@ class BackTest():
             self.lastCandle = df.iloc[-1]
             checkContinue = self.positionManager.update_positions(self.lastCandle['close'], self.lastState)
             if not checkContinue :
-                self.processOrders(4, None, 0.00060)
+                self.processOrders(4, None, Settings.constantNumbers["commission"])
                 continue
 
             choice, signal = self.orderManager.decider(df, self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.position_average_price(), self.positionManager.position_size())
-            self.processOrders(choice, signal, 0.00060)
+            self.processOrders(choice, signal, Settings.constantNumbers["commission"])
             # print(self.portfolioManager.balance)
 
             self.portfolioManager.calc_poL()
@@ -123,7 +124,7 @@ class BackTest():
             # df['Equity'] = self.portfolioManager.equity
             # print(df)
 
-        self.processOrders(4, None, 0.0006)
+        self.processOrders(4, None, Settings.constantNumbers["commission"])
 
         report = self.portfolioManager.report(self.positionManager.closedPositions)
         numberOfDays = ((self.endAtTS - self.startAtTS)/(1440 * 60))

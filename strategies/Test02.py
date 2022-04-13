@@ -24,12 +24,12 @@ class Test02(Strategy):
             self.decisions['longExt'] = 1
 
     def short_enter(self):
-        shortEnters = []
+        shortEnters = [0,3]
         if self.currentTime in shortEnters:
             self.decisions['shortEnt'] = 1
 
     def short_exit(self):
-        shortExits = []
+        shortExits = [4]
         if self.currentTime in shortExits:
             self.decisions['shortExt'] = 1
 

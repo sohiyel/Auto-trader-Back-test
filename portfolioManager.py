@@ -1,6 +1,6 @@
-
+from markets import Markets
 class PortfolioManager():
-    def __init__(self, initialCapital=1, exchange="") -> None:
+    def __init__(self, pair, initialCapital=1, exchange="") -> None:
         self.initialCapital = initialCapital
         self.balance = initialCapital
         self.equity = initialCapital
@@ -12,17 +12,18 @@ class PortfolioManager():
         self.balances = []
         self.equities = []
         self.exchange = exchange
+        self.contractSize = Markets().get_contract_size(pair)
         
     def calc_poL(self):
         if self.loss != 0:
             self.pol = abs( self.profit / self.loss )
 
     def open_position(self, volume, price, commission):
-        if volume * float(price) *  ( 1 + commission ) * 0.001 < self.balance:
-            self.balance -= volume * price * 0.001
+        if volume * float(price) *  ( 1 + commission ) * self.contractSize < self.balance:
+            self.balance -= volume * price * self.contractSize
             return True
         else:
-            print ("Insufficent balance!", self.balance, price * volume * 0.001)
+            print ("Insufficent balance!", self.balance, price * volume * self.contractSize)
             return False
 
     def close_position(self, lastPrice, commission):
@@ -37,8 +38,8 @@ class PortfolioManager():
         self.numLosses += 1
 
     def add_volume(self, volume, price, commission):
-        if volume * price *  ( 1 + commission ) * 0.001 < self.balance:
-            self.balance -= volume * price *  ( 1 + commission ) * 0.001
+        if volume * price *  ( 1 + commission ) * self.contractSize < self.balance:
+            self.balance -= volume * price *  ( 1 + commission ) * self.contractSize
             return True
         else:
             print ("Insufficent balance!")
