@@ -15,23 +15,13 @@
         "user_name": "maysam1",
         "sandbox": false,
         "pts": [{
-            "pair": "BTC/USDT:USDT",
+            "pair": "ADA/USDT:USDT",
             "tf": "1m",
             "strategy": "Test01",
             "bot": "",
             "leverage": 1,
             "long_short": "both",
-            "stake_amount": 0.001,
-            "tradeable_balance_ratio": 0
-        },
-        {
-            "pair": "BTC/USDT:USDT",
-            "tf": "1m",
-            "strategy": "Test02",
-            "bot": "",
-            "leverage": 1,
-            "long_short": "long",
-            "stake_amount": 0.001,
+            "stake_amount": 10,
             "tradeable_balance_ratio": 0
         }]
     }

@@ -6,5 +6,8 @@
         }, {
             "pair": "ETH_USDT",
             "tf": "1m"
+        }, {
+            "pair": "ADA_USDT",
+            "tf": "1m"
         }]
 }
