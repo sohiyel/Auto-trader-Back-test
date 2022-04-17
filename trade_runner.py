@@ -1,15 +1,15 @@
 from pprint import isreadable
-from data import DataService
-from tfMap import tfMap
-from trader import Trader
-from userInput import UserInput
+from src.data import DataService
+from src.tfMap import tfMap
+from src.trader import Trader
+from src.userInput import UserInput
 import pandas as pd
 from pprint import pprint
 import time
 from datetime import datetime
-from tradeIndex import TradeIndex
-from kucoinFutures import KucoinFutures
-from kucoinSpot import  KucoinSpot
+from src.tradeIndex import TradeIndex
+from src.exchanges.kucoinFutures import KucoinFutures
+from src.exchanges.kucoinSpot import  KucoinSpot
 import asyncio
 import concurrent.futures
 import sys

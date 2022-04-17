@@ -1,13 +1,15 @@
 from pprint import isreadable
-from data import DataService
-from back_test import BackTest
-from userInput import UserInput
+from src.data import DataService
+from src.backTest import BackTest
+from src.userInput import UserInput
 import pandas as pd
 from pprint import pprint
 import time
 from datetime import datetime
 import concurrent.futures
-from backTestTask import BackTestTask
+from src.backTestTask import BackTestTask
+from account.settings.settings import Settings
+from os import path
 
 class BackTestRunner():
     def __init__(self, multiProcess) -> None:
@@ -73,10 +75,10 @@ class BackTestRunner():
         # print(optimumResult["TwoEMA_slow_len"])
         print (results)
         if self.task.botName:
-            path = "optimizations/" + timestr + "_" + self.task.pair + "_" + self.task.timeFrame + "_" + self.task.botName +".csv"
+            optimizationPath = path.join(Settings.OPTIMIZATIONS_DIR , timestr + "_" + self.task.pair + "_" + self.task.timeFrame + "_" + self.task.botName +".csv")
         else:
-            path = "optimizations/" + timestr + "_" + self.task.pair + "_" + self.task.timeFrame + "_" + self.task.strategyName +".csv"
-        results.to_csv(path)
+            optimizationPath = path.join(Settings.OPTIMIZATIONS_DIR , timestr + "_" + self.task.pair + "_" + self.task.timeFrame + "_" + self.task.strategyName +".csv")
+        results.to_csv(optimizationPath)
         self.userInput.write_optimized_values(optimumResult)
             
         print("--- End of optimization: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
