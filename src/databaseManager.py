@@ -60,7 +60,31 @@ class DatabaseManager():
                         isOpen boolean NOT NULL,
                         timeFrame text NOT NULL,
                         strategyName text NOT NULL,
-                        botName text 
+                        botName text,
+                        stopLossOrderId text,
+                        takeProfitOrderId text
+                        );''')
+        except:
+            print ("Cannot create positions table!")
+
+        self.conn.commit()
+        cur.close()
+
+    def create_orders_table(self):
+        cur = self.conn.cursor()
+        try:
+            cur.execute('''CREATE TABLE IF NOT EXISTS orders (
+                        id text PRIMARY KEY,
+                        pair text NOT NULL,
+                        side text NOT NULL,
+                        volume numeric NOT NULL,
+                        entryPrice numeric NOT NULL,
+                        leverage numeric NOT NULL,
+                        isOpen boolean NOT NULL,
+                        timeFrame text NOT NULL,
+                        strategyName text NOT NULL,
+                        botName text,
+                        positionId text
                         );''')
         except:
             print ("Cannot create positions table!")
@@ -78,6 +102,7 @@ class DatabaseManager():
         for i in self.tables:
             self.create_ohlcv_table(i[0], i[1])
         self.create_positions_table()
+        self.create_orders_table()
 
     def store_klines(self, klines, tableName):
         for index, k in klines.iterrows():
@@ -124,7 +149,7 @@ class DatabaseManager():
             query = cur.fetchall()
             df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice',
                                                 'openAt', 'closeAt', 'leverage', 'isOpen', 'timeFrame',
-                                                'strategyName', 'botName'])
+                                                'strategyName', 'botName', 'stopLossOrderId', 'takeProfitOrderId'])
             self.conn.commit()
             cur.close()
             return df
@@ -135,15 +160,35 @@ class DatabaseManager():
             query = []
             df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice',
                                              'openAt', 'closeAt', 'leverage, isOpen', 'timeFrame',
-                                             'strategyName', 'botName'])
+                                             'strategyName', 'botName', 'stopLossOrderId', 'takeProfitOrderId'])
             return df
 
-    def add_position(self, id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyName, botName):
+    def get_open_orders(self, pair):
         cur = self.conn.cursor()
         try:
-            SQL = "INSERT into positions (id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyname, botname)\
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
-            data = (id,pair,side,volume,entryPrice,openAt,leverage,isOpen,timeFrame,strategyName,botName)
+            SQL = "SELECT * FROM orders WHERE pair = '{0}' AND isopen = True;".format(pair)
+            cur.execute(SQL)
+            query = cur.fetchall()
+            df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice', 'leverage', 'isOpen', 'timeFrame',
+                                                'strategyName', 'botName', 'positionId'])
+            self.conn.commit()
+            cur.close()
+            return df
+        except:
+            self.conn.commit()
+            cur.close()
+            print (f"Cannot get open positions!")
+            query = []
+            df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice', 'leverage, isOpen', 'timeFrame',
+                                             'strategyName', 'botName', 'positionId'])
+            return df
+
+    def add_position(self, id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyName, botName, stopLossOrderId, takeProfitOrderId):
+        cur = self.conn.cursor()
+        try:
+            SQL = "INSERT into positions (id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyname, botname, stopLossOrderId, takeProfitOrderId)\
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+            data = (id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyName, botName, stopLossOrderId, takeProfitOrderId)
             cur.execute(SQL, data)
         except:
             print (f"Cannot add new position to database!")
@@ -151,14 +196,51 @@ class DatabaseManager():
         self.conn.commit() 
         cur.close()
 
+    def add_order(self, id, pair, side, volume, entryPrice, leverage, isOpen, timeFrame, strategyName, botName, positionId):
+        cur = self.conn.cursor()
+        try:
+            SQL = "INSERT into orders (id, pair, side, volume, entryPrice, leverage, isOpen, timeFrame, strategyname, botname, positionId)\
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+            data = (id, pair, side, volume, entryPrice, leverage, isOpen, timeFrame, strategyName, botName, positionId)
+            cur.execute(SQL, data)
+        except:
+            print (f"Cannot add new order to database!")
+
+        self.conn.commit() 
+        cur.close()
+
     def close_position(self, id):
         cur = self.conn.cursor()
-        # try:
-        cur.execute(f"UPDATE positions\
-                    SET isopen = False, closeat = {time.time()}\
-                    WHERE id='{id}';")
-        # except:
-        #     print (f"Cannot close position {id}")
+        try:
+            cur.execute(f"UPDATE positions\
+                        SET isopen = False, closeat = {time.time()}\
+                        WHERE id='{id}';")
+        except:
+            print (f"Cannot close position {id}")
+
+        self.conn.commit() 
+        cur.close()
+
+    def close_order(self, id):
+        cur = self.conn.cursor()
+        try:
+            cur.execute(f"UPDATE orders\
+                        SET isopen = False\
+                        WHERE id='{id}';")
+        except:
+            print (f"Cannot close order {id}")
+
+        self.conn.commit() 
+        cur.close()
+
+    def close_order_by_positionId(self, id):
+        cur = self.conn.cursor()
+        try:
+            cur.execute(f"UPDATE orders\
+                        SET isopen = False\
+                        WHERE positionId='{id}';")
+        except:
+            print (f"Cannot close order {id}")
 
         self.conn.commit() 
         cur.close()

@@ -33,3 +33,21 @@ class tfMap:
             pairs = pair.split("-")
             return pairs[0] + "_" + pairs[1]
 
+    def opposite_side(side):
+        if side == 'buy':
+            return 'sell'
+        elif side == 'sell':
+            return 'buy'
+
+    def get_stop_side(side):
+        if side == 'buy':
+            return 'down'
+        elif side == 'sell':
+            return 'up'
+
+    def get_profit_side(side):
+        if side == 'buy':
+            return 'up'
+        elif side == 'sell':
+            return 'down'
+

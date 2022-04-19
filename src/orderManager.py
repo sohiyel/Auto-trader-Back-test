@@ -31,7 +31,7 @@ class OrderManager():
                 return [3,signal]
             elif signal.longExit:
                 self.lastSignal = 2
-                signal.side = "buyEXIT"
+                signal.side = "sell"
                 return [2,signal]
             return [0,signal]
         elif self.lastSignal == 3:
@@ -41,7 +41,7 @@ class OrderManager():
                 return [1,signal]
             elif signal.shortExit:
                 self.lastSignal = 4
-                signal.side = "sellEXIT"
+                signal.side = "buy"
                 return [4,signal]
         return [0,signal]
 

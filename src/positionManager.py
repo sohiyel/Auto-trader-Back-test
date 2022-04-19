@@ -34,15 +34,37 @@ class PositionManager():
                     amount = self.ratioAmount * self.initialCapital / ask
                 elif signal.side == 'sell':
                     amount = self.ratioAmount * self.initialCapital / bid
-                self.exchange.create_market_order(signal.pair, signal.side, amount / self.contractSize, params={'leverage': self.leverage})        
-                self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName)
-                newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
+                volume = amount / self.contractSize
             else:
-                self.exchange.create_market_order(signal.pair, signal.side, self.volume / self.contractSize, params={'leverage': self.leverage})
-                self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, self.volume, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName)
-                newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
+                volume = self.volume / self.contractSize
+                amount = self.volume
+                
+            self.exchange.create_market_order(signal.pair,
+                                                signal.side,
+                                                volume,
+                                                params={'leverage': self.leverage})
+            # stopLossOrderId = self.exchange.create_market_order(signal.pair,
+            #                                                     tfMap.opposite_side(signal.side),
+            #                                                     volume,
+            #                                                     params={'leverage': self.leverage,
+            #                                                             'stop': tfMap.get_stop_side(signal.side),
+            #                                                             'stopPriceType': 'MP',
+            #                                                             'stopPrice': signal.stopLoss})
+            # takeProfitOrderId = self.exchange.create_market_order(signal.pair,
+            #                                                     tfMap.opposite_side(signal.side),
+            #                                                     volume,
+            #                                                     params={'leverage': self.leverage,
+            #                                                             'stop': tfMap.get_profit_side(signal.side),
+            #                                                             'stopPriceType': 'MP',
+            #                                                             'stopPrice': signal.takeProfit})
+            stopLossOrderId = uuid.uuid4().hex
+            takeProfitOrderId = uuid.uuid4().hex
+            self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
+            newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)                
+            self.db.add_order(stopLossOrderId, signal.pair, tfMap.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+            self.db.add_order(takeProfitOrderId, signal.pair, tfMap.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
         else:
-            newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
+            newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, '', '', True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
         self.openPositions.append(newPosition)
         print ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
 
@@ -51,11 +73,13 @@ class PositionManager():
             if self.exchange:
                 if self.openPositions[0].side == "buy":
                     self.exchange.create_market_order(self.openPositions[0].pair, "sell", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})
+                    
                     print ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
                 elif self.openPositions[0].side == "sell":
                     self.exchange.create_market_order(self.openPositions[0].pair, "buy", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})
                     print ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
                 self.db.close_position(self.openPositions[0].id)
+                self.db.close_order_by_positionId(self.openPositions[0].id)
             lastPrice = self.openPositions[0].close_position(timestamp)
             self.closedPositions.append(self.openPositions[0])
             self.openPositions = []
@@ -114,6 +138,7 @@ class PositionManager():
                 for index, k in dbPositions.iterrows():
                     print(f"-------------- Closing position {k['id']} in database! --------------")
                     self.db.close_position(k["id"])
+                    self.db.close_order_by_positionId(k["id"])
                 self.openPositions = []
         else:
             print(f"-------------- There is a position with this pair({self.pair}) in exchange!--------------")
@@ -133,7 +158,7 @@ class PositionManager():
                 elif pos["side"] == "short":
                     side = "sell"
                 positionId = uuid.uuid4().hex
-                self.openPositions.append(Position(positionId, ep["symbol"], side, ep["contractSize"] * ep["contracts"], ep["entryPrice"], ep["timestamp"], self.timeFrame, self.strategyName, self.botName, True, ep["leverage"]))
+                self.openPositions.append(Position(positionId, ep["symbol"], side, ep["contractSize"] * ep["contracts"], ep["entryPrice"], ep["timestamp"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"], pos["takeProfitOrderId"], True, ep["leverage"]))
             else:
                 print(f"-------------- Positions in exchange does not match the positions in database! --------------")
                 for i in exchangePositions:
@@ -146,4 +171,5 @@ class PositionManager():
                 for index, k in dbPositions.iterrows():
                     print(f"-------------- Closing position {k['id']} in database! --------------")
                     self.db.close_position(k["id"])
+                    self.db.close_order_by_positionId(k["id"])
                 self.openPositions = []

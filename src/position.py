@@ -1,7 +1,7 @@
 from account.settings.settings import Settings
 
 class Position():
-    def __init__(self, id, pair, side, volume, entryPrice, openAt, timeFrame, strategyName, botName, isOpen = True, leverage = 1, stopLoss = 0, takeProfit = 0, slPercent = 0, tpPercent = 0, comment="") -> None:
+    def __init__(self, id, pair, side, volume, entryPrice, openAt, timeFrame, strategyName, botName, stopLossOrderId ='', takeProfitOrderId='', isOpen = True, leverage = 1, stopLoss = 0, takeProfit = 0, slPercent = 0, tpPercent = 0, comment="") -> None:
         self.id = id
         self.pair = pair
         self.side = side
@@ -30,6 +30,8 @@ class Position():
         self.timeFrame = timeFrame
         self.strategyName = strategyName
         self.botName = botName
+        self.stopLossOrderId = stopLossOrderId
+        self.takeProfitOrderId = takeProfitOrderId
         
 
     def calc_profit(self):
