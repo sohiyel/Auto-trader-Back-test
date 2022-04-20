@@ -39,6 +39,7 @@ class Trader():
         self.positionManager = PositionManager(self.portfolioManager.initialCapital, self.pair, self.volume, self.ratioAmount, self.timeFrame, self.strategyName, self.botName, self.leverage, exchange)
         self.positionManager.sync_positions()
         self.currentInput = index
+        self.df = ""
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
@@ -102,24 +103,21 @@ class Trader():
             lastPrice = self.positionManager.calc_equity()
             self.portfolioManager.equities.append(self.portfolioManager.update_equity(lastPrice))
 
-
+    def update_candle_data(self):
+        self.lastState = time.time() * 1000
+        df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState)
+        self.df = df.sort_values(by='timestamp', ascending=True)
+        self.lastCandle = df.iloc[0]
 
     def mainloop(self):
+        print ( f"<----------- Run mainloop on {self.pair} ----------->")
         if self.portfolioManager.get_equity():
             if self.portfolioManager.equity <= 0:
                 self.processOrders(4, None, Settings.constantNumbers["commission"])
                 self.portfolioManager.balance = 0
                 return
-
-        self.lastState = time.time() * 1000
-        df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState)
-        df = df.sort_values(by='timestamp', ascending=True)
-        self.lastCandle = df.iloc[-1]
-        checkContinue = self.positionManager.update_positions(self.lastCandle['close'], self.lastState)
-        if not checkContinue :
-            self.processOrders(4, None, Settings.constantNumbers["commission"])
-            return
-        choice, signal = self.orderManager.decider(df,
+        self.update_candle_data()
+        choice, signal = self.orderManager.decider(self.df,
                                                     self.portfolioManager.equity,
                                                     self.portfolioManager.balance,
                                                     self.positionManager.position_average_price(),
@@ -127,3 +125,14 @@ class Trader():
         print ( f"Current choice is:{choice}")
         self.processOrders(choice, signal, Settings.constantNumbers["commission"])
         self.portfolioManager.calc_poL()
+
+    def check_continue(self):
+        print ( f"<----------- Check continue on {self.pair} ----------->")
+        self.update_candle_data()
+        # print (self.df)
+        # print ( f"Last candle close: {self.lastCandle['close']}")
+        checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
+        if not checkContinue :
+            print ( f"<----------- Close on SL/TP {self.pair} ----------->")
+            self.processOrders(4, None, Settings.constantNumbers["commission"])
+            return

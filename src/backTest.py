@@ -105,7 +105,7 @@ class BackTest():
             df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState * 1000)
             df = df.sort_values(by='timestamp', ascending=True)
             self.lastCandle = df.iloc[-1]
-            checkContinue = self.positionManager.update_positions(self.lastCandle['close'], self.lastState)
+            checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
             if not checkContinue :
                 self.processOrders(4, None, Settings.constantNumbers["commission"])
                 continue

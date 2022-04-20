@@ -11,22 +11,22 @@ class Test01(Strategy):
         self.currentTime = 0
 
     def long_enter(self):
-        longEnters = [0,2]
+        longEnters = [0]
         if self.currentTime in longEnters:
             self.decisions['longEnt'] = 1
 
     def long_exit(self):
-        longExits = [3]
+        longExits = []
         if self.currentTime in longExits:
             self.decisions['longExt'] = 1
 
     def short_enter(self):
-        shortEnters = [4]
+        shortEnters = []
         if self.currentTime in shortEnters:
             self.decisions['shortEnt'] = 1
 
     def short_exit(self):
-        shortExits = [5]
+        shortExits = []
         if self.currentTime in shortExits:
             self.decisions['shortExt'] = 1
 
@@ -48,8 +48,8 @@ class Test01(Strategy):
         self.short_exit()
         sig = SignalClass(pair = self.pair,
                         price = self.df.iloc[-1]["close"],
-                        slPercent = 0.05,
-                        tpPercent = 0.1,
+                        stopLoss = 40853,
+                        takeProfit = 41000,
                         comment= "Test01",
                         longEnter = self.decisions["longEnt"],
                         longExit = self.decisions["longExt"],

@@ -91,23 +91,35 @@ class PositionManager():
         self.openPositions[0].entryPrice = (self.openPositions[0].entryPrice * self.openPositions[0].volume + price * volume) / ( self.openPositions[0].volume + volume )
         self.openPositions[0].volume += volume
 
-    def update_positions(self, currentPrice, timestamp):
+    def check_sl_tp(self, currentPrice, timestamp):
         for i in self.openPositions:
             i.currentPrice = currentPrice
             i.profit = i.calc_profit()
             if i.side == 'buy':
                 if i.takeProfit > 0:
                     if currentPrice > i.takeProfit:
+                        print ("Side: Buy")
+                        print (f"Current Price:{currentPrice}")
+                        print (f"Take Proft:{i.takeProfit}")
                         return False
                 if i.stopLoss > 0:
                     if currentPrice < i.stopLoss:
+                        print ("Side: Buy")
+                        print (f"Current Price:{currentPrice}")
+                        print (f"Stop Loss:{i.stopLoss}")
                         return False
             elif i.side == 'sell':
                 if i.takeProfit > 0:
                     if currentPrice < i.takeProfit:
+                        print ("Side: Sell")
+                        print (f"Current Price:{currentPrice}")
+                        print (f"Take Proft:{i.takeProfit}")
                         return False
                 if i.stopLoss > 0:
                     if currentPrice > i.stopLoss:
+                        print ("Side: Sell")
+                        print (f"Current Price:{currentPrice}")
+                        print (f"Take Proft:{i.stopLoss}")
                         return False
         return True
 

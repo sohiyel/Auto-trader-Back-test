@@ -18,13 +18,21 @@ class TradeRunner():
         self.tradeIndexList = TradeIndex().indexes
         self.exchange = KucoinFutures(sandBox = False)
         self.exchange.authorize()
+        self.trades = []
 
     def initialize_indexes(self, index):
         trader = Trader(index,self.exchange.exchange)
+        self.trades.append(trader)
         print  (f"--------- Initialized :{index.pair} ---------")
+        startTime = time.time()
+        counter = 0
         while True:
-            trader.mainloop()
-            time.sleep(tfMap.array[index.timeFrame] * 60)
+            deltaTime = (time.time() - startTime)
+            if int(deltaTime % (tfMap.array[index.timeFrame] * 60)) == 0:
+                trader.mainloop()
+            if int(deltaTime % (tfMap.array[index.timeFrame] * 20)) == 0:
+                trader.check_continue()
+            time.sleep(1)
 
 if __name__ == '__main__':
     tradeRunner = TradeRunner()
