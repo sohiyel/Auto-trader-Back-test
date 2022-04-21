@@ -107,7 +107,8 @@ class Trader():
         self.lastState = time.time() * 1000
         df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState)
         self.df = df.sort_values(by='timestamp', ascending=True)
-        self.lastCandle = df.iloc[0]
+        self.df.reset_index(drop=True, inplace=True)
+        self.lastCandle = self.df.iloc[-1]
 
     def mainloop(self):
         print ( f"<----------- Run mainloop on {self.pair} ----------->")
@@ -130,7 +131,7 @@ class Trader():
         print ( f"<----------- Check continue on {self.pair} ----------->")
         self.update_candle_data()
         # print (self.df)
-        # print ( f"Last candle close: {self.lastCandle['close']}")
+        print ( f"Last candle close: {self.lastCandle['close']}")
         checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
         if not checkContinue :
             print ( f"<----------- Close on SL/TP {self.pair} ----------->")

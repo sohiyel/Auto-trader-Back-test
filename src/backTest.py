@@ -104,6 +104,7 @@ class BackTest():
             self.lastState = i
             df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState * 1000)
             df = df.sort_values(by='timestamp', ascending=True)
+            df.reset_index(drop=True, inplace=True)
             self.lastCandle = df.iloc[-1]
             checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
             if not checkContinue :
