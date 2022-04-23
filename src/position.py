@@ -1,7 +1,5 @@
-from account.settings.settings import Settings
-
 class Position():
-    def __init__(self, id, pair, side, volume, entryPrice, openAt, timeFrame, strategyName, botName, stopLossOrderId ='', takeProfitOrderId='', isOpen = True, leverage = 1, stopLoss = 0, takeProfit = 0, slPercent = 0, tpPercent = 0, comment="") -> None:
+    def __init__(self, id, pair, side, volume, entryPrice, openAt, timeFrame, strategyName, botName, stopLossOrderId ='', takeProfitOrderId='', isOpen = True, leverage = 1, stopLoss = 0, takeProfit = 0, slPercent = 0, tpPercent = 0, comment="", settings="") -> None:
         self.id = id
         self.pair = pair
         self.side = side
@@ -23,7 +21,7 @@ class Position():
             self.stopLoss = stopLoss
         self.closeAt = ""
         self.profit = 0.0
-        self.commission = Settings.constantNumbers["commission"] * entryPrice * volume
+        self.commission = settings.constantNumbers["commission"] * entryPrice * volume
         self.comment = comment
         self.leverage = leverage
         self.isOpen = isOpen
@@ -32,6 +30,7 @@ class Position():
         self.botName = botName
         self.stopLossOrderId = stopLossOrderId
         self.takeProfitOrderId = takeProfitOrderId
+        self.settings = settings
         
 
     def calc_profit(self):
@@ -43,7 +42,7 @@ class Position():
 
     def close_position(self, timestamp):
         self.closeAt = timestamp
-        self.commission += self.volume * self.currentPrice * Settings.constantNumbers["commission"]
+        self.commission += self.volume * self.currentPrice * self.settings.constantNumbers["commission"]
         self.calc_profit()
         return (self.entryPrice * self.volume) + self.profit
 

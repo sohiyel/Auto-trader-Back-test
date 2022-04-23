@@ -1,27 +1,22 @@
 from pprint import isreadable
-from src.data import DataService
 from src.tfMap import tfMap
 from src.trader import Trader
-from src.userInput import UserInput
-import pandas as pd
 from pprint import pprint
 import time
-from datetime import datetime
 from src.tradeIndex import TradeIndex
 from src.exchanges.kucoinFutures import KucoinFutures
-from src.exchanges.kucoinSpot import  KucoinSpot
-import asyncio
 import concurrent.futures
-import sys
+
 class TradeRunner():
-    def __init__(self) -> None:
-        self.tradeIndexList = TradeIndex().indexes
-        self.exchange = KucoinFutures(sandBox = False)
+    def __init__(self, settings) -> None:
+        self.settings = settings
+        self.tradeIndexList = TradeIndex(settings).indexes
+        self.exchange = KucoinFutures(settings, sandBox = False)
         self.exchange.authorize()
         self.trades = []
 
     def initialize_indexes(self, index):
-        trader = Trader(index,self.exchange.exchange)
+        trader = Trader(index,self.exchange.exchange, self.settings)
         self.trades.append(trader)
         print  (f"--------- Initialized :{index.pair} ---------")
         startTime = time.time()

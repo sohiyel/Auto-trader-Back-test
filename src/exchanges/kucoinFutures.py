@@ -3,11 +3,11 @@ import requests
 import asyncio
 import ccxt
 import configparser
-from account.settings.settings import Settings
 from src.tfMap import tfMap
 
 class KucoinFutures(Kucoin):
-    def __init__(self, sandBox = False):
+    def __init__(self, settings, sandBox = False):
+        self.settings = settings
         super().__init__(sandBox)
         self.baseUrl = 'https://api-futures.kucoin.com/'
         self.exchange = ccxt.kucoinfutures()
@@ -16,9 +16,9 @@ class KucoinFutures(Kucoin):
     def authorize(self):
         cfg = configparser.ConfigParser()
         if self.sandBox:
-            cfg.read(Settings.API_SANDBOX_FUTURE_PATH)
+            cfg.read(self.settings.API_SANDBOX_FUTURE_PATH)
         else:
-            cfg.read(Settings.API_FUTURE_PATH)
+            cfg.read(self.settings.API_FUTURE_PATH)
         self.exchange.apiKey = cfg.get('KEYS','api_key')
         self.exchange.secret = cfg.get('KEYS', 'api_secret')
         self.exchange.password = cfg.get('KEYS', 'api_passphrase')

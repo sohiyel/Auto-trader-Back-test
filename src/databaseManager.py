@@ -4,10 +4,10 @@ import configparser
 from src.tfMap import tfMap
 import pandas as pd
 import time
-from account.settings.settings import Settings
 
 class DatabaseManager():
-    def __init__(self) -> None:
+    def __init__(self, settings) -> None:
+        self.settings = settings
         self.conn = None
         self.connect_to_db()
         self.tables = []
@@ -15,7 +15,7 @@ class DatabaseManager():
     def connect_to_db(self):
         try:
             cfg = configparser.ConfigParser()
-            cfg.read(Settings.DB_CONFIG_PATH)
+            cfg.read(self.settings.DB_CONFIG_PATH)
             username = cfg.get('KEYS','user')
             password = cfg.get('KEYS', 'password')
             host = cfg.get('KEYS', 'host')
@@ -94,7 +94,7 @@ class DatabaseManager():
 
     def set_up_tables(self):
         self.tables = []
-        with open(Settings.DATABASE_INDEXES_PATH,"r") as json_data_file:
+        with open(self.settings.DATABASE_INDEXES_PATH,"r") as json_data_file:
             self.jsonFile = json.load(json_data_file)
             ptss = self.jsonFile["tables"]
             for pts in ptss:

@@ -10,11 +10,11 @@ from pytz import timezone
 import os
 from src.plotter import Plotter
 import time
-from account.settings.settings import Settings
 
 
 class Trader():
-    def __init__ (self, index, exchange, market = 'futures'):
+    def __init__ (self, index, exchange, settings, market = 'futures'):
+        self.settings = settings
         self.exchange = exchange
         self.pair = index.pair
         self.side = index.side
@@ -22,21 +22,21 @@ class Trader():
         historyNeeded = index.calc_history_needed()
         self.historyNeeded = int(historyNeeded)
         self.endAt = datetime.fromtimestamp(time.time() - historyNeeded, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
-        self.dataService = DataService(market, index.pair, index.timeFrame, self.startAt, self.endAt, historyNeeded)
+        self.dataService = DataService(market, index.pair, index.timeFrame, self.startAt, self.endAt, historyNeeded, settings)
         self.startAtTS = self.dataService.startAtTs
         self.endAtTS = self.dataService.endAtTs
         self.lastState = self.dataService.startAtTs
         self.strategyName = index.strategyName
         self.botName = index.botName
-        self.portfolioManager = PortfolioManager(index.pair,1,exchange)
+        self.portfolioManager = PortfolioManager(index.pair,1, settings, exchange)
         self.initialCapital = self.portfolioManager.get_equity()
-        self.orderManager = OrderManager(self.initialCapital, index.strategyName, index.botName, index.inputs, index.pair)
+        self.orderManager = OrderManager(self.initialCapital, index.strategyName, index.botName, index.inputs, index.pair, settings)
         self.timeFrame = index.timeFrame
         self.lastCandle = ""
         self.volume = index.amount
         self.ratioAmount = index.ratioAmount
         self.leverage = index.leverage
-        self.positionManager = PositionManager(self.portfolioManager.initialCapital, self.pair, self.volume, self.ratioAmount, self.timeFrame, self.strategyName, self.botName, self.leverage, exchange)
+        self.positionManager = PositionManager(self.portfolioManager.initialCapital, self.pair, self.volume, self.ratioAmount, self.timeFrame, self.strategyName, self.botName, self.leverage,settings, exchange)
         self.positionManager.sync_positions()
         self.currentInput = index
         self.df = ""
@@ -114,7 +114,7 @@ class Trader():
         print ( f"<----------- Run mainloop on {self.pair} ----------->")
         if self.portfolioManager.get_equity():
             if self.portfolioManager.equity <= 0:
-                self.processOrders(4, None, Settings.constantNumbers["commission"])
+                self.processOrders(4, None, self.settings.constantNumbers["commission"])
                 self.portfolioManager.balance = 0
                 return
         self.update_candle_data()
@@ -124,7 +124,7 @@ class Trader():
                                                     self.positionManager.position_average_price(),
                                                     self.positionManager.position_size())
         print ( f"Current choice is:{choice}")
-        self.processOrders(choice, signal, Settings.constantNumbers["commission"])
+        self.processOrders(choice, signal, self.settings.constantNumbers["commission"])
         self.portfolioManager.calc_poL()
 
     def check_continue(self):
@@ -135,5 +135,5 @@ class Trader():
         checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
         if not checkContinue :
             print ( f"<----------- Close on SL/TP {self.pair} ----------->")
-            self.processOrders(4, None, Settings.constantNumbers["commission"])
+            self.processOrders(4, None, self.settings.constantNumbers["commission"])
             return

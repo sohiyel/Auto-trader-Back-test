@@ -5,7 +5,7 @@ from src.tfMap import tfMap
 from src.markets import Markets
 
 class PositionManager():
-    def __init__(self, initialCapital, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, exchange="") -> None:
+    def __init__(self, initialCapital, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, settings, exchange="") -> None:
         self.openPositions = []
         self.closedPositions = []
         self.initialCapital = initialCapital
@@ -17,8 +17,9 @@ class PositionManager():
         self.botName = botName
         self.leverage = leverage
         self.exchange = exchange
-        self.db = DatabaseManager()
-        self.contractSize = Markets().get_contract_size(pair)
+        self.settings = settings
+        self.db = DatabaseManager(settings)
+        self.contractSize = Markets(settings).get_contract_size(pair)
     
     def open_position(self, signal, lastState):
         positionId = uuid.uuid4().hex
@@ -60,11 +61,11 @@ class PositionManager():
             stopLossOrderId = uuid.uuid4().hex
             takeProfitOrderId = uuid.uuid4().hex
             self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
-            newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)                
+            newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
             self.db.add_order(stopLossOrderId, signal.pair, tfMap.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
             self.db.add_order(takeProfitOrderId, signal.pair, tfMap.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
         else:
-            newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, '', '', True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment)
+            newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, '', '', True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)
         self.openPositions.append(newPosition)
         print ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
 
@@ -170,7 +171,7 @@ class PositionManager():
                 elif pos["side"] == "short":
                     side = "sell"
                 positionId = uuid.uuid4().hex
-                self.openPositions.append(Position(positionId, ep["symbol"], side, ep["contractSize"] * ep["contracts"], ep["entryPrice"], ep["timestamp"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"], pos["takeProfitOrderId"], True, ep["leverage"]))
+                self.openPositions.append(Position(positionId, ep["symbol"], side, ep["contractSize"] * ep["contracts"], ep["entryPrice"], ep["timestamp"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"], pos["takeProfitOrderId"], True, ep["leverage"],settings=self.settings))
             else:
                 print(f"-------------- Positions in exchange does not match the positions in database! --------------")
                 for i in exchangePositions:

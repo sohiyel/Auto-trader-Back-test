@@ -1,7 +1,8 @@
 from src.markets import Markets
 
 class PortfolioManager():
-    def __init__(self, pair, initialCapital=1, exchange="") -> None:
+    def __init__(self, pair, initialCapital=1, settings="", exchange="") -> None:
+        self.settings = settings
         self.initialCapital = initialCapital
         self.balance = initialCapital
         self.equity = initialCapital
@@ -13,7 +14,7 @@ class PortfolioManager():
         self.balances = []
         self.equities = []
         self.exchange = exchange
-        self.contractSize = Markets().get_contract_size(pair)
+        self.contractSize = Markets(self.settings).get_contract_size(pair)
         
     def calc_poL(self):
         if self.loss != 0:

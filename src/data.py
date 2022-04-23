@@ -8,12 +8,12 @@ from src.exchanges.kucoinFutures import KucoinFutures
 from src.exchanges.kucoinSpot import KucoinSpot
 from src.tfMap import tfMap
 from src.databaseManager import DatabaseManager
-from account.settings.settings import Settings
 from os import path
 class DataService():
 
-    def __init__(self, market, pair, timeFrame, startTime, endTime, historyNeeded = 0):
+    def __init__(self, market, pair, timeFrame, startTime, endTime, historyNeeded = 0, settings=''):
         self.pair = pair
+        self.settings = settings
         self.dbPair = tfMap.get_db_format(self.pair)
         self.timeFrame = timeFrame
         self.tableName = self.dbPair + "_" + self.timeFrame
@@ -26,13 +26,13 @@ class DataService():
         self.endAtTs = self.convert_time(endTime)
         self.historyNeeded = int(historyNeeded)
         self.state = 0
-        self.db = DatabaseManager()
+        self.db = DatabaseManager(settings)
         if market == 'futures':
-            self.limit = Settings.constantNumbers["data_limit_future"]
-            self.client = KucoinFutures()
+            self.limit = self.settings.constantNumbers["data_limit_future"]
+            self.client = KucoinFutures(settings)
         else:
-            self.limit = Settings.constantNumbers["data_limit_spot"]
-            self.client = KucoinSpot()
+            self.limit = self.settings.constantNumbers["data_limit_spot"]
+            self.client = KucoinSpot(settings)
         
         asyncio.run(self.fetch_klines())
 
@@ -42,7 +42,7 @@ class DataService():
         return int(datetime.timestamp(utc_time))
 
     async def fetch_klines(self):
-        fileName = path.join(Settings.DATA_DIR,self.market,self.dbPair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv")
+        fileName = path.join(self.settings.DATA_DIR,self.market,self.dbPair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv")
         if ( os.path.exists(fileName)):
             self.dataFrame = pd.read_csv(fileName)
             print(fileName + " has been read from disk")
@@ -74,7 +74,7 @@ class DataService():
         asyncio.create_task(self.write_to_CSV())
         
     async def write_to_CSV(self):
-        fileName = path.join(Settings.DATA_DIR,self.market,self.dbPair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv")
+        fileName = path.join(self.settings.DATA_DIR,self.market,self.dbPair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv")
         if ( os.path.exists(fileName)):
             return
         else:

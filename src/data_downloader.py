@@ -7,16 +7,19 @@ import pandas as pd
 import time
 import concurrent.futures
 import json
-from account.settings.settings import Settings
+from src.settings import Settings
+import sys
+import os
 
 class DataDownloader():
-    def __init__(self, pair, timeFrame) -> None:
+    def __init__(self, pair, timeFrame, settings) -> None:
+        self.settings = settings
         self.pair = pair
         self.timeFrame = timeFrame
         pair = tfMap.get_db_format(self.pair)
         self.tableName = pair + "_" + self.timeFrame
         self.exchange = ccxt.kucoinfutures()
-        self.db = DatabaseManager()
+        self.db = DatabaseManager(settings)
 
     def get_klines(self):
         pair = tfMap.get_exchange_format(self.pair)
@@ -39,12 +42,13 @@ class DataDownloader():
             time.sleep(tfMap.array[self.timeFrame] * 60)
 
 class Downloader():
-    def __init__(self) -> None:
+    def __init__(self, settings) -> None:
+        self.settings = settings
         self.tablesList = self.find_tables()
         self.indexes = []
 
     def initialize_indexes(self, table):
-        downloader = DataDownloader(table[0], table[1])
+        downloader = DataDownloader(table[0], table[1], self.settings)
         downloader.main_loop()
         self.indexes.append(downloader)
         print  (f"--------- Initialized :{table[0]} _ {table[1]} ---------")
@@ -52,7 +56,7 @@ class Downloader():
 
     def find_tables(self):
         tables = []
-        with open(Settings.DATABASE_INDEXES_PATH,"r") as json_data_file:
+        with open(self.settings.DATABASE_INDEXES_PATH,"r") as json_data_file:
             jsonFile = json.load(json_data_file)
             ptss = jsonFile["tables"]
             for pts in ptss:
@@ -60,7 +64,9 @@ class Downloader():
         return tables
 
 if __name__ == '__main__':
-    downloader = Downloader()
-    with concurrent.futures.ThreadPoolExecutor() as executor:        
-        executor.map(downloader.initialize_indexes,downloader.tablesList)
+    settings = Settings(sys.argv[1])
+    if os.path.exists(settings.ACCOUNT_DIR):
+        downloader = Downloader(settings)
+        with concurrent.futures.ThreadPoolExecutor() as executor:        
+            executor.map(downloader.initialize_indexes,downloader.tablesList)
 

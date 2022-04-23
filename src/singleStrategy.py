@@ -1,10 +1,9 @@
 import importlib
-
 class SingleStrategy():
-    def __init__(self, strategyName, currentInput, pair) -> None:
+    def __init__(self, strategyName, currentInput, pair, settings) -> None:
         self.lastSignal = 0
         self.marketData = []
-        strategies = importlib.import_module("account.strategies."+strategyName)
+        strategies = importlib.import_module(settings.STRATEGIES_MODULE_PATH+strategyName)
         self.StrategyClass = getattr(strategies, strategyName)
         self.strategy = self.StrategyClass(currentInput, pair)
         

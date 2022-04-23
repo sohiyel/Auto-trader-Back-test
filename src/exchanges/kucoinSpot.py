@@ -3,11 +3,11 @@ import requests
 import asyncio
 import configparser
 import ccxt as ccxt
-from account.settings.settings import Settings
 
 class KucoinSpot(Kucoin):
-    def __init__(self, sandBox = False):
+    def __init__(self, settings, sandBox = False):
         super().__init__(sandBox)
+        self.settings = settings
         self.baseUrl = 'https://api.kucoin.com'
         self.exchange = ccxt.kucoin()
         self.exchange.set_sandbox_mode(sandBox)
@@ -15,9 +15,9 @@ class KucoinSpot(Kucoin):
     def authorize(self):
         cfg = configparser.ConfigParser()
         if self.sandBox:
-            cfg.read(Settings.API_SANDBOX_PATH)
+            cfg.read(self.settings.API_SANDBOX_PATH)
         else:
-            cfg.read(Settings.API_PATH)
+            cfg.read(self.settings.API_PATH)
         self.exchange.apiKey = cfg.get('KEYS','api_key')
         self.exchange.secret = cfg.get('KEYS', 'api_secret')
         self.exchange.password = cfg.get('KEYS', 'api_passphrase')

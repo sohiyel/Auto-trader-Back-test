@@ -5,11 +5,11 @@ import numpy as np
 from random import shuffle
 import time
 from src.tfMap import tfMap
-from account.settings.settings import Settings
 from os import path
 
 class UserInput():
-    def __init__(self, pair, timeFrame, strategyName, botName, side = "both", leverage = 1, amount = 1 , ratioAmount = 0, optimization = False, randomInput = False) -> None:
+    def __init__(self, pair, timeFrame, strategyName, botName, side = "both", leverage = 1, amount = 1 , ratioAmount = 0, optimization = False, randomInput = False, settings="") -> None:
+        self.settings = settings
         self.pair = pair
         self.timeFrame = timeFrame
         self.strategyName = strategyName
@@ -32,7 +32,7 @@ class UserInput():
 
     def get_strategy_inputs(self, strategyName):
         strategyFileName = strategyName + ".json"
-        json_data_file = open(path.join(Settings.STRATEGIES_DIR , strategyFileName))
+        json_data_file = open(path.join(self.settings.STRATEGIES_DIR , strategyFileName))
         jsonFile = json.load(json_data_file)
         inputs = []
         if self.optimization:
@@ -63,7 +63,7 @@ class UserInput():
 
     def get_bot_inputs(self):
         botFileName = self.botName + ".json"
-        json_data_file = open(path.join(Settings.SIGNALS_DIR , botFileName))
+        json_data_file = open(path.join(self.settings.SIGNALS_DIR , botFileName))
         jsonFile = json.load(json_data_file)
         inputs = []
         if self.optimization:
@@ -94,7 +94,7 @@ class UserInput():
     def get_strategy_names(self):
         strategyNames = []
         botFileName = self.botName + ".json"
-        json_data_file = open(path.join(Settings.SIGNALS_DIR , botFileName))
+        json_data_file = open(path.join(self.settings.SIGNALS_DIR , botFileName))
         jsonFile = json.load(json_data_file)
         for s in jsonFile["strategies"]:
             strategyNames.append(s["strategy"])
@@ -105,11 +105,11 @@ class UserInput():
         names = []
         if self.botName:
             botFileName = self.botName + ".json"
-            with open(path.join(Settings.SIGNALS_DIR , botFileName), 'r+') as json_data_file:
+            with open(path.join(self.settings.SIGNALS_DIR , botFileName), 'r+') as json_data_file:
                 jsonFile = json.load(json_data_file)
         else:
             strategyFileName = self.strategyName + ".json"
-            with open(path.join(Settings.STRATEGIES_DIR , strategyFileName), 'r+') as json_data_file:
+            with open(path.join(self.settings.STRATEGIES_DIR , strategyFileName), 'r+') as json_data_file:
                 jsonFile = json.load(json_data_file)
 
         params = jsonFile["params"][0]
@@ -122,11 +122,11 @@ class UserInput():
         inputNames = []
         if self.botName:
             botFileName = self.botName + ".json"
-            with open(path.join(Settings.SIGNALS_DIR , botFileName), 'r+') as json_data_file:
+            with open(path.join(self.settings.SIGNALS_DIR , botFileName), 'r+') as json_data_file:
                 jsonFile = json.load(json_data_file)
         else:
             strategyFileName = self.strategyName + ".json"
-            with open(path.join(Settings.STRATEGIES_DIR , strategyFileName), 'r+') as json_data_file:
+            with open(path.join(self.settings.STRATEGIES_DIR , strategyFileName), 'r+') as json_data_file:
                 jsonFile = json.load(json_data_file)
         inputNames = self.get_input_names()
 
@@ -160,11 +160,11 @@ class UserInput():
 
         if self.botName:
             botFileName = self.botName + ".json"
-            with open(path.join(Settings.SIGNALS_DIR , botFileName), 'w') as json_data_file:
+            with open(path.join(self.settings.SIGNALS_DIR , botFileName), 'w') as json_data_file:
                 json.dump(jsonFile, json_data_file)
         else:
             strategyFileName = self.strategyName + ".json"
-            with open(path.join(Settings.STRATEGIES_DIR , strategyFileName), 'w') as json_data_file:
+            with open(path.join(self.settings.STRATEGIES_DIR , strategyFileName), 'w') as json_data_file:
                 json.dump(jsonFile, json_data_file)
 
     def calc_history_needed(self):

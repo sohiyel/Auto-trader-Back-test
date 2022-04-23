@@ -3,10 +3,8 @@ from src.signalClass import SignalClass
 import json
 import importlib
 from os import path
-from account.settings.settings import Settings
-
 class BotSignal():
-    def __init__(self, botName, currentInput, timeFrame="default", pair="default") -> None:
+    def __init__(self, botName, currentInput, timeFrame="default", pair="default", settings="") -> None:
         self.lastSignal = 0
         self.marketData = []
         self.timeFrame = timeFrame
@@ -14,14 +12,14 @@ class BotSignal():
         self.strategyNames = []
         self.strategies = []
         botFile = botName + ".json"
-        json_data_file = open( path.join(Settings.SIGNALS_DIR, botFile))
+        json_data_file = open( path.join(settings.SIGNALS_DIR, botFile))
         botJson = json.load(json_data_file)
         
         for s in botJson["strategies"]:
             self.strategyNames.append(s["strategy"])
         
         for s in self.strategyNames:
-            strategies = importlib.import_module("account.strategies."+s)
+            strategies = importlib.import_module(settings.STRATEGIES_MODULE_PATH+s)
             StrategyClass = getattr(strategies, s)
             self.strategies.append(StrategyClass(currentInput, self.pair))
 

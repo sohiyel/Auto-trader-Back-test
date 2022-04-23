@@ -49,7 +49,7 @@ class Test01(Strategy):
         sig = SignalClass(pair = self.pair,
                         price = self.df.iloc[-1]["close"],
                         stopLoss = 41560,
-                        takeProfit = 41660,
+                        takeProfit = 41600,
                         comment= "Test01",
                         longEnter = self.decisions["longEnt"],
                         longExit = self.decisions["longExt"],

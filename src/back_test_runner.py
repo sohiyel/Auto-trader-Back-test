@@ -1,5 +1,4 @@
 from pprint import isreadable
-from src.data import DataService
 from src.backTest import BackTest
 from src.userInput import UserInput
 import pandas as pd
@@ -8,19 +7,20 @@ import time
 from datetime import datetime
 import concurrent.futures
 from src.backTestTask import BackTestTask
-from account.settings.settings import Settings
 from os import path
 
 class BackTestRunner():
-    def __init__(self, multiProcess) -> None:
-        self.multiProcess = multiProcess
-        self.task = BackTestTask()
+    def __init__(self, settings) -> None:
+        self.settings = settings
+        self.multiProcess = settings.multiProcess
+        self.task = BackTestTask(self.settings)
         self.userInput = UserInput(pair = self.task.pair,
                                   timeFrame = self.task.timeFrame,
                                   strategyName = self.task.strategyName,
                                   botName = self.task.botName,
                                   optimization = self.task.optimization,
-                                  randomInput = self.task.randomInputs)
+                                  randomInput = self.task.randomInputs,
+                                  settings = self.settings)
         self.historyNeeded = self.userInput.calc_history_needed()
 
     def run_back_test(self, currentInput):
@@ -36,7 +36,8 @@ class BackTestRunner():
                         volume = self.task.volume,
                         currentInput = currentInput,
                         optimization = self.task.optimization,
-                        historyNeeded = self.historyNeeded)
+                        historyNeeded = self.historyNeeded,
+                        settings = self.settings)
         result = trader.mainloop()
         print  ("--------- A process has finished! ---------")
         return result
@@ -48,7 +49,8 @@ class BackTestRunner():
                                   strategyName = self.task.strategyName,
                                   botName = self.task.botName,
                                   optimization = self.task.optimization,
-                                  randomInput = self.task.randomInputs)
+                                  randomInput = self.task.randomInputs,
+                                  settings = self.settings)
             self.historyNeeded = self.userInput.calc_history_needed()
             print(f'Number of history needed in secnds: {self.historyNeeded}')
             start_time = time.time()
@@ -75,15 +77,16 @@ class BackTestRunner():
         # print(optimumResult["TwoEMA_slow_len"])
         print (results)
         if self.task.botName:
-            optimizationPath = path.join(Settings.OPTIMIZATIONS_DIR , timestr + "_" + self.task.pair + "_" + self.task.timeFrame + "_" + self.task.botName +".csv")
+            optimizationPath = path.join(self.settings.OPTIMIZATIONS_DIR , timestr + "_" + self.task.pair + "_" + self.task.timeFrame + "_" + self.task.botName +".csv")
         else:
-            optimizationPath = path.join(Settings.OPTIMIZATIONS_DIR , timestr + "_" + self.task.pair + "_" + self.task.timeFrame + "_" + self.task.strategyName +".csv")
+            optimizationPath = path.join(self.settings.OPTIMIZATIONS_DIR , timestr + "_" + self.task.pair + "_" + self.task.timeFrame + "_" + self.task.strategyName +".csv")
         results.to_csv(optimizationPath)
         self.userInput.write_optimized_values(optimumResult)
             
         print("--- End of optimization: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
 
 if __name__ == '__main__':
+    
     tradeRunner = BackTestRunner(multiProcess = False)
     while True:
         tradeRunner.start_task()
