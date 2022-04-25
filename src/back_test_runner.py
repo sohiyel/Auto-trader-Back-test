@@ -14,14 +14,8 @@ class BackTestRunner():
         self.settings = settings
         self.multiProcess = settings.multiProcess
         self.task = BackTestTask(self.settings)
-        self.userInput = UserInput(pair = self.task.pair,
-                                  timeFrame = self.task.timeFrame,
-                                  strategyName = self.task.strategyName,
-                                  botName = self.task.botName,
-                                  optimization = self.task.optimization,
-                                  randomInput = self.task.randomInputs,
-                                  settings = self.settings)
-        self.historyNeeded = self.userInput.calc_history_needed()
+        self.userInput = ""
+        self.historyNeeded = ""
 
     def run_back_test(self, currentInput):
         print  ("--------- New process started ---------")
