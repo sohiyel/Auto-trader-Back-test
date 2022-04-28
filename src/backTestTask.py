@@ -3,8 +3,6 @@ from tabnanny import check
 import time
 import os
 
-from django.conf import settings
-
 from src.tfMap import tfMap
 class BackTestTask():
     def __init__(self,settings) -> None:
