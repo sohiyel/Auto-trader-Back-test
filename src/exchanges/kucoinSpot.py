@@ -1,9 +1,11 @@
+from numpy import true_divide
 from src.exchanges.kucoin import Kucoin
 import requests
 import asyncio
 import configparser
 import ccxt as ccxt
-
+from datetime import datetime
+from time import sleep
 class KucoinSpot(Kucoin):
     def __init__(self, settings, sandBox = False):
         super().__init__(sandBox)
@@ -30,13 +32,28 @@ class KucoinSpot(Kucoin):
             'startAt': startAt,
             'endAt': endAt
         }
-        print(params)
-        response = requests.get(self.baseUrl+kLineURL,params=params)
-        if response.status_code ==  200:
-            print(response.json())
-            return(response.json()['data'])
-        else:
-            print("Something went wrong. Error: "+ str(response.status_code))
+        #print(params)
+        print('requesting data for {} in timeframe {} from {} to {}'.format(symbol,timeFrame, str(datetime.fromtimestamp(startAt)), str(datetime.fromtimestamp(endAt))))
+        status = True
+        while status:
+            response = requests.get(self.baseUrl+kLineURL,params=params)
+            if response.status_code != 200:
+                print('        Something went wrong. Error: {} sleeping ... '.format(response.status_code))
+                sleep(10)
+            else:
+                
+                print('        Success! recieved {} candles'.format(len(response.json()['data'])))
+                return(response.json()['data'])
+
+
+        # if response.status_code ==  200:
+        #     print('recieved data for {} in timeframe {} from {} to {}'.format(symbol,timeFrame, str(datetime.fromtimestamp(startAt)), str(datetime.fromtimestamp(endAt))))
+        #     print('     {} candles'.format(len(response.json()['data'])))
+        #     #print(response.json())
+        #     return(response.json()['data'])
+        # else:
+        #     print("Something went wrong. Error: "+ str(response.status_code))
+        #     #### todo: this will raise exeption and abort. on this event we should wait and try adain
 
     async def get_klines_data(self, symbol, timeFrame, startAt, endAt, limit):
         klines = []
@@ -49,7 +66,7 @@ class KucoinSpot(Kucoin):
             if temp:
                 if len(temp) > 0:
                     klines.extend(temp)
-                    print(temp[0][0],temp[-1][0])
+                    #print(temp[0][0],temp[-1][0])
                     await asyncio.sleep(5)
             else:
                 break
