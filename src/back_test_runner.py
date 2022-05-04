@@ -1,5 +1,6 @@
 from pprint import isreadable
 from src.backTest import BackTest
+from src.fastBackTest import FastBackTest
 from src.userInput import UserInput
 import pandas as pd
 from pprint import pprint
@@ -10,16 +11,18 @@ from src.backTestTask import BackTestTask
 from os import path
 
 class BackTestRunner():
-    def __init__(self, settings) -> None:
+    def __init__(self, settings, fast = True) -> None:
         self.settings = settings
         self.multiProcess = settings.multiProcess
         self.task = BackTestTask(self.settings)
         self.userInput = ""
         self.historyNeeded = ""
+        self.isFast = fast
 
     def run_back_test(self, currentInput):
         print  ("--------- New process started ---------")
-        trader = BackTest(market = self.task.market,
+        if self.isFast:
+            trader = FastBackTest(market = self.task.market,
                         pair = self.task.pair,
                         timeFrame = self.task.timeFrame,
                         startAt = self.task.startAt,
@@ -32,6 +35,20 @@ class BackTestRunner():
                         optimization = self.task.optimization,
                         historyNeeded = self.historyNeeded,
                         settings = self.settings)
+        else:
+            trader = BackTest(market = self.task.market,
+                            pair = self.task.pair,
+                            timeFrame = self.task.timeFrame,
+                            startAt = self.task.startAt,
+                            endAt = self.task.endAt,
+                            initialCapital = self.task.initialCapital,
+                            strategyName = self.task.strategyName,
+                            botName= self.task.botName,
+                            volume = self.task.volume,
+                            currentInput = currentInput,
+                            optimization = self.task.optimization,
+                            historyNeeded = self.historyNeeded,
+                            settings = self.settings)
         result = trader.mainloop()
         print  ("--------- A process has finished! ---------")
         return result

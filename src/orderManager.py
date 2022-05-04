@@ -3,16 +3,16 @@ from src.signalManager import SignalManager
 
 
 class OrderManager():
-    def __init__(self, initialCapital, strategyName, botName, currentInput, pair, settings) -> None:
+    def __init__(self, initialCapital, strategyName, botName, currentInput, pair, settings, marketData="") -> None:
         self.initialCapital = initialCapital
         self.equity = initialCapital
         self.positionSize = 0
         self.positionAveragePrice = 0
-        self.signalManager = SignalManager(strategyName, botName, currentInput, pair, settings)
+        self.signalManager = SignalManager(strategyName, botName, currentInput, pair, settings, marketData)
         self.lastSignal = 0
 
-    def decider(self, marketData, equity, initialCapital, positionAveragePrice, positionSize):
-        signal = self.signalManager.getSignal(marketData)
+    def decider(self, marketData, equity, initialCapital, positionAveragePrice, positionSize, timeStamp = ""):
+        signal = self.signalManager.getSignal(marketData, timeStamp)
         if self.lastSignal == 0 or self.lastSignal == 2 or self.lastSignal == 4:
             if signal.longEnter and not signal.shortEnter:
                 self.lastSignal = 1

@@ -4,7 +4,7 @@ import json
 import importlib
 from os import path
 class BotSignal():
-    def __init__(self, botName, currentInput, timeFrame="default", pair="default", settings="") -> None:
+    def __init__(self, botName, currentInput, timeFrame="default", pair="default", settings="", marketData="") -> None:
         self.lastSignal = 0
         self.marketData = []
         self.timeFrame = timeFrame
@@ -21,7 +21,7 @@ class BotSignal():
         for s in self.strategyNames:
             strategies = importlib.import_module(settings.STRATEGIES_MODULE_PATH+s)
             StrategyClass = getattr(strategies, s)
-            self.strategies.append(StrategyClass(currentInput, self.pair))
+            self.strategies.append(StrategyClass(currentInput, self.pair, marketData))
 
         self.andEnter = botJson["and_or_strategies"]["enter_strategies_and"]
         self.andExit = botJson["and_or_strategies"]["exit_strategies_and"]
