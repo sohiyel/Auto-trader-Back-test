@@ -45,16 +45,6 @@ class KucoinSpot(Kucoin):
                 print('        Success! recieved {} candles'.format(len(response.json()['data'])))
                 return(response.json()['data'])
 
-
-        # if response.status_code ==  200:
-        #     print('recieved data for {} in timeframe {} from {} to {}'.format(symbol,timeFrame, str(datetime.fromtimestamp(startAt)), str(datetime.fromtimestamp(endAt))))
-        #     print('     {} candles'.format(len(response.json()['data'])))
-        #     #print(response.json())
-        #     return(response.json()['data'])
-        # else:
-        #     print("Something went wrong. Error: "+ str(response.status_code))
-        #     #### todo: this will raise exeption and abort. on this event we should wait and try adain
-
     async def get_klines_data(self, symbol, timeFrame, startAt, endAt, limit):
         klines = []
         for i in range(startAt,endAt,limit):

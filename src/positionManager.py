@@ -20,6 +20,7 @@ class PositionManager():
         self.settings = settings
         self.db = DatabaseManager(settings)
         self.contractSize = Markets(settings).get_contract_size(pair)
+        self.echo = False
     
     def open_position(self, signal, lastState):
         positionId = uuid.uuid4().hex
@@ -29,7 +30,7 @@ class PositionManager():
                 bid = orderbook['bids'][0][0] if len (orderbook['bids']) > 0 else None
                 ask = orderbook['asks'][0][0] if len (orderbook['asks']) > 0 else None
                 spread = (ask - bid) if (bid and ask) else None
-                print('market price', {'bid': bid, 'ask': ask, 'spread': spread})
+                if self.echo: print('market price', {'bid': bid, 'ask': ask, 'spread': spread})
                 amount = 0
                 if signal.side == 'buy':
                     amount = self.ratioAmount * self.initialCapital / ask
@@ -67,7 +68,7 @@ class PositionManager():
         else:
             newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, '', '', True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)
         self.openPositions.append(newPosition)
-        print ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
+        if self.echo: print ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
 
     def close_position(self, timestamp):
         if len(self.openPositions) > 0:
@@ -75,10 +76,10 @@ class PositionManager():
                 if self.openPositions[0].side == "buy":
                     self.exchange.create_market_order(self.openPositions[0].pair, "sell", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})
                     
-                    print ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
+                    if self.echo: print ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
                 elif self.openPositions[0].side == "sell":
                     self.exchange.create_market_order(self.openPositions[0].pair, "buy", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})
-                    print ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
+                    if self.echo: print ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
                 self.db.close_position(self.openPositions[0].id)
                 self.db.close_order_by_positionId(self.openPositions[0].id)
             lastPrice = self.openPositions[0].close_position(timestamp)
@@ -99,28 +100,28 @@ class PositionManager():
             if i.side == 'buy':
                 if i.takeProfit > 0:
                     if currentPrice > i.takeProfit:
-                        print ("Side: Buy")
-                        print (f"Current Price:{currentPrice}")
-                        print (f"Take Proft:{i.takeProfit}")
+                        if self.echo: print ("Side: Buy")
+                        if self.echo: print (f"Current Price:{currentPrice}")
+                        if self.echo: print (f"Take Proft:{i.takeProfit}")
                         return False
                 if i.stopLoss > 0:
                     if currentPrice < i.stopLoss:
-                        print ("Side: Buy")
-                        print (f"Current Price:{currentPrice}")
-                        print (f"Stop Loss:{i.stopLoss}")
+                        if self.echo: print ("Side: Buy")
+                        if self.echo: print (f"Current Price:{currentPrice}")
+                        if self.echo: print (f"Stop Loss:{i.stopLoss}")
                         return False
             elif i.side == 'sell':
                 if i.takeProfit > 0:
                     if currentPrice < i.takeProfit:
-                        print ("Side: Sell")
-                        print (f"Current Price:{currentPrice}")
-                        print (f"Take Proft:{i.takeProfit}")
+                        if self.echo: print ("Side: Sell")
+                        if self.echo: print (f"Current Price:{currentPrice}")
+                        if self.echo: print (f"Take Proft:{i.takeProfit}")
                         return False
                 if i.stopLoss > 0:
                     if currentPrice > i.stopLoss:
-                        print ("Side: Sell")
-                        print (f"Current Price:{currentPrice}")
-                        print (f"Take Proft:{i.stopLoss}")
+                        if self.echo: print ("Side: Sell")
+                        if self.echo: print (f"Current Price:{currentPrice}")
+                        if self.echo: print (f"Take Proft:{i.stopLoss}")
                         return False
         return True
 
@@ -139,32 +140,32 @@ class PositionManager():
     def sync_positions(self):
         exchangePositions = self.exchange.fetch_positions()
         dbPositions = self.db.get_open_positions(tfMap.get_db_format(self.pair))
-        print(exchangePositions)
+        if self.echo: print(exchangePositions)
         ep = ""
         for i in exchangePositions:
             if i["symbol"] == tfMap.get_exchange_format(self.pair):
                 ep = i
         if ep == "":
-            print(f"-------------- There is no position with this pair({self.pair}) in exchange!--------------")
+            if self.echo: print(f"-------------- There is no position with this pair({self.pair}) in exchange!--------------")
             if len(dbPositions) > 0:
-                print(f"-------------- There are some extra position with this pair({self.pair}) in database!--------------")
+                if self.echo: print(f"-------------- There are some extra position with this pair({self.pair}) in database!--------------")
                 for index, k in dbPositions.iterrows():
-                    print(f"-------------- Closing position {k['id']} in database! --------------")
+                    if self.echo: print(f"-------------- Closing position {k['id']} in database! --------------")
                     self.db.close_position(k["id"])
                     self.db.close_order_by_positionId(k["id"])
                 self.openPositions = []
         else:
-            print(f"-------------- There is a position with this pair({self.pair}) in exchange!--------------")
+            if self.echo: print(f"-------------- There is a position with this pair({self.pair}) in exchange!--------------")
             volumes = 0
             pos = ""
             for index, k in dbPositions.iterrows():
                 if k["timeFrame"] == self.timeFrame:
-                    print(f"-------------- There is a position with this pts in database!--------------")
+                    if self.echo: print(f"-------------- There is a position with this pts in database!--------------")
                     pos = k
                 volumes += k["volume"]
-            print(volumes, ep["contractSize"] * ep["contracts"])
+            if self.echo: print(volumes, ep["contractSize"] * ep["contracts"])
             if float(volumes) == float(ep["contractSize"] * ep["contracts"]) and self.leverage == ep["leverage"]:
-                print(f"-------------- Positions in exchange match the positions in database! --------------")
+                if self.echo: print(f"-------------- Positions in exchange match the positions in database! --------------")
                 side = pos["side"]
                 if pos["side"] == "long":
                     side = "buy"
@@ -173,16 +174,16 @@ class PositionManager():
                 positionId = uuid.uuid4().hex
                 self.openPositions.append(Position(positionId, ep["symbol"], side, ep["contractSize"] * ep["contracts"], ep["entryPrice"], ep["timestamp"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"], pos["takeProfitOrderId"], True, ep["leverage"],settings=self.settings))
             else:
-                print(f"-------------- Positions in exchange does not match the positions in database! --------------")
+                if self.echo: print(f"-------------- Positions in exchange does not match the positions in database! --------------")
                 for i in exchangePositions:
                     if i["side"] == "long":
                         self.exchange.create_market_order(i["symbol"], "sell", i["contracts"], params={'leverage': self.leverage})
-                        print ( f"-------- Close buy position on {i['symbol']}--------")
+                        if self.echo: print ( f"-------- Close buy position on {i['symbol']}--------")
                     elif i["side"] == "short":
                         self.exchange.create_market_order(i["symbol"], "buy", i["contracts"], params={'leverage': self.leverage})
-                        print ( f"-------- Close sell position on {i['symbol']}--------")
+                        if self.echo: print ( f"-------- Close sell position on {i['symbol']}--------")
                 for index, k in dbPositions.iterrows():
-                    print(f"-------------- Closing position {k['id']} in database! --------------")
+                    if self.echo: print(f"-------------- Closing position {k['id']} in database! --------------")
                     self.db.close_position(k["id"])
                     self.db.close_order_by_positionId(k["id"])
                 self.openPositions = []

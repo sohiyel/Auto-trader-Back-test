@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from logging import currentframe
 import pandas as pd
 from src.positionManager import PositionManager
@@ -34,6 +35,7 @@ class BackTest():
         self.currentInput = currentInput
         self.optimization = optimization
         self.historyNeeded = int(historyNeeded)
+        self.dataframe = NULL
 
 
     def openPosition(self, signal, commission):
@@ -94,6 +96,9 @@ class BackTest():
     def mainloop(self):
         global balances
         start_time = time.time()
+
+        data_time = 0
+
         print("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
         for i in range(self.dataService.startAtTs, self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
@@ -101,7 +106,13 @@ class BackTest():
                 self.portfolioManager.balance = 0
                 break
             self.lastState = i
+
+            #calculating time of read_data_from_db
+            sttime = time.time() ##### start time
             df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState * 1000)
+            data_time += (time.time() - sttime)
+
+
             df = df.sort_values(by='timestamp', ascending=True)
             df.reset_index(drop=True, inplace=True)
             self.lastCandle = df.iloc[-1]
@@ -181,10 +192,11 @@ class BackTest():
         if not self.optimization:
             df = pd.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
             df['Balance'] = self.portfolioManager.balances
-            print(df)
+            #print(df)
 
             self.plotter.writeDFtoFile(df)
         print("--- End time: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
         print("--- Duration: %s seconds ---" % (time.time() - start_time))
+        print("--- Duration of data read: %s seconds ---" % data_time)
         return result
 
