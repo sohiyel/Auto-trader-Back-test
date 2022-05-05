@@ -6,7 +6,7 @@ import pandas_ta as ta
 from itertools import chain
 
 class RSIStrategy(Strategy):
-    def __init__(self, currentInput, pair) -> None:
+    def __init__(self, currentInput, pair, marketData = "") -> None:
         super().__init__()
         self.pair = pair
         self.marketData = []
@@ -43,7 +43,7 @@ class RSIStrategy(Strategy):
         if self.rsi.iloc[-1] > self.rsiMidLine:
             self.decisions['shortExt'] = 1
 
-    def decider(self, marketData):
+    def decider(self, marketData, timeStamp =""):
         if len(marketData) < self.rsiLength:
             return SignalClass()
 

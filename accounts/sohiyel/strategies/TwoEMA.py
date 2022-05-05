@@ -5,7 +5,7 @@ import pandas as pd
 import pandas_ta as ta
 from itertools import chain
 class TwoEMA(Strategy):
-    def __init__(self, currentInput, pair) -> None:
+    def __init__(self, currentInput, pair, marketData = "") -> None:
         super().__init__()
         self.pair = pair
         self.marketData = []
@@ -40,7 +40,7 @@ class TwoEMA(Strategy):
         if self.fastEMA.iloc[-1] > self.slowEMA.iloc[-1]:
             self.decisions['shortExt'] = 1
 
-    def decider(self, marketData):
+    def decider(self, marketData, timeStamp =""):
         self.decisions = {
             'longEnt' : 0,
             'shortEnt' : 0,
