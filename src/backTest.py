@@ -109,7 +109,8 @@ class BackTest():
 
             #calculating time of read_data_from_db
             sttime = time.time() ##### start time
-            df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState * 1000)
+            #df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState * 1000)
+            df = self.dataService.read_data_from_memory(self.historyNeeded, self.lastState * 1000)
             data_time += (time.time() - sttime)
 
 
