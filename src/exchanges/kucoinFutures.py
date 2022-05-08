@@ -4,6 +4,8 @@ import asyncio
 import ccxt
 import configparser
 from src.tfMap import tfMap
+from datetime import datetime
+import time
 
 class KucoinFutures(Kucoin):
     def __init__(self, settings, sandBox = False):
@@ -26,7 +28,16 @@ class KucoinFutures(Kucoin):
 
     def get_klines(self, symbol, timeFrame, startAt, endAt):
         symbol = tfMap.get_exchange_format(symbol)
-        return self.exchange.fetch_ohlcv(symbol, timeFrame, startAt)
+        print('requesting data for {} in timeframe {} from {} to {}'.format(symbol,timeFrame, str(datetime.fromtimestamp(startAt)), str(datetime.fromtimestamp(endAt))))
+        status = True
+        while status:
+            response = self.exchange.fetch_ohlcv(symbol, timeFrame, startAt)
+            if len(response) == 0:
+                print('        Something went wrong. Error: respones is empty sleeping ... ')
+                time.sleep(10)
+            else: 
+                print('        Success! recieved {} candles'.format(len(response)))
+                return(response)
         # kLineURL = 'api/v1/kline/query?'
         # params = {
         #     'symbol': symbol,

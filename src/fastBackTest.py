@@ -12,7 +12,7 @@ import os
 from src.plotter import Plotter
 import time
 
-class BackTest():
+class FastBackTest():
     def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization, historyNeeded, settings):
         self.settings = settings
         self.pair = pair
@@ -25,7 +25,8 @@ class BackTest():
         self.initialCapital = initialCapital
         self.strategyName = strategyName
         self.botName = botName
-        self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput, pair, settings)
+        self.dataframe = self.dataService.dataFrame
+        self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput, pair, settings, self.dataframe)
         self.positionManager = PositionManager(initialCapital, pair, volume, 0, timeFrame, strategyName, botName, 1, settings)
         self.portfolioManager = PortfolioManager(pair, initialCapital, settings)
         self.timeFrame = timeFrame
@@ -35,8 +36,7 @@ class BackTest():
         self.currentInput = currentInput
         self.optimization = optimization
         self.historyNeeded = int(historyNeeded)
-        self.dataframe = NULL
-
+        print(self.startAtTS)
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
@@ -108,21 +108,20 @@ class BackTest():
             self.lastState = i
 
             #calculating time of read_data_from_db
-            sttime = time.time() ##### start time
-            #df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState * 1000)
-            df = self.dataService.read_data_from_memory(self.historyNeeded, self.lastState * 1000)
-            data_time += (time.time() - sttime)
+            # sttime = time.time() ##### start time
+            # df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState * 1000)
+            # data_time += (time.time() - sttime)
 
 
-            df = df.sort_values(by='timestamp', ascending=True)
-            df.reset_index(drop=True, inplace=True)
-            self.lastCandle = df.iloc[-1]
+            # df = df.sort_values(by='timestamp', ascending=True)
+            # df.reset_index(drop=True, inplace=True)
+            self.lastCandle = self.dataframe.loc[self.dataframe['timestamp'] == i*1000].iloc[0]
             checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
             if not checkContinue :
                 self.processOrders(4, None, self.settings.constantNumbers["commission"])
                 continue
 
-            choice, signal = self.orderManager.decider(df, self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.position_average_price(), self.positionManager.position_size())
+            choice, signal = self.orderManager.decider(self.dataframe, self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.position_average_price(), self.positionManager.position_size(),i)
             self.processOrders(choice, signal, self.settings.constantNumbers["commission"])
             # print(self.portfolioManager.balance)
 

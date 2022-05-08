@@ -8,8 +8,8 @@ from src.settings import Settings
 import os
 from threading import Thread
 
-def run_back_test():
-    tradeRunner = BackTestRunner(settings)
+def run_back_test(fast):
+    tradeRunner = BackTestRunner(settings, fast)
     while True:
         tradeRunner.start_task()
         time.sleep(5)
@@ -29,7 +29,13 @@ if __name__ == '__main__':
     if sys.argv[1] == "backtest":
         settings = Settings(sys.argv[2])
         if os.path.exists(settings.ACCOUNT_DIR):
-            run_back_test()
+            run_back_test(False)
+        else:
+            print (f"There is no account with this informations!")
+    if sys.argv[1] == "fast_backtest":
+        settings = Settings(sys.argv[2])
+        if os.path.exists(settings.ACCOUNT_DIR):
+            run_back_test(True)
         else:
             print (f"There is no account with this informations!")
     elif sys.argv[1] == "trade":

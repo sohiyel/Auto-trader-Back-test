@@ -1,4 +1,5 @@
 from datetime import datetime
+from psycopg2 import Timestamp
 from pytz import timezone
 import os
 import asyncio
@@ -50,7 +51,7 @@ class DataService():
             await self.get_klines()
         
     async def get_klines(self):
-        print(self.startAtTs, self.endAtTs)
+        #print(self.startAtTs, self.endAtTs)
         limit = 1440 * tfMap.array[self.timeFrame] * 60
         self.klines = await self.client.get_klines_data(self.pair, self.timeFrame, self.startAtTs - self.historyNeeded, self.endAtTs, limit)
         self.make_data_frame()
@@ -67,7 +68,7 @@ class DataService():
         
         self.db.create_ohlcv_table(self.dbPair, self.timeFrame)
         self.db.store_klines(dataFrame, self.tableName)
-        dataFrame['timestamp'] = pd.to_datetime(dataFrame['timestamp'], unit='ms')
+        #dataFrame['timestamp'] = pd.to_datetime(dataFrame['timestamp'], unit='ms')
         dataFrame.set_index('timestamp', inplace=True)
         dataFrame.sort_index(inplace=True)
         self.dataFrame = dataFrame
@@ -95,3 +96,15 @@ class DataService():
 
     def read_data_from_db(self, limit, lastState):
         return self.db.read_klines(self.dbPair, self.timeFrame, limit, lastState)
+
+    def read_data_from_memory(self, limit, lastState):
+        df = self.dataFrame
+        df = df[df['timestamp'] < lastState]
+        return df.tail(limit)
+        
+        d1 = d1.sort_values(by='timestamp', ascending=True)
+        d2 = self.db.read_klines(self.dbPair, self.timeFrame, limit, lastState)
+        d1.to_csv("d1.csv")
+        d2.to_csv("d2.csv")
+        return d1
+

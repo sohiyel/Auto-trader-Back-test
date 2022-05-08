@@ -140,6 +140,12 @@ class PortfolioManager():
             profitFactor = self.profit / self.loss * -1
         else:
             profitFactor = "infinite"
+        if len(self.equities) > 0:
+            maxDrawDown = self.initialCapital - min(self.equities)
+            maxDrawDownPercent = (self.initialCapital - min(self.equities)) / self.initialCapital * 100
+        else:
+            maxDrawDown = 0
+            maxDrawDownPercent = 0
         
         return {
             "netProfit" : self.balance - self.initialCapital,
@@ -155,6 +161,6 @@ class PortfolioManager():
             "totalClosedTrades": numOfTrades,
             "totalLongTrades" : numOfLongs,
             "totalShortTrades" : numOfShorts,
-            "maxDrawDown": self.initialCapital - min(self.equities),
-            "maxDrawDownPercent" : (self.initialCapital - min(self.equities)) / self.initialCapital * 100,
+            "maxDrawDown": maxDrawDown,
+            "maxDrawDownPercent" : maxDrawDownPercent,
         }

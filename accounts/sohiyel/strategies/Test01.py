@@ -4,7 +4,7 @@ import pandas as pd
 import time
 
 class Test01(Strategy):
-    def __init__(self, currentInput, pair) -> None:
+    def __init__(self, currentInput, pair, marketData = "") -> None:
         super().__init__()
         self.pair = pair
         self.startTime = time.time()
@@ -30,7 +30,7 @@ class Test01(Strategy):
         if self.currentTime in shortExits:
             self.decisions['shortExt'] = 1
 
-    def decider(self, marketData):
+    def decider(self, marketData, timeStamp =""):
         self.currentTime = int((time.time() - self.startTime)  / 60)
         if len(marketData) < 1:
             print ("-----------Low amount of Data!-----------")
@@ -48,8 +48,8 @@ class Test01(Strategy):
         self.short_exit()
         sig = SignalClass(pair = self.pair,
                         price = self.df.iloc[-1]["close"],
-                        stopLoss = 41560,
-                        takeProfit = 41600,
+                        slPercent = 0.1,
+                        tpPercent = 0.2,
                         comment= "Test01",
                         longEnter = self.decisions["longEnt"],
                         longExit = self.decisions["longExt"],
