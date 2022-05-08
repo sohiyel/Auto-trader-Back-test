@@ -23,9 +23,7 @@ class OneEMA(Strategy):
             self.emaLength = next((x.value for x in currentInput if x.name == "len"), None)
             self.stopLoss = next((x.value for x in currentInput if x.name == "sl_percent"), 0.3)
             self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
-        print("type(marketData)",type(marketData))
         if not isinstance(marketData, str):
-            print("YEssssssssss")
             self.df["ema"] = ta.ema(self.df["close"], length=self.emaLength)
 
     def long_enter(self,candle):

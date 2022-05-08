@@ -3,7 +3,7 @@ from os import path
 class Settings:
     def __init__(self,username) -> None:
         self.username = username
-        self.multiProcess = False
+        self.multiProcess = True
         self.constantNumbers = {
             "commission" : 0.0006,
             "data_limit_future" : 200,

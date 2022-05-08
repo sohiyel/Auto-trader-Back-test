@@ -139,7 +139,7 @@ class FastBackTest():
 
         report = self.portfolioManager.report(self.positionManager.closedPositions)
         numberOfDays = ((self.endAtTS - self.startAtTS)/(1440 * 60))
-        buyAndHold = self.dataService.dataFrame.iloc[-1]["close"] - self.dataService.dataFrame.iloc[0]["close"]
+        buyAndHold = int(self.dataService.dataFrame.iloc[-1]["close"]) - int(self.dataService.dataFrame.iloc[0]["close"])
         sellAndHold = buyAndHold * -1
         reportDict = {
                 "Net profit percent" : [report["netProfitPercent"]],

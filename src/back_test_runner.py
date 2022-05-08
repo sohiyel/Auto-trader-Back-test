@@ -98,7 +98,7 @@ class BackTestRunner():
 
 if __name__ == '__main__':
     
-    tradeRunner = BackTestRunner(multiProcess = False)
+    tradeRunner = BackTestRunner(multiProcess = True)
     while True:
         tradeRunner.start_task()
         time.sleep(5)
