@@ -114,7 +114,7 @@ class UserInput():
 
         params = jsonFile["params"][0]
         for i in params["inputs"]:
-            names.append( (i["name"],i["strategy"]) )
+            names.append( (i["name"],i["strategy"],i["historyNeeded"]) )
         json_data_file.close()
         return names
 
@@ -143,7 +143,7 @@ class UserInput():
                             inputExist = True
                             break
                     if not inputExist:
-                        newInput = ParamInput(n[0], value, n[1])
+                        newInput = ParamInput(n[0], value, n[1],n[2])
                         jsonFile["params"][idx]["inputs"].append(newInput.to_dict())
                 jsonFile["params"][idx]["optimization_date"] = time.strftime("%Y-%m-%d_%H:%M:%S")
 
@@ -155,7 +155,7 @@ class UserInput():
             newParam["inputs"] = []
             for n in inputNames:
                 value = float(report[n[1] + "_" + n[0]])
-                newParam["inputs"].append(ParamInput(n[0], value, n[1]).to_dict())
+                newParam["inputs"].append(ParamInput(n[0], value, n[1],n[2]).to_dict())
             jsonFile["params"].append(newParam)
 
         if self.botName:
