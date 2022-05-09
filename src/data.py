@@ -35,20 +35,28 @@ class DataService():
             self.limit = self.settings.constantNumbers["data_limit_spot"]
             self.client = KucoinSpot(settings)
         
-        asyncio.run(self.fetch_klines())
+        self.fetch_klines()
 
     def convert_time(self, ttime):
         date_time_obj = datetime.strptime(ttime, '%Y-%m-%d %H:%M:%S')
         utc_time = date_time_obj.replace(tzinfo=timezone('utc'))
         return int(datetime.timestamp(utc_time))
 
-    async def fetch_klines(self):
-        fileName = path.join(self.settings.DATA_DIR,self.market,self.dbPair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv")
-        if ( os.path.exists(fileName)):
-            self.dataFrame = pd.read_csv(fileName)
-            print(fileName + " has been read from disk")
-        else:
-            await self.get_klines()
+    # async def fetch_klines(self):
+    #     fileName = path.join(self.settings.DATA_DIR,self.market,self.dbPair+"_"+str(self.startAtTs - self.historyNeeded)+"_"+str(self.endAtTs)+".csv")
+    #     if ( os.path.exists(fileName)):
+    #         self.dataFrame = pd.read_csv(fileName)
+    #         print(fileName + " has been read from disk")
+    #     else:
+    #         await self.get_klines()
+
+    def fetch_klines(self):
+        self.dataFrame = self.db.fetch_klines(self.pair, self.timeFrame, (self.startAtTs - self.historyNeeded) * 1000, self.endAtTs * 1000)
+        print(" Expected candles:", (self.endAtTs - (self.startAtTs - self.historyNeeded))/(tfMap.array[self.timeFrame]*60))
+        print( "Existing candles:", self.dataFrame.shape[0])
+        print("Needed start and end time:", (self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000)
+        print("Existed start anad end time:", self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp'])
+        print(self.dataFrame)
         
     async def get_klines(self):
         #print(self.startAtTs, self.endAtTs)
@@ -98,9 +106,8 @@ class DataService():
         return self.db.read_klines(self.dbPair, self.timeFrame, limit, lastState)
 
     def read_data_from_memory(self, limit, lastState):
-        df = self.dataFrame
-        df = df[df['timestamp'] < lastState]
-        return df.tail(limit)
+        candles = self.dataFrame.loc[self.dataFrame['timestamp'] <= lastState]
+        return candles.tail(limit)
         
         d1 = d1.sort_values(by='timestamp', ascending=True)
         d2 = self.db.read_klines(self.dbPair, self.timeFrame, limit, lastState)

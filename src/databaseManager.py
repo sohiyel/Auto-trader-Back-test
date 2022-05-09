@@ -141,6 +141,22 @@ class DatabaseManager():
             df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
             return df
 
+    def fetch_klines(self, pair, timeFrame, startAt, endAt):
+        cur = self.conn.cursor()
+        tableName = tfMap.get_db_format(pair) + "_" + timeFrame
+        try:
+            cur.execute(f"SELECT * FROM {tableName} WHERE dt < {endAt + 1} AND dt > {startAt - 1} ORDER BY dt DESC;")
+            query = cur.fetchall()
+            df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'], dtype=float)
+            cur.close()
+            return df
+        except:
+            cur.close()
+            print (f"Cannot find table {tableName}!")
+            query = []
+            df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+            return df
+
     def get_open_positions(self, pair):
         cur = self.conn.cursor()
         try:

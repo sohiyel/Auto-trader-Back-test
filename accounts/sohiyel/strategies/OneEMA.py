@@ -43,9 +43,6 @@ class OneEMA(Strategy):
             self.decisions['shortExt'] = 1
 
     def decider(self, marketData, timeStamp =""):
-        if len(marketData) < self.emaLength:
-            print ("-----------Low amount of Data!-----------")
-            return SignalClass()
         
         self.decisions = {
             'longEnt' : 0,
@@ -56,6 +53,12 @@ class OneEMA(Strategy):
         if timeStamp:
             candle = self.df.loc[self.df["timestamp"] == timeStamp*1000]
         else:
+            if len(marketData) < self.emaLength:
+                print ("-----------Low amount of Data!-----------")
+                print("Expected:",str(self.emaLength))
+                print("Given:", str(len(marketData)))
+                print(marketData.iloc[0]['timestamp'], marketData.iloc[-1]['timestamp'])
+                return SignalClass()
             self.df = pd.DataFrame(marketData)
             self.df["ema"] = ta.ema(self.df["close"], length=self.emaLength)
             candle = self.df.loc[self.df["timestamp"] == self.df.iloc[-1]["timestamp"]]

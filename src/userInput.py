@@ -169,10 +169,17 @@ class UserInput():
 
     def calc_history_needed(self):
         max = 1
-        for i in self.inputs[0]:
-            if i.historyNeeded:
-                if i.value > max:
-                    max = i.value
+        if self.optimization:
+            for j in self.inputs:
+                for i in j:
+                    if i.historyNeeded:
+                        if i.value > max:
+                            max = i.value
+        else:    
+            for i in self.inputs[0]:
+                if i.historyNeeded:
+                    if i.value > max:
+                        max = i.value
         return max * tfMap.array[self.timeFrame] * 60
         
         
