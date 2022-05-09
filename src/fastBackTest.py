@@ -115,7 +115,11 @@ class FastBackTest():
 
             # df = df.sort_values(by='timestamp', ascending=True)
             # df.reset_index(drop=True, inplace=True)
-            self.lastCandle = self.dataframe.loc[self.dataframe['timestamp'] == i*1000].iloc[0]
+            try:
+                self.lastCandle = self.dataframe.loc[self.dataframe['timestamp'] == i*1000].iloc[0]
+            except:
+                print(f"---------- Could not find this candle{i*1000} ---------")
+                continue
             checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
             if not checkContinue :
                 self.processOrders(4, None, self.settings.constantNumbers["commission"])
