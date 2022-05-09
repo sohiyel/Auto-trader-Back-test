@@ -38,7 +38,7 @@ class DataService():
         self.fetch_klines()
 
     def convert_time(self, ttime):
-        date_time_obj = datetime.strptime(ttime, '%Y-%m-%d %H:%M:%S')
+        date_time_obj = datetime.strptime(ttime, '%Y-%m-%d_%H:%M:%S')
         utc_time = date_time_obj.replace(tzinfo=timezone('utc'))
         return int(datetime.timestamp(utc_time))
 
@@ -56,7 +56,6 @@ class DataService():
         print( "Existing candles:", self.dataFrame.shape[0])
         print("Needed start and end time:", (self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000)
         print("Existed start anad end time:", self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp'])
-        print(self.dataFrame)
         
     async def get_klines(self):
         #print(self.startAtTs, self.endAtTs)
