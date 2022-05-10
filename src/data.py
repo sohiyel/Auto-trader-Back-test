@@ -37,7 +37,8 @@ class DataService():
         
         self.fetch_klines()
 
-    def convert_time(self, ttime):
+    @staticmethod
+    def convert_time(ttime):
         date_time_obj = datetime.strptime(ttime, '%Y-%m-%d_%H:%M:%S')
         utc_time = date_time_obj.replace(tzinfo=timezone('utc'))
         return int(datetime.timestamp(utc_time))

@@ -1,5 +1,4 @@
 import sys
-import this
 from src.back_test_runner import BackTestRunner
 from src.trade_runner import TradeRunner
 from src.data_downloader import DataDownloader, Downloader
@@ -30,8 +29,8 @@ def run_data_downloader():
 
 def download_data(pair, timeframe, startAt, endAt):
     downloader = DataDownloader(pair, timeframe, settings)
-    startAtTs = DataService.convert_time(this,startAt) * 1000
-    endAtTs = DataService.convert_time(this, endAt) * 1000
+    startAtTs = DataService.convert_time(startAt) * 1000
+    endAtTs = DataService.convert_time(endAt) * 1000
     print(startAtTs, endAtTs)
     downloader.fetch_klines(startAtTs, endAtTs)
 
