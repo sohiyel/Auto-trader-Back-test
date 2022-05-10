@@ -117,6 +117,9 @@ class BackTest():
             df = df.sort_values(by='timestamp', ascending=True)
             df.reset_index(drop=True, inplace=True)
             self.lastCandle = df.iloc[-1]
+            if self.lastCandle['timestamp'] != i*1000:
+                print(f"---------- Could not find this candle{i*1000} ---------")
+                continue
             checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
             if not checkContinue :
                 self.processOrders(4, None, self.settings.constantNumbers["commission"])
