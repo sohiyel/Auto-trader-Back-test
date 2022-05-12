@@ -114,7 +114,7 @@ class UserInput():
 
         params = jsonFile["params"][0]
         for i in params["inputs"]:
-            names.append( (i["name"],i["strategy"]) )
+            names.append( (i["name"],i["strategy"],i["historyNeeded"]) )
         json_data_file.close()
         return names
 
@@ -143,7 +143,7 @@ class UserInput():
                             inputExist = True
                             break
                     if not inputExist:
-                        newInput = ParamInput(n[0], value, n[1])
+                        newInput = ParamInput(n[0], value, n[1],n[2])
                         jsonFile["params"][idx]["inputs"].append(newInput.to_dict())
                 jsonFile["params"][idx]["optimization_date"] = time.strftime("%Y-%m-%d_%H:%M:%S")
 
@@ -155,7 +155,7 @@ class UserInput():
             newParam["inputs"] = []
             for n in inputNames:
                 value = float(report[n[1] + "_" + n[0]])
-                newParam["inputs"].append(ParamInput(n[0], value, n[1]).to_dict())
+                newParam["inputs"].append(ParamInput(n[0], value, n[1],n[2]).to_dict())
             jsonFile["params"].append(newParam)
 
         if self.botName:
@@ -169,10 +169,17 @@ class UserInput():
 
     def calc_history_needed(self):
         max = 1
-        for i in self.inputs[0]:
-            if i.historyNeeded:
-                if i.value > max:
-                    max = i.value
+        if self.optimization:
+            for j in self.inputs:
+                for i in j:
+                    if i.historyNeeded:
+                        if i.value > max:
+                            max = i.value
+        else:    
+            for i in self.inputs[0]:
+                if i.historyNeeded:
+                    if i.value > max:
+                        max = i.value
         return max * tfMap.array[self.timeFrame] * 60
         
         

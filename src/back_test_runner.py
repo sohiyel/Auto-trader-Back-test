@@ -21,6 +21,8 @@ class BackTestRunner():
 
     def run_back_test(self, currentInput):
         print  ("--------- New process started ---------")
+        self.historyNeeded = self.userInput.calc_history_needed()
+        print(f'Number of history needed in secnds: {self.historyNeeded}')
         if self.isFast:
             trader = FastBackTest(market = self.task.market,
                         pair = self.task.pair,
@@ -62,8 +64,6 @@ class BackTestRunner():
                                   optimization = self.task.optimization,
                                   randomInput = self.task.randomInputs,
                                   settings = self.settings)
-            self.historyNeeded = self.userInput.calc_history_needed()
-            print(f'Number of history needed in secnds: {self.historyNeeded}')
             start_time = time.time()
             print("Number of steps: " + str(len(self.userInput.inputs)))
             results = []

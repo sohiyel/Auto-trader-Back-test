@@ -10,6 +10,7 @@ import json
 from src.settings import Settings
 import sys
 import os
+from src.data import DataService
 
 class DataDownloader():
     def __init__(self, pair, timeFrame, settings) -> None:
@@ -26,6 +27,28 @@ class DataDownloader():
         klines = self.exchange.fetch_ohlcv(pair, self.timeFrame)
         df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
         return df
+
+    def fetch_klines(self, startAt, endAt):
+        pair = tfMap.get_exchange_format(self.pair)
+        klinesList = []
+        lastDate = startAt
+        while lastDate < endAt+1:
+            klines = self.exchange.fetch_ohlcv(pair, self.timeFrame, lastDate)
+            if len(klines) == 0:
+                print('        Something went wrong in getting klines sleeping ... ')
+                time.sleep(10)
+            else:
+                print('        Success! recieved {} candles'.format(len(klines)))
+                lastDate = klines[-1][0]
+                klinesList.extend(klines)
+                df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+                self.db.store_klines(df, self.tableName)
+                time.sleep(3)
+        print('        Expected {} candles!'.format((endAt - startAt)/(tfMap.array[self.timeFrame]*60000)))
+        print('        Done! recieved {} candles'.format(len(klinesList)))
+        firstDate = datetime.fromtimestamp(klinesList[0][0]/1000, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
+        endDate = datetime.fromtimestamp(klinesList[-1][0]/1000, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
+        print(f'        From {firstDate} to {endDate}')
 
     def find_new_data(self, klines):
         df = self.db.read_klines(self.pair, self.timeFrame, 200, time.time())

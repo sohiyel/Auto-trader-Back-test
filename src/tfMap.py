@@ -6,15 +6,15 @@ class tfMap:
     def get_exchange_format(pair):
         if "/" in pair:
             if ":" in pair:
-                return pair
+                return pair.upper()
             else:
-                return pair + ":USDT"
+                return pair.upper() + ":USDT"
         elif "_" in pair:
             pairs = pair.split("_")
-            return pairs[0] + "/" + pairs[1] + ":USDT"
+            return pairs[0].upper() + "/" + pairs[1].upper() + ":USDT"
         elif "-" in pair:
             pairs = pair.split("-")
-            return pairs[0] + "/" + pairs[1] + ":USDT"
+            return pairs[0].upper() + "/" + pairs[1].upper() + ":USDT"
 
     def get_db_format(pair):
         if "_" in pair:

@@ -67,12 +67,12 @@ class BotSignal():
                     decision["shortExit"] = True
         return decision
 
-    def decider(self, marketData):
+    def decider(self, marketData="", timestamp=""):
         self.marketData = marketData
         signals = []
 
         for s in self.strategies:
-            signals.append(s.decider(self.marketData))
+            signals.append(s.decider(self.marketData, timestamp))
         decision = self.get_final_decision(signals)
         signal = SignalClass(signals[0].pair,
                             signals[0].side,

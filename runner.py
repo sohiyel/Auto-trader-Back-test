@@ -7,6 +7,8 @@ import time
 from src.settings import Settings
 import os
 from threading import Thread
+from src.data import DataService
+from src.tfMap import tfMap
 
 def run_back_test(fast):
     tradeRunner = BackTestRunner(settings, fast)
@@ -24,6 +26,13 @@ def run_data_downloader():
     downloader = Downloader(settings)
     with concurrent.futures.ThreadPoolExecutor() as executor:        
         executor.map(downloader.initialize_indexes,downloader.tablesList)
+
+def download_data(pair, timeframe, startAt, endAt):
+    downloader = DataDownloader(pair, timeframe, settings)
+    startAtTs = DataService.convert_time(startAt) * 1000
+    endAtTs = DataService.convert_time(endAt) * 1000
+    print(startAtTs, endAtTs)
+    downloader.fetch_klines(startAtTs, endAtTs)
 
 if __name__ == '__main__':
     if sys.argv[1] == "backtest":
@@ -48,10 +57,16 @@ if __name__ == '__main__':
             thread02.start()
         else:
             print (f"There is no account with this informations!")
-    elif sys.argv[1] == "data":
+    elif sys.argv[1] == "live_data":
         settings = Settings(sys.argv[2])
         if os.path.exists(settings.ACCOUNT_DIR):
             run_data_downloader()
+        else:
+            print (f"There is no account with this informations!")
+    elif sys.argv[1] == "download_data":
+        settings = Settings(sys.argv[2])
+        if os.path.exists(settings.ACCOUNT_DIR):
+            download_data(sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6])
         else:
             print (f"There is no account with this informations!")
     else:
