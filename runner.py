@@ -10,8 +10,8 @@ from threading import Thread
 from src.data import DataService
 from src.tfMap import tfMap
 
-def run_back_test(fast):
-    tradeRunner = BackTestRunner(settings, fast)
+def run_back_test():
+    tradeRunner = BackTestRunner(settings)
     while True:
         tradeRunner.start_task()
         time.sleep(5)
@@ -36,19 +36,19 @@ def download_data(pair, timeframe, startAt, endAt):
 
 if __name__ == '__main__':
     if sys.argv[1] == "backtest":
-        settings = Settings(sys.argv[2])
+        settings = Settings(sys.argv[2], "backtest")
         if os.path.exists(settings.ACCOUNT_DIR):
-            run_back_test(False)
+            run_back_test()
         else:
             print (f"There is no account with this informations!")
     if sys.argv[1] == "fast_backtest":
-        settings = Settings(sys.argv[2])
+        settings = Settings(sys.argv[2], "fast_backtest")
         if os.path.exists(settings.ACCOUNT_DIR):
-            run_back_test(True)
+            run_back_test()
         else:
             print (f"There is no account with this informations!")
     elif sys.argv[1] == "trade":
-        settings = Settings(sys.argv[2])
+        settings = Settings(sys.argv[2], "trade")
         if os.path.exists(settings.ACCOUNT_DIR):
             thread01 = Thread(target= run_data_downloader)
             thread01.start()
@@ -58,13 +58,13 @@ if __name__ == '__main__':
         else:
             print (f"There is no account with this informations!")
     elif sys.argv[1] == "live_data":
-        settings = Settings(sys.argv[2])
+        settings = Settings(sys.argv[2], "live_data")
         if os.path.exists(settings.ACCOUNT_DIR):
             run_data_downloader()
         else:
             print (f"There is no account with this informations!")
     elif sys.argv[1] == "download_data":
-        settings = Settings(sys.argv[2])
+        settings = Settings(sys.argv[2], "download_data")
         if os.path.exists(settings.ACCOUNT_DIR):
             download_data(sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6])
         else:

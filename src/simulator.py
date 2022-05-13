@@ -1,5 +1,3 @@
-from asyncio.windows_events import NULL
-from logging import currentframe
 import pandas as pd
 from src.positionManager import PositionManager
 from src.orderManager import OrderManager
@@ -12,7 +10,7 @@ import os
 from src.plotter import Plotter
 import time
 
-class FastBackTest():
+class Simulator():
     def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization, historyNeeded, settings):
         self.settings = settings
         self.pair = pair
@@ -25,18 +23,19 @@ class FastBackTest():
         self.initialCapital = initialCapital
         self.strategyName = strategyName
         self.botName = botName
-        self.dataframe = self.dataService.dataFrame
+        if settings.task == 'fast_backtest':
+            self.dataframe = self.dataService.dataFrame
+        else:
+            self.dataframe = ""
         self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput, pair, settings, self.dataframe)
         self.positionManager = PositionManager(initialCapital, pair, volume, 0, timeFrame, strategyName, botName, 1, settings)
         self.portfolioManager = PortfolioManager(pair, initialCapital, settings)
         self.timeFrame = timeFrame
         self.plotter =  Plotter(self.pair + "_" + str(self.startAtTS) + "_" + str(self.endAtTS) + "_" + self.timeFrame + ".csv", settings)
-        self.lastCandle = ""
         self.volume = volume
         self.currentInput = currentInput
         self.optimization = optimization
         self.historyNeeded = int(historyNeeded)
-        print(self.startAtTS)
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
@@ -57,7 +56,6 @@ class FastBackTest():
                 self.portfolioManager.balances.append(self.portfolioManager.balance)
                 if self.portfolioManager.open_position(signal.volume, signal.price, commission):
                     self.positionManager.open_position(signal, self.lastState)
-                
 
     def closePosition(self, commission):
         if len(self.positionManager.openPositions) > 0:
@@ -91,14 +89,26 @@ class FastBackTest():
             lastPrice = self.positionManager.calc_equity()
             self.portfolioManager.equities.append(self.portfolioManager.update_equity(lastPrice))
 
-
+    def get_data(self, lastState):
+        try:
+            if self.settings.task == "backtest":
+                df = self.dataService.read_data_from_memory(self.historyNeeded, self.lastState * 1000)
+                df = df.sort_values(by='timestamp', ascending=True)
+                df.reset_index(drop=True, inplace=True)
+                lastCandle = df.iloc[-1]
+                if lastCandle['timestamp'] != lastState*1000:
+                    print(f"---------- Could not find this candle{lastState*1000} ---------")
+                    return False,False
+                return df, lastCandle
+            elif self.settings.task == "fast_backtest":
+                lastCandle = self.dataframe.loc[self.dataframe['timestamp'] == lastState*1000].iloc[0]
+                return self.dataframe, lastCandle
+        except:
+            print(f"---------- Could not find this candle{lastState*1000} ---------")
+            return False,False
 
     def mainloop(self):
-        global balances
         start_time = time.time()
-
-        data_time = 0
-
         print("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
         for i in range(self.dataService.startAtTs, self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
@@ -106,38 +116,20 @@ class FastBackTest():
                 self.portfolioManager.balance = 0
                 break
             self.lastState = i
-
-            #calculating time of read_data_from_db
-            # sttime = time.time() ##### start time
-            # df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState * 1000)
-            # data_time += (time.time() - sttime)
-
-
-            # df = df.sort_values(by='timestamp', ascending=True)
-            # df.reset_index(drop=True, inplace=True)
-            try:
-                self.lastCandle = self.dataframe.loc[self.dataframe['timestamp'] == i*1000].iloc[0]
-            except:
-                print(f"---------- Could not find this candle{i*1000} ---------")
+            df, lastCandle = self.get_data(i)
+            if isinstance(lastCandle, bool):
                 continue
-            checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
+            checkContinue = self.positionManager.check_sl_tp(lastCandle['close'], self.lastState)
             if not checkContinue :
                 self.processOrders(4, None, self.settings.constantNumbers["commission"])
                 continue
-
-            choice, signal = self.orderManager.decider(self.dataframe, self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.position_average_price(), self.positionManager.position_size(),i)
+            if self.settings.task == "backtest":
+                timestamp = ""
+            elif self.settings.task == "fast_backtest":
+                timestamp = i
+            choice, signal = self.orderManager.decider(df, self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.position_average_price(), self.positionManager.position_size(), timestamp)
             self.processOrders(choice, signal, self.settings.constantNumbers["commission"])
-            # print(self.portfolioManager.balance)
-
             self.portfolioManager.calc_poL()
-
-            # clear = lambda: os.system('cls')
-            # clear()
-
-            # df = pd.DataFrame.from_records([position.to_dict() for position in self.positionManager.openPositions])
-            # df['Balance'] = self.portfolioManager.balance
-            # df['Equity'] = self.portfolioManager.equity
-            # print(df)
 
         self.processOrders(4, None, self.settings.constantNumbers["commission"])
 
@@ -196,11 +188,7 @@ class FastBackTest():
         if not self.optimization:
             df = pd.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
             df['Balance'] = self.portfolioManager.balances
-            #print(df)
-
             self.plotter.writeDFtoFile(df)
         print("--- End time: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
         print("--- Duration: %s seconds ---" % (time.time() - start_time))
-        print("--- Duration of data read: %s seconds ---" % data_time)
         return result
-
