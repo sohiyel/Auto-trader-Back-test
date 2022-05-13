@@ -36,6 +36,7 @@ class Simulator():
         self.currentInput = currentInput
         self.optimization = optimization
         self.historyNeeded = int(historyNeeded)
+        self.lastCandle = ""
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
@@ -107,6 +108,17 @@ class Simulator():
             print(f"---------- Could not find this candle{lastState*1000} ---------")
             return False,False
 
+    def check_continue(self):
+        if self.settings.task == "trade":
+            print ( f"<----------- Check continue on {self.pair} ----------->")
+            self.update_candle_data()
+        checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
+        if not checkContinue :
+            if self.settings.task == "trade":
+                print ( f"<----------- Close on SL/TP {self.pair} ----------->")
+            self.processOrders(4, None, self.settings.constantNumbers["commission"])
+            return
+
     def mainloop(self):
         start_time = time.time()
         print("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
@@ -116,13 +128,11 @@ class Simulator():
                 self.portfolioManager.balance = 0
                 break
             self.lastState = i
-            df, lastCandle = self.get_data(i)
-            if isinstance(lastCandle, bool):
+            df, self.lastCandle = self.get_data(i)
+            if isinstance(self.lastCandle, bool):
                 continue
-            checkContinue = self.positionManager.check_sl_tp(lastCandle['close'], self.lastState)
-            if not checkContinue :
-                self.processOrders(4, None, self.settings.constantNumbers["commission"])
-                continue
+            checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
+            self.check_continue()
             if self.settings.task == "backtest":
                 timestamp = ""
             elif self.settings.task == "fast_backtest":

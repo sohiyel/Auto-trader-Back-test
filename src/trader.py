@@ -10,18 +10,19 @@ from pytz import timezone
 import os
 from src.plotter import Plotter
 import time
+from src.simulator import Simulator
 
 
-class Trader():
+class Trader(Simulator):
     def __init__ (self, index, exchange, settings, market = 'futures'):
         self.settings = settings
         self.exchange = exchange
         self.pair = index.pair
         self.side = index.side
-        self.startAt = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        self.startAt = datetime.utcnow().strftime('%Y-%m-%d_%H:%M:%S')
         historyNeeded = index.calc_history_needed()
         self.historyNeeded = int(historyNeeded)
-        self.endAt = datetime.fromtimestamp(time.time() - historyNeeded, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
+        self.endAt = datetime.fromtimestamp(time.time() - historyNeeded, tz=timezone('utc')).strftime('%Y-%m-%d_%H:%M:%S')
         self.dataService = DataService(market, index.pair, index.timeFrame, self.startAt, self.endAt, historyNeeded, settings)
         self.startAtTS = self.dataService.startAtTs
         self.endAtTS = self.dataService.endAtTs
@@ -40,37 +41,6 @@ class Trader():
         self.positionManager.sync_positions()
         self.currentInput = index
         self.df = ""
-
-    def openPosition(self, signal, commission):
-        if len( self.positionManager.openPositions ) == 0:
-            if self.portfolioManager.open_position(signal.volume, signal.price, commission):
-                self.positionManager.open_position(signal, self.lastState)
-        elif len( self.positionManager.openPositions ) == 1:
-            if self.positionManager.openPositions[0].side == signal.side:
-                if self.portfolioManager.add_volume(signal.volume, signal.price, commission):
-                    self.positionManager.add_volume(signal.price, signal.volume)
-            else:
-                lastPrice = self.positionManager.close_position(self.lastState)
-                self.portfolioManager.close_position(lastPrice, commission)
-                if self.positionManager.closedPositions[-1].profit > 0:
-                    self.portfolioManager.add_profit(self.positionManager.closedPositions[-1].profit)
-                else:
-                    self.portfolioManager.add_loss(self.positionManager.closedPositions[-1].profit)
-                
-                self.portfolioManager.balances.append(self.portfolioManager.balance)
-                if self.portfolioManager.open_position(signal.volume, signal.price, commission):
-                    self.positionManager.open_position(signal, self.lastState)
-                
-
-    def closePosition(self, commission):
-        if len(self.positionManager.openPositions) > 0:
-            lastPrice = self.positionManager.close_position(self.lastState)
-            self.portfolioManager.close_position(lastPrice, commission)
-            if self.positionManager.closedPositions[-1].profit > 0:
-                self.portfolioManager.add_profit(self.positionManager.closedPositions[-1].profit)
-            else:
-                self.portfolioManager.add_loss(self.positionManager.closedPositions[-1].profit)
-            self.portfolioManager.balances.append(self.portfolioManager.balance)
 
     def processOrders(self, choice, signal, commission ):
         if choice == 0:
@@ -126,14 +96,3 @@ class Trader():
         print ( f"Current choice is:{choice}")
         self.processOrders(choice, signal, self.settings.constantNumbers["commission"])
         self.portfolioManager.calc_poL()
-
-    def check_continue(self):
-        print ( f"<----------- Check continue on {self.pair} ----------->")
-        self.update_candle_data()
-        # print (self.df)
-        print ( f"Last candle close: {self.lastCandle['close']}")
-        checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
-        if not checkContinue :
-            print ( f"<----------- Close on SL/TP {self.pair} ----------->")
-            self.processOrders(4, None, self.settings.constantNumbers["commission"])
-            return

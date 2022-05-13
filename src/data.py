@@ -34,8 +34,8 @@ class DataService():
         else:
             self.limit = self.settings.constantNumbers["data_limit_spot"]
             self.client = KucoinSpot(settings)
-        
-        self.fetch_klines()
+        if not settings.task == 'trade':
+            self.fetch_klines()
 
     @staticmethod
     def convert_time(ttime):
