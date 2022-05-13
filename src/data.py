@@ -7,7 +7,7 @@ import pandas as pd
 from pytz import timezone
 from src.exchanges.kucoinFutures import KucoinFutures
 from src.exchanges.kucoinSpot import KucoinSpot
-from src.tfMap import tfMap
+from src.utility import Utility
 from src.databaseManager import DatabaseManager
 from os import path
 class DataService():
@@ -15,8 +15,8 @@ class DataService():
     def __init__(self, market, pair, timeFrame, startTime, endTime, historyNeeded = 0, settings=''):
         self.pair = pair
         self.settings = settings
-        self.dbPair = tfMap.get_db_format(self.pair)
-        self.timeFrame = timeFrame
+        self.dbPair = Utility.get_db_format(self.pair)
+        self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
         self.tableName = self.dbPair + "_" + self.timeFrame
         self.startTime = startTime
         self.endTime = endTime
@@ -53,14 +53,14 @@ class DataService():
 
     def fetch_klines(self):
         self.dataFrame = self.db.fetch_klines(self.pair, self.timeFrame, (self.startAtTs - self.historyNeeded) * 1000, self.endAtTs * 1000)
-        print(" Expected candles:", (self.endAtTs - (self.startAtTs - self.historyNeeded))/(tfMap.array[self.timeFrame]*60))
+        print(" Expected candles:", (self.endAtTs - (self.startAtTs - self.historyNeeded))/(Utility.array[self.timeFrame]*60))
         print( "Existing candles:", self.dataFrame.shape[0])
         print("Needed start and end time:", (self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000)
         print("Existed start anad end time:", self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp'])
         
     async def get_klines(self):
         #print(self.startAtTs, self.endAtTs)
-        limit = 1440 * tfMap.array[self.timeFrame] * 60
+        limit = 1440 * Utility.array[self.timeFrame] * 60
         self.klines = await self.client.get_klines_data(self.pair, self.timeFrame, self.startAtTs - self.historyNeeded, self.endAtTs, limit)
         self.make_data_frame()
                         

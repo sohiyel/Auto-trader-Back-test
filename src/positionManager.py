@@ -1,7 +1,7 @@
 from src.position import Position
 import uuid
 from src.databaseManager import DatabaseManager
-from src.tfMap import tfMap
+from src.utility import Utility
 from src.markets import Markets
 
 class PositionManager():
@@ -46,25 +46,25 @@ class PositionManager():
                                                 volume,
                                                 params={'leverage': self.leverage})
             # stopLossOrderId = self.exchange.create_market_order(signal.pair,
-            #                                                     tfMap.opposite_side(signal.side),
+            #                                                     Utility.opposite_side(signal.side),
             #                                                     volume,
             #                                                     params={'leverage': self.leverage,
-            #                                                             'stop': tfMap.get_stop_side(signal.side),
+            #                                                             'stop': Utility.get_stop_side(signal.side),
             #                                                             'stopPriceType': 'MP',
             #                                                             'stopPrice': signal.stopLoss})
             # takeProfitOrderId = self.exchange.create_market_order(signal.pair,
-            #                                                     tfMap.opposite_side(signal.side),
+            #                                                     Utility.opposite_side(signal.side),
             #                                                     volume,
             #                                                     params={'leverage': self.leverage,
-            #                                                             'stop': tfMap.get_profit_side(signal.side),
+            #                                                             'stop': Utility.get_profit_side(signal.side),
             #                                                             'stopPriceType': 'MP',
             #                                                             'stopPrice': signal.takeProfit})
             stopLossOrderId = uuid.uuid4().hex
             takeProfitOrderId = uuid.uuid4().hex
-            self.db.add_position(positionId, tfMap.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
+            self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
             newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
-            self.db.add_order(stopLossOrderId, signal.pair, tfMap.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
-            self.db.add_order(takeProfitOrderId, signal.pair, tfMap.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+            self.db.add_order(stopLossOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+            self.db.add_order(takeProfitOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
         else:
             newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, '', '', True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)
         self.openPositions.append(newPosition)
@@ -139,11 +139,11 @@ class PositionManager():
 
     def sync_positions(self):
         exchangePositions = self.exchange.fetch_positions()
-        dbPositions = self.db.get_open_positions(tfMap.get_db_format(self.pair))
+        dbPositions = self.db.get_open_positions(Utility.get_db_format(self.pair))
         if self.echo: print(exchangePositions)
         ep = ""
         for i in exchangePositions:
-            if i["symbol"] == tfMap.get_exchange_format(self.pair):
+            if i["symbol"] == Utility.get_exchange_format(self.pair):
                 ep = i
         if ep == "":
             if self.echo: print(f"-------------- There is no position with this pair({self.pair}) in exchange!--------------")

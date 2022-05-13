@@ -3,7 +3,7 @@ from src.positionManager import PositionManager
 from src.orderManager import OrderManager
 from src.data import DataService
 from src.portfolioManager import PortfolioManager
-from src.tfMap import tfMap
+from src.utility import Utility
 from datetime import datetime
 from pytz import timezone
 import os
@@ -14,7 +14,8 @@ class Simulator():
     def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization, historyNeeded, settings):
         self.settings = settings
         self.pair = pair
-        self.dataService = DataService(market, pair, timeFrame, startAt, endAt, historyNeeded, settings)
+        self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
+        self.dataService = DataService(market, pair, self.timeFrame, startAt, endAt, historyNeeded, settings)
         self.startAt = startAt,
         self.endAt = endAt,
         self.startAtTS = self.dataService.startAtTs
@@ -28,9 +29,8 @@ class Simulator():
         else:
             self.dataframe = ""
         self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput, pair, settings, self.dataframe)
-        self.positionManager = PositionManager(initialCapital, pair, volume, 0, timeFrame, strategyName, botName, 1, settings)
+        self.positionManager = PositionManager(initialCapital, pair, volume, 0, self.timeFrame, strategyName, botName, 1, settings)
         self.portfolioManager = PortfolioManager(pair, initialCapital, settings)
-        self.timeFrame = timeFrame
         self.plotter =  Plotter(self.pair + "_" + str(self.startAtTS) + "_" + str(self.endAtTS) + "_" + self.timeFrame + ".csv", settings)
         self.volume = volume
         self.currentInput = currentInput
@@ -132,7 +132,7 @@ class Simulator():
     def mainloop(self):
         start_time = time.time()
         print("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
-        for i in range(self.dataService.startAtTs, self.dataService.endAtTs, tfMap.array[self.timeFrame]*60):
+        for i in range(self.dataService.startAtTs, self.dataService.endAtTs, Utility.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
                 self.processOrders(4, None, self.settings.constantNumbers["commission"])
                 self.portfolioManager.balance = 0
@@ -141,7 +141,6 @@ class Simulator():
             df, self.lastCandle = self.get_data(i)
             if isinstance(self.lastCandle, bool):
                 continue
-            checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
             self.check_continue()
             if self.settings.task == "backtest":
                 timestamp = ""

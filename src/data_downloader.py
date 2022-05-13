@@ -1,6 +1,6 @@
 import ccxt
 from src.databaseManager import DatabaseManager
-from src.tfMap import tfMap
+from src.utility import Utility
 from datetime import datetime
 from pytz import timezone
 import pandas as pd
@@ -16,20 +16,20 @@ class DataDownloader():
     def __init__(self, pair, timeFrame, settings) -> None:
         self.settings = settings
         self.pair = pair
-        self.timeFrame = timeFrame
-        pair = tfMap.get_db_format(self.pair)
+        self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
+        pair = Utility.get_db_format(self.pair)
         self.tableName = pair + "_" + self.timeFrame
         self.exchange = ccxt.kucoinfutures()
         self.db = DatabaseManager(settings)
 
     def get_klines(self):
-        pair = tfMap.get_exchange_format(self.pair)
+        pair = Utility.get_exchange_format(self.pair)
         klines = self.exchange.fetch_ohlcv(pair, self.timeFrame)
         df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
         return df
 
     def fetch_klines(self, startAt, endAt):
-        pair = tfMap.get_exchange_format(self.pair)
+        pair = Utility.get_exchange_format(self.pair)
         klinesList = []
         lastDate = startAt
         while lastDate < endAt+1:
@@ -44,7 +44,7 @@ class DataDownloader():
                 df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
                 self.db.store_klines(df, self.tableName)
                 time.sleep(3)
-        print('        Expected {} candles!'.format((endAt - startAt)/(tfMap.array[self.timeFrame]*60000)))
+        print('        Expected {} candles!'.format((endAt - startAt)/(Utility.array[self.timeFrame]*60000)))
         print('        Done! recieved {} candles'.format(len(klinesList)))
         firstDate = datetime.fromtimestamp(klinesList[0][0]/1000, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
         endDate = datetime.fromtimestamp(klinesList[-1][0]/1000, tz=timezone('utc')).strftime('%Y-%m-%d %H:%M:%S')
@@ -62,7 +62,7 @@ class DataDownloader():
             diff = self.find_new_data(klines)
             self.db.store_klines(diff,self.tableName)
             print (f"{diff.shape[0]} new canldes were added to {self.tableName}")
-            time.sleep(tfMap.array[self.timeFrame] * 60)
+            time.sleep(Utility.array[self.timeFrame] * 60)
 
 class Downloader():
     def __init__(self, settings) -> None:

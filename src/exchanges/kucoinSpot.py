@@ -6,6 +6,7 @@ import configparser
 import ccxt as ccxt
 from datetime import datetime
 from time import sleep
+from src.utility import Utility
 class KucoinSpot(Kucoin):
     def __init__(self, settings, sandBox = False):
         super().__init__(sandBox)
@@ -26,6 +27,7 @@ class KucoinSpot(Kucoin):
 
     def get_klines(self, symbol, timeFrame, startAt, endAt):
         kLineURL = '/api/v1/market/candles?'
+        timeFrame = Utility.unify_timeframe(timeFrame, "kucoin")
         params = {
             'type': timeFrame,
             'symbol': symbol,
@@ -47,6 +49,7 @@ class KucoinSpot(Kucoin):
 
     async def get_klines_data(self, symbol, timeFrame, startAt, endAt, limit):
         klines = []
+        timeFrame = Utility.unify_timeframe(timeFrame, "kucoin")
         for i in range(startAt,endAt,limit):
             temp = []
             if (i+limit < endAt):

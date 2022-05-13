@@ -3,7 +3,7 @@ import requests
 import asyncio
 import ccxt
 import configparser
-from src.tfMap import tfMap
+from src.utility import Utility
 from datetime import datetime
 import time
 
@@ -27,7 +27,8 @@ class KucoinFutures(Kucoin):
         # print( self.exchange.fetch_balance())
 
     def get_klines(self, symbol, timeFrame, startAt, endAt):
-        symbol = tfMap.get_exchange_format(symbol)
+        symbol = Utility.get_exchange_format(symbol)
+        timeFrame = Utility.unify_timeframe(timeFrame, "kucoinfutures")
         print('requesting data for {} in timeframe {} from {} to {}'.format(symbol,timeFrame, str(datetime.fromtimestamp(startAt)), str(datetime.fromtimestamp(endAt))))
         status = True
         while status:
@@ -56,7 +57,8 @@ class KucoinFutures(Kucoin):
         klines = []
         startAt = startAt * 1000
         endAt = endAt * 1000
-        step = limit * tfMap.array[timeFrame]
+        timeFrame = Utility.unify_timeframe(timeFrame, "kucoinfutures")
+        step = limit * Utility.array[timeFrame]
         print(startAt, endAt, step)
         for i in range(startAt,endAt,step):
             temp = []

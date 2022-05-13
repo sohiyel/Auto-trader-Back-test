@@ -8,7 +8,7 @@ from src.settings import Settings
 import os
 from threading import Thread
 from src.data import DataService
-from src.tfMap import tfMap
+from src.utility import Utility
 
 def run_back_test():
     tradeRunner = BackTestRunner(settings)
@@ -28,7 +28,7 @@ def run_data_downloader():
         executor.map(downloader.initialize_indexes,downloader.tablesList)
 
 def download_data(pair, timeframe, startAt, endAt):
-    downloader = DataDownloader(pair, timeframe, settings)
+    downloader = DataDownloader(pair, Utility.unify_timeframe(timeframe, settings.exchange), settings)
     startAtTs = DataService.convert_time(startAt) * 1000
     endAtTs = DataService.convert_time(endAt) * 1000
     print(startAtTs, endAtTs)

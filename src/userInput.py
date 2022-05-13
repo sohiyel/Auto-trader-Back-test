@@ -4,14 +4,14 @@ import itertools
 import numpy as np
 from random import shuffle
 import time
-from src.tfMap import tfMap
+from src.utility import Utility
 from os import path
 
 class UserInput():
     def __init__(self, pair, timeFrame, strategyName, botName, side = "both", leverage = 1, amount = 1 , ratioAmount = 0, optimization = False, randomInput = False, settings="") -> None:
         self.settings = settings
         self.pair = pair
-        self.timeFrame = timeFrame
+        self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
         self.strategyName = strategyName
         self.botName = botName
         self.side = side
@@ -180,7 +180,7 @@ class UserInput():
                 if i.historyNeeded:
                     if i.value > max:
                         max = i.value
-        return max * tfMap.array[self.timeFrame] * 60
+        return max * Utility.array[self.timeFrame] * 60
         
         
 

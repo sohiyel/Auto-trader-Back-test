@@ -1,5 +1,5 @@
 from pprint import isreadable
-from src.tfMap import tfMap
+from src.utility import Utility
 from src.trader import Trader
 from pprint import pprint
 import time
@@ -23,9 +23,9 @@ class TradeRunner():
         counter = 0
         while True:
             deltaTime = (time.time() - startTime)
-            if int(deltaTime % (tfMap.array[index.timeFrame] * 60)) == 0:
+            if int(deltaTime % (Utility.array[index.timeFrame] * 60)) == 0:
                 trader.mainloop()
-            if int(deltaTime % (tfMap.array[index.timeFrame] * 20)) == 0:
+            if int(deltaTime % (Utility.array[index.timeFrame] * 20)) == 0:
                 trader.check_continue()
             time.sleep(1)
 

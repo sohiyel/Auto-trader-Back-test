@@ -4,7 +4,7 @@ from src.positionManager import PositionManager
 from src.orderManager import OrderManager
 from src.data import DataService
 from src.portfolioManager import PortfolioManager
-from src.tfMap import tfMap
+from src.utility import Utility
 from datetime import datetime
 from pytz import timezone
 import os
@@ -18,12 +18,13 @@ class Trader(Simulator):
         self.settings = settings
         self.exchange = exchange
         self.pair = index.pair
+        self.timeFrame = Utility.unify_timeframe(index.timeFrame, settings.exchange)
         self.side = index.side
         self.startAt = datetime.utcnow().strftime('%Y-%m-%d_%H:%M:%S')
         historyNeeded = index.calc_history_needed()
         self.historyNeeded = int(historyNeeded)
         self.endAt = datetime.fromtimestamp(time.time() - historyNeeded, tz=timezone('utc')).strftime('%Y-%m-%d_%H:%M:%S')
-        self.dataService = DataService(market, index.pair, index.timeFrame, self.startAt, self.endAt, historyNeeded, settings)
+        self.dataService = DataService(market, index.pair, self.timeFrame, self.startAt, self.endAt, historyNeeded, settings)
         self.startAtTS = self.dataService.startAtTs
         self.endAtTS = self.dataService.endAtTs
         self.lastState = self.dataService.startAtTs
@@ -32,7 +33,6 @@ class Trader(Simulator):
         self.portfolioManager = PortfolioManager(index.pair,1, settings, exchange)
         self.initialCapital = self.portfolioManager.get_equity()
         self.orderManager = OrderManager(self.initialCapital, index.strategyName, index.botName, index.inputs, index.pair, settings)
-        self.timeFrame = index.timeFrame
         self.lastCandle = ""
         self.volume = index.amount
         self.ratioAmount = index.ratioAmount
