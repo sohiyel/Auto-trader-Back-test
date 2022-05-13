@@ -37,6 +37,7 @@ class Simulator():
         self.optimization = optimization
         self.historyNeeded = int(historyNeeded)
         self.lastCandle = ""
+        self.side = settings.tradeSide
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
@@ -73,18 +74,27 @@ class Simulator():
             pass
 
         elif choice == 1:
-            if signal:
-                self.openPosition(signal, commission)
+            if self.side == "long" or self.side == "both":
+                if signal:
+                    self.openPosition(signal, commission)
             
         elif choice == 2:
-            self.closePosition(commission)
+            if self.side == "long" or self.side == "both":
+                if signal:
+                    self.closePosition(commission)
 
         elif choice == 3:
-            if signal:
-                self.openPosition(signal, commission)
+            if self.side == "short" or self.side == "both":
+                if signal:
+                    self.openPosition(signal, commission)
             
         elif choice == 4:
-            self.closePosition(commission)
+            if signal:
+                if self.side == "short" or self.side == "both":
+                    self.closePosition(commission)
+            else:
+                self.closePosition(commission)
+            
 
         if len(self.positionManager.openPositions) > 0:
             lastPrice = self.positionManager.calc_equity()

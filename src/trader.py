@@ -42,37 +42,6 @@ class Trader(Simulator):
         self.currentInput = index
         self.df = ""
 
-    def processOrders(self, choice, signal, commission ):
-        if choice == 0:
-            pass
-
-        elif choice == 1:
-            if self.side == "long" or self.side == "both":
-                if signal:
-                    self.openPosition(signal, commission)
-            
-        elif choice == 2:
-            if self.side == "long" or self.side == "both":
-                if signal:
-                    self.closePosition(commission)
-
-        elif choice == 3:
-            if self.side == "short" or self.side == "both":
-                if signal:
-                    self.openPosition(signal, commission)
-            
-        elif choice == 4:
-            if signal:
-                if self.side == "short" or self.side == "both":
-                    self.closePosition(commission)
-            else:
-                self.closePosition(commission)
-            
-
-        if len(self.positionManager.openPositions) > 0:
-            lastPrice = self.positionManager.calc_equity()
-            self.portfolioManager.equities.append(self.portfolioManager.update_equity(lastPrice))
-
     def update_candle_data(self):
         self.lastState = time.time() * 1000
         df = self.dataService.read_data_from_db(self.historyNeeded, self.lastState)

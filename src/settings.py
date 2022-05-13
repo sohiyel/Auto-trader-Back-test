@@ -5,6 +5,7 @@ class Settings:
         self.username = username
         self.task = task
         self.multiProcess = False
+        self.tradeSide = "both"
         self.constantNumbers = {
             "commission" : 0.0006,
             "data_limit_future" : 200,
