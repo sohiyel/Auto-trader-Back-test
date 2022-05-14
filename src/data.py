@@ -106,8 +106,10 @@ class DataService():
         return self.db.read_klines(self.dbPair, self.timeFrame, limit, lastState)
 
     def read_data_from_memory(self, limit, lastState):
-        candles = self.dataFrame.loc[self.dataFrame['timestamp'] <= lastState]
-        return candles.tail(limit)
+        df = self.dataFrame.loc[self.dataFrame['timestamp'] <= lastState]
+        df = df.sort_values(by='timestamp', ascending=True)
+        df.reset_index(drop=True, inplace=True)
+        return df.tail(limit)
         
         d1 = d1.sort_values(by='timestamp', ascending=True)
         d2 = self.db.read_klines(self.dbPair, self.timeFrame, limit, lastState)

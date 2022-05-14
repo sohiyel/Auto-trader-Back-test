@@ -104,8 +104,6 @@ class Simulator():
         try:
             if self.settings.task == "backtest":
                 df = self.dataService.read_data_from_memory(self.historyNeeded, self.lastState * 1000)
-                df = df.sort_values(by='timestamp', ascending=True)
-                df.reset_index(drop=True, inplace=True)
                 lastCandle = df.iloc[-1]
                 if lastCandle['timestamp'] != lastState*1000:
                     print(f"---------- Could not find this candle{lastState*1000} ---------")

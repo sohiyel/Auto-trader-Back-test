@@ -145,7 +145,7 @@ class DatabaseManager():
         cur = self.conn.cursor()
         tableName = Utility.get_db_format(pair) + "_" + timeFrame
         try:
-            cur.execute(f"SELECT * FROM {tableName} WHERE dt < {endAt + 1} AND dt > {startAt - 1} ORDER BY dt DESC;")
+            cur.execute(f"SELECT * FROM {tableName} WHERE dt < {endAt + 1} AND dt > {startAt - 1} ORDER BY dt ASC;")
             query = cur.fetchall()
             df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'], dtype=float)
             cur.close()

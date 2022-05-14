@@ -1,3 +1,4 @@
+from django.conf import settings
 from src.strategy import Strategy
 import json
 from src.signalClass import SignalClass
@@ -25,9 +26,10 @@ class OneEMA(Strategy):
             self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
         if not isinstance(marketData, str):
             self.df["ema"] = ta.ema(self.df["close"], length=self.emaLength)
+            pd.DataFrame.to_csv(self.df,"./oneEMAResults.csv")
 
     def long_enter(self,candle):
-        if candle.iloc[-1]['close'] > candle.iloc[-1]['ema']:
+        if candle['close'] > candle['ema']:
             self.decisions['longEnt'] = 1
             
 
@@ -35,11 +37,11 @@ class OneEMA(Strategy):
         pass
 
     def short_enter(self,candle):
-        if candle.iloc[-1]['close'] < candle.iloc[-1]['ema']:
+        if candle['close'] < candle['ema']:
             self.decisions['shortEnt'] = 1
 
     def short_exit(self, candle):
-        if candle.iloc[-1]['close'] > candle.iloc[-1]['ema']:
+        if candle['close'] > candle['ema']:
             self.decisions['shortExt'] = 1
 
     def decider(self, marketData, timeStamp =""):
@@ -51,7 +53,7 @@ class OneEMA(Strategy):
             'shortExt' : 0,
         }
         if timeStamp:
-            candle = self.df.loc[self.df["timestamp"] == timeStamp*1000]
+            candle = self.df.loc[self.df["timestamp"] == timeStamp*1000].iloc[-1]
         else:
             if len(marketData) < self.emaLength:
                 print ("-----------Low amount of Data!-----------")
@@ -61,13 +63,13 @@ class OneEMA(Strategy):
                 return SignalClass()
             self.df = pd.DataFrame(marketData)
             self.df["ema"] = ta.ema(self.df["close"], length=self.emaLength)
-            candle = self.df.loc[self.df["timestamp"] == self.df.iloc[-1]["timestamp"]]
+            candle = self.df.iloc[-1]
         self.long_enter(candle)
         self.long_exit(candle)
         self.short_enter(candle)
         self.short_exit(candle)
         sig = SignalClass(pair = self.pair,
-                        price = candle.iloc[-1]["close"],
+                        price = candle["close"],
                         slPercent = self.stopLoss,
                         tpPercent = self.takeProfit,
                         comment= "OneEMA",
