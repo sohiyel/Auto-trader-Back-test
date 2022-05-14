@@ -15,25 +15,23 @@ from src.data import DataService
 class DataDownloader():
     def __init__(self, pair, timeFrame, settings) -> None:
         self.settings = settings
-        self.pair = pair
+        self.pair = Utility.get_exchange_format(pair)
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
-        pair = Utility.get_db_format(self.pair)
-        self.tableName = pair + "_" + self.timeFrame
+        self.dbPair = Utility.get_db_format(self.pair)
+        self.tableName = self.dbPair + "_" + self.timeFrame
         self.exchange = ccxt.kucoinfutures()
         self.db = DatabaseManager(settings)
 
-    def get_klines(self):
-        pair = Utility.get_exchange_format(self.pair)
-        klines = self.exchange.fetch_ohlcv(pair, self.timeFrame)
+    def get_current_klines(self):
+        klines = self.exchange.fetch_ohlcv(self.pair, self.timeFrame)
         df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
         return df
 
     def fetch_klines(self, startAt, endAt):
-        pair = Utility.get_exchange_format(self.pair)
         klinesList = []
         lastDate = startAt
         while lastDate < endAt+1:
-            klines = self.exchange.fetch_ohlcv(pair, self.timeFrame, lastDate)
+            klines = self.exchange.fetch_ohlcv(self.pair, self.timeFrame, lastDate)
             if len(klines) == 0:
                 print('        Something went wrong in getting klines sleeping ... ')
                 time.sleep(10)
@@ -57,7 +55,7 @@ class DataDownloader():
 
     def main_loop(self):
         while True:
-            klines = self.get_klines()
+            klines = self.get_current_klines()
             self.db.create_ohlcv_table(self.pair,self.timeFrame)
             diff = self.find_new_data(klines)
             self.db.store_klines(diff,self.tableName)
@@ -68,14 +66,10 @@ class Downloader():
     def __init__(self, settings) -> None:
         self.settings = settings
         self.tablesList = self.find_tables()
-        self.indexes = []
 
     def initialize_indexes(self, table):
         downloader = DataDownloader(table[0], table[1], self.settings)
         downloader.main_loop()
-        self.indexes.append(downloader)
-        print  (f"--------- Initialized :{table[0]} _ {table[1]} ---------")
-        time.sleep(1)
 
     def find_tables(self):
         tables = []
