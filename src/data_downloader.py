@@ -49,7 +49,7 @@ class DataDownloader():
         print(f'        From {firstDate} to {endDate}')
 
     def find_new_data(self, klines):
-        df = self.db.read_klines(self.pair, self.timeFrame, 200, time.time())
+        df = self.db.read_klines(self.pair, self.timeFrame, 200, time.time()*1000)
         diff = klines.merge(df, how = 'outer', indicator = True).loc[ lambda x : x['_merge'] == 'left_only']
         return diff
 

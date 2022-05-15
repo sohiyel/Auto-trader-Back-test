@@ -32,6 +32,7 @@ def download_data(pair, timeframe, startAt, endAt):
     startAtTs = DataService.convert_time(startAt) * 1000
     endAtTs = DataService.convert_time(endAt) * 1000
     print(startAtTs, endAtTs)
+    downloader.db.create_ohlcv_table(pair, timeframe)
     downloader.fetch_klines(startAtTs, endAtTs)
 
 if __name__ == '__main__':
