@@ -1,9 +1,12 @@
 from os import path
 
 class Settings:
-    def __init__(self,username) -> None:
+    def __init__(self,username, task='backtest') -> None:
         self.username = username
+        self.task = task
         self.multiProcess = False
+        self.tradeSide = "both"
+        self.exchange = "kucoinfutures"
         self.constantNumbers = {
             "commission" : 0.0006,
             "data_limit_future" : 200,

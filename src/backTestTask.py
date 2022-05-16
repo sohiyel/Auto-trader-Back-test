@@ -3,7 +3,9 @@ from tabnanny import check
 import time
 import os
 
-from src.tfMap import tfMap
+from django.conf import settings
+
+from src.utility import Utility
 class BackTestTask():
     def __init__(self,settings) -> None:
         self.settings = settings
@@ -31,7 +33,7 @@ class BackTestTask():
                         else:
                             self.pair = ""
                         if "timeFrame" in self.jsonFile["To_Do"][0]:
-                            self.timeFrame = self.jsonFile["To_Do"][0]["timeFrame"]
+                            self.timeFrame = Utility.unify_timeframe(self.jsonFile["To_Do"][0]["timeFrame"], self.settings.exchange)
                         else:
                             self.timeFrame = ""
                         if "strategyName" in self.jsonFile["To_Do"][0]:
@@ -98,7 +100,7 @@ class BackTestTask():
             if not self.numberOfInputs:
                 print("-------------Number of inputs is required for random input!-------------")    
                 return (False,"Number of inputs is required for random input")
-        if not self.timeFrame in tfMap.array.keys():
+        if not self.timeFrame in Utility.array.keys():
             print("-------------Timeframe of this task is not valid!-------------")
             return (False,"Timeframe of this task is not valid")
         if self.botName:

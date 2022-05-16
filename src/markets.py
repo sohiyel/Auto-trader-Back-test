@@ -1,6 +1,6 @@
 from src.exchanges.kucoinFutures import KucoinFutures
 import json
-from src.tfMap import tfMap
+from src.utility import Utility
 import os
 
 class Markets():
@@ -29,7 +29,7 @@ class Markets():
         return json_file
 
     def get_contract_size(self, pair):
-        ePair = tfMap.get_exchange_format(pair)
+        ePair = Utility.get_exchange_format(pair)
         return self.markets[ePair]['contractSize']
 
 

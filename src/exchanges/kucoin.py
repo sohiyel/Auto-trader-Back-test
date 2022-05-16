@@ -1,5 +1,5 @@
 import requests
-from src.tfMap import tfMap
+from src.utility import Utility
 
 class Kucoin:
     def __init__(self, sandBox=False):

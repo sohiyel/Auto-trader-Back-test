@@ -1,5 +1,6 @@
 import json
 from src.userInput import UserInput
+from src.utility import Utility
 
 class TradeIndex():
     def __init__(self, settings) -> None:
@@ -9,7 +10,7 @@ class TradeIndex():
             ptss = self.jsonFile["trades"]["pts"]
             for pts in ptss:
                 self.indexes.append( UserInput( pair = pts["pair"], 
-                                                timeFrame = pts["tf"], 
+                                                timeFrame = Utility.unify_timeframe(pts["tf"], settings.exchange),
                                                 strategyName = pts["strategy"],
                                                 botName = pts["bot"],
                                                 side = pts["long_short"],

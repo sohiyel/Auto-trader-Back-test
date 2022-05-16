@@ -1,7 +1,7 @@
 import psycopg2
 import json
 import configparser
-from src.tfMap import tfMap
+from src.utility import Utility
 import pandas as pd
 import time
 
@@ -28,7 +28,7 @@ class DatabaseManager():
             print ("Cannot read db config file!")
 
     def create_ohlcv_table(self, pair, timeFrame):
-        dbPair = tfMap.get_db_format(pair)
+        dbPair = Utility.get_db_format(pair)
         cur = self.conn.cursor()
         try:
             cur.execute('''CREATE TABLE IF NOT EXISTS {} (
@@ -127,7 +127,7 @@ class DatabaseManager():
 
     def read_klines(self, pair, timeFrame, limit, lastState):
         cur = self.conn.cursor()
-        tableName = tfMap.get_db_format(pair) + "_" + timeFrame
+        tableName = Utility.get_db_format(pair) + "_" + timeFrame
         try:
             cur.execute(f"SELECT * FROM {tableName} WHERE dt < {lastState} ORDER BY dt DESC LIMIT {limit};")
             query = cur.fetchall()
@@ -143,9 +143,9 @@ class DatabaseManager():
 
     def fetch_klines(self, pair, timeFrame, startAt, endAt):
         cur = self.conn.cursor()
-        tableName = tfMap.get_db_format(pair) + "_" + timeFrame
+        tableName = Utility.get_db_format(pair) + "_" + timeFrame
         try:
-            cur.execute(f"SELECT * FROM {tableName} WHERE dt < {endAt + 1} AND dt > {startAt - 1} ORDER BY dt DESC;")
+            cur.execute(f"SELECT * FROM {tableName} WHERE dt < {endAt + 1} AND dt > {startAt - 1} ORDER BY dt ASC;")
             query = cur.fetchall()
             df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'], dtype=float)
             cur.close()

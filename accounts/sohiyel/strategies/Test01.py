@@ -16,17 +16,17 @@ class Test01(Strategy):
             self.decisions['longEnt'] = 1
 
     def long_exit(self):
-        longExits = []
+        longExits = [1]
         if self.currentTime in longExits:
             self.decisions['longExt'] = 1
 
     def short_enter(self):
-        shortEnters = []
+        shortEnters = [2]
         if self.currentTime in shortEnters:
             self.decisions['shortEnt'] = 1
 
     def short_exit(self):
-        shortExits = []
+        shortExits = [3]
         if self.currentTime in shortExits:
             self.decisions['shortExt'] = 1
 
