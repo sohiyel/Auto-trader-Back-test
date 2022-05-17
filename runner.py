@@ -9,6 +9,10 @@ import os
 from threading import Thread
 from src.data import DataService
 from src.utility import Utility
+from src.logManager import get_logger
+
+settings = Settings(sys.argv[2], sys.argv[1])
+logger = get_logger(__name__, settings)
 
 def run_back_test():
     tradeRunner = BackTestRunner(settings)
@@ -39,36 +43,41 @@ if __name__ == '__main__':
     if sys.argv[1] == "backtest":
         settings = Settings(sys.argv[2], "backtest")
         if os.path.exists(settings.ACCOUNT_DIR):
+            logger.info ("Start backtesting!")
             run_back_test()
         else:
-            print (f"There is no account with this informations!")
+            logger.warning (f"There is no account with this informations!")
     if sys.argv[1] == "fast_backtest":
         settings = Settings(sys.argv[2], "fast_backtest")
         if os.path.exists(settings.ACCOUNT_DIR):
+            logger.info ("Start fast backtesting!")
             run_back_test()
         else:
-            print (f"There is no account with this informations!")
+            logger.warning (f"There is no account with this informations!")
     elif sys.argv[1] == "trade":
         settings = Settings(sys.argv[2], "trade")
         if os.path.exists(settings.ACCOUNT_DIR):
+            logger.info ("Start trading!")
             thread01 = Thread(target= run_data_downloader)
             thread01.start()
             time.sleep(5)
             thread02 = Thread(target=run_trade)
             thread02.start()
         else:
-            print (f"There is no account with this informations!")
+            logger.warning (f"There is no account with this informations!")
     elif sys.argv[1] == "live_data":
         settings = Settings(sys.argv[2], "live_data")
         if os.path.exists(settings.ACCOUNT_DIR):
+            logger.info ("Start downloading live data!")
             run_data_downloader()
         else:
-            print (f"There is no account with this informations!")
+            logger.warning (f"There is no account with this informations!")
     elif sys.argv[1] == "download_data":
         settings = Settings(sys.argv[2], "download_data")
         if os.path.exists(settings.ACCOUNT_DIR):
+            logger.info ("Start downloading backtest data!")
             download_data(sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6])
         else:
-            print (f"There is no account with this informations!")
+            logger.warning (f"There is no account with this informations!")
     else:
-        print ("Wrong command!")
+        logger.error ("Wrong command!")
