@@ -7,11 +7,9 @@ from src.portfolioManager import PortfolioManager
 from src.utility import Utility
 from datetime import datetime
 from pytz import timezone
-import os
-from src.plotter import Plotter
 import time
 from src.simulator import Simulator
-
+from src.logManager import get_logger
 
 class Trader(Simulator):
     def __init__ (self, index, exchange, settings, market = 'futures'):
@@ -41,6 +39,7 @@ class Trader(Simulator):
         self.positionManager.sync_positions()
         self.currentInput = index
         self.df = ""
+        self.logger = get_logger(__name__, settings)
 
     def update_candle_data(self):
         self.lastState = time.time() * 1000
@@ -50,18 +49,24 @@ class Trader(Simulator):
         self.lastCandle = self.df.iloc[-1]
 
     def mainloop(self):
-        print ( f"<----------- Run mainloop on {self.pair} ----------->")
+        self.logger.info ( f"<----------- Run mainloop on {self.pair} ----------->")
         if self.portfolioManager.get_equity():
             if self.portfolioManager.equity <= 0:
                 self.processOrders(4, None, self.settings.constantNumbers["commission"])
                 self.portfolioManager.balance = 0
                 return
-        self.update_candle_data()
+        try:
+            self.update_candle_data()
+        except:
+            self.logger.error("Cannot update candle data!")
         choice, signal = self.orderManager.decider(self.df,
                                                     self.portfolioManager.equity,
                                                     self.portfolioManager.balance,
                                                     self.positionManager.position_average_price(),
                                                     self.positionManager.position_size())
-        print ( f"Current choice is:{choice}")
-        self.processOrders(choice, signal, self.settings.constantNumbers["commission"])
+        self.logger.info ( f"Current choice is:{choice}")
+        try:
+            self.processOrders(choice, signal, self.settings.constantNumbers["commission"])
+        except:
+            self.logger.error("Cannot process this signal!")
         self.portfolioManager.calc_poL()

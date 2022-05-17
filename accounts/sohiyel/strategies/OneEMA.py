@@ -1,18 +1,16 @@
-from django.conf import settings
 from src.strategy import Strategy
-import json
 from src.signalClass import SignalClass
 import pandas as pd
 import pandas_ta as ta
-from itertools import chain
-
+from src.logManager import get_logger
 class OneEMA(Strategy):
-    def __init__(self, currentInput, pair, marketData = "") -> None:
+    def __init__(self, currentInput, pair, marketData = "", settings="") -> None:
         super().__init__()
         self.pair = pair
         self.marketData = []
         self.df = marketData
-        # print(currentInput)
+        self.logger = get_logger(__name__, settings)
+
         if type(currentInput[0]) == tuple:
             for i in currentInput:
                 if i[0].strategy == "OneEMA":
@@ -26,7 +24,6 @@ class OneEMA(Strategy):
             self.takeProfit = next((x.value for x in currentInput if x.name == "tp_percent"), 0.5)
         if not isinstance(marketData, str):
             self.df["ema"] = ta.ema(self.df["close"], length=self.emaLength)
-            pd.DataFrame.to_csv(self.df,"./oneEMAResults.csv")
 
     def long_enter(self,candle):
         if candle['close'] > candle['ema']:
@@ -56,10 +53,10 @@ class OneEMA(Strategy):
             candle = self.df.loc[self.df["timestamp"] == timeStamp*1000].iloc[-1]
         else:
             if len(marketData) < self.emaLength:
-                print ("-----------Low amount of Data!-----------")
-                print("Expected:",str(self.emaLength))
-                print("Given:", str(len(marketData)))
-                print(marketData.iloc[0]['timestamp'], marketData.iloc[-1]['timestamp'])
+                self.logger.warning ("-----------Low amount of Data!-----------")
+                self.logger.warning("Expected:",str(self.emaLength))
+                self.logger.warning("Given:", str(len(marketData)))
+                self.logger.warning(marketData.iloc[0]['timestamp'], marketData.iloc[-1]['timestamp'])
                 return SignalClass()
             self.df = pd.DataFrame(marketData)
             self.df["ema"] = ta.ema(self.df["close"], length=self.emaLength)
@@ -77,5 +74,4 @@ class OneEMA(Strategy):
                         longExit = self.decisions["longExt"],
                         shortEnter = self.decisions["shortEnt"],
                         shortExit = self.decisions["shortExt"])
-        # print(sig)
         return sig

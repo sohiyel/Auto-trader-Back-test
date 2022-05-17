@@ -1,9 +1,6 @@
 from src.strategy import Strategy
-import json
 from src.signalClass import SignalClass
-import pandas as pd
 import pandas_ta as ta
-from itertools import chain
 
 class OneEMA_fast(Strategy):
     def __init__(self, currentInput, pair, marketData="") -> None:
@@ -11,7 +8,6 @@ class OneEMA_fast(Strategy):
         self.pair = pair
         self.marketData = []
         self.df = marketData
-        # print(currentInput)
         if type(currentInput[0]) == tuple:
             for i in currentInput:
                 if i[0].strategy == "OneEMA":
@@ -42,10 +38,7 @@ class OneEMA_fast(Strategy):
             self.decisions['shortExt'] = 1
 
     def decider(self, marketData, timeStamp = ""):
-        # print(self.df.iloc[0])
-        # print("timeStamp:"+ str(timeStamp))
         candle = self.df.loc[self.df["timestamp"] == timeStamp*1000]
-        # print(candle)
         self.decisions = {
             'longEnt' : 0,
             'shortEnt' : 0,
@@ -65,5 +58,4 @@ class OneEMA_fast(Strategy):
                         longExit = self.decisions["longExt"],
                         shortEnter = self.decisions["shortEnt"],
                         shortExit = self.decisions["shortExt"])
-        # print(sig)
         return sig
