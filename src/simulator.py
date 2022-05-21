@@ -6,9 +6,9 @@ from src.portfolioManager import PortfolioManager
 from src.utility import Utility
 from datetime import datetime
 from pytz import timezone
-import os
 from src.plotter import Plotter
 import time
+from src.logManager import get_logger
 
 class Simulator():
     def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization, historyNeeded, settings):
@@ -38,6 +38,7 @@ class Simulator():
         self.historyNeeded = int(historyNeeded)
         self.lastCandle = ""
         self.side = settings.tradeSide
+        self.logger = get_logger(__name__, settings)
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
@@ -72,30 +73,24 @@ class Simulator():
     def processOrders(self, choice, signal, commission ):
         if choice == 0:
             pass
-
         elif choice == 1:
             if self.side == "long" or self.side == "both":
                 if signal:
                     self.openPosition(signal, commission)
-            
         elif choice == 2:
             if self.side == "long" or self.side == "both":
                 if signal:
                     self.closePosition(commission)
-
         elif choice == 3:
             if self.side == "short" or self.side == "both":
                 if signal:
                     self.openPosition(signal, commission)
-            
         elif choice == 4:
             if signal:
                 if self.side == "short" or self.side == "both":
                     self.closePosition(commission)
             else:
                 self.closePosition(commission)
-            
-
         if len(self.positionManager.openPositions) > 0:
             lastPrice = self.positionManager.calc_equity()
             self.portfolioManager.equities.append(self.portfolioManager.update_equity(lastPrice))
@@ -106,30 +101,30 @@ class Simulator():
                 df = self.dataService.read_data_from_memory(self.historyNeeded, self.lastState * 1000)
                 lastCandle = df.iloc[-1]
                 if lastCandle['timestamp'] != lastState*1000:
-                    print(f"---------- Could not find this candle{lastState*1000} ---------")
+                    self.logger.warning(f"---------- Could not find this candle{lastState*1000} ---------")
                     return False,False
                 return df, lastCandle
             elif self.settings.task == "fast_backtest":
                 lastCandle = self.dataframe.loc[self.dataframe['timestamp'] == lastState*1000].iloc[0]
                 return self.dataframe, lastCandle
         except:
-            print(f"---------- Could not find this candle{lastState*1000} ---------")
+            self.logger.warning(f"---------- Could not find this candle{lastState*1000} ---------")
             return False,False
 
     def check_continue(self):
         if self.settings.task == "trade":
-            print ( f"<----------- Check continue on {self.pair} ----------->")
+            self.logger.info ( f"<----------- Check continue on {self.pair} ----------->")
             self.update_candle_data()
         checkContinue = self.positionManager.check_sl_tp(self.lastCandle['close'], self.lastState)
         if not checkContinue :
             if self.settings.task == "trade":
-                print ( f"<----------- Close on SL/TP {self.pair} ----------->")
+                self.logger.info ( f"<----------- Close on SL/TP {self.pair} ----------->")
             self.processOrders(4, None, self.settings.constantNumbers["commission"])
             return
 
     def mainloop(self):
         start_time = time.time()
-        print("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
+        self.logger.info("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
         for i in range(self.dataService.startAtTs, self.dataService.endAtTs, Utility.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
                 self.processOrders(4, None, self.settings.constantNumbers["commission"])
@@ -200,12 +195,12 @@ class Simulator():
             reportDict
         )
 
-        print(result)
+        self.logger.info(result)
 
         if not self.optimization:
             df = pd.DataFrame.from_records([position.to_dict() for position in self.positionManager.closedPositions])
             df['Balance'] = self.portfolioManager.balances
             self.plotter.writeDFtoFile(df)
-        print("--- End time: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
-        print("--- Duration: %s seconds ---" % (time.time() - start_time))
+        self.logger.info("--- End time: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
+        self.logger.info("--- Duration: %s seconds ---" % (time.time() - start_time))
         return result

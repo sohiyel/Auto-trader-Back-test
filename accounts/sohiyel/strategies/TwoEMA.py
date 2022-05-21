@@ -1,15 +1,15 @@
 from src.strategy import Strategy
-import json
 from src.signalClass import SignalClass
 import pandas as pd
 import pandas_ta as ta
-from itertools import chain
+from src.logManager import get_logger
 class TwoEMA(Strategy):
-    def __init__(self, currentInput, pair, marketData = "") -> None:
+    def __init__(self, currentInput, pair, marketData = "", settings="") -> None:
         super().__init__()
         self.pair = pair
         self.marketData = []
         self.df = marketData
+        self.logger = get_logger(__name__, settings)
         if type(currentInput[0]) == tuple:
             for i in currentInput:
                 if i[0].strategy == "TwoEMA":
@@ -45,7 +45,7 @@ class TwoEMA(Strategy):
 
     def decider(self, marketData, timeStamp =""):
         if len(marketData) < self.slowEMALength:
-            print ("-----------Low amount of Data!-----------")
+            self.logger.warning ("-----------Low amount of Data!-----------")
             return SignalClass()
         
         self.decisions = {
@@ -75,5 +75,4 @@ class TwoEMA(Strategy):
                         longExit = self.decisions["longExt"],
                         shortEnter = self.decisions["shortEnt"],
                         shortExit = self.decisions["shortExt"])
-        # print(sig)
         return sig

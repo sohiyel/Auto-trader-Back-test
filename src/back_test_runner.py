@@ -1,14 +1,12 @@
-from pprint import isreadable
 from src.userInput import UserInput
 import pandas as pd
-from pprint import pprint
 import time
 from datetime import datetime
 import concurrent.futures
 from src.backTestTask import BackTestTask
 from os import path
 from src.simulator import Simulator
-
+from src.logManager import get_logger
 class BackTestRunner():
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -16,11 +14,12 @@ class BackTestRunner():
         self.task = BackTestTask(self.settings)
         self.userInput = ""
         self.historyNeeded = ""
+        self.logger = get_logger(__name__, settings)
 
     def run_back_test(self, currentInput):
-        print  ("--------- New process started ---------")
+        self.logger.info  ("--------- New process started ---------")
         self.historyNeeded = self.userInput.calc_history_needed()
-        print(f'Number of history needed in secnds: {self.historyNeeded}')
+        self.logger.info(f'Number of history needed in secnds: {self.historyNeeded}')
         trader = Simulator(market = self.task.market,
                     pair = self.task.pair,
                     timeFrame = self.task.timeFrame,
@@ -36,7 +35,7 @@ class BackTestRunner():
                     settings = self.settings)
 
         result = trader.mainloop()
-        print  ("--------- A process has finished! ---------")
+        self.logger.info  ("--------- A process has finished! ---------")
         return result
 
     def start_task(self):
@@ -49,7 +48,7 @@ class BackTestRunner():
                                   randomInput = self.task.randomInputs,
                                   settings = self.settings)
             start_time = time.time()
-            print("Number of steps: " + str(len(self.userInput.inputs)))
+            self.logger.info("Number of steps: " + str(len(self.userInput.inputs)))
             results = []
             if not self.task.randomInputs:
                 numberOfInputs = len(self.userInput.inputs)
@@ -69,8 +68,7 @@ class BackTestRunner():
         timestr = time.strftime("%Y-%m-%d_%H-%M-%S")
         results = results.sort_values(by = 'Net profit per day', ascending = False)
         optimumResult = results.iloc[0]
-        # print(optimumResult["TwoEMA_slow_len"])
-        print (results)
+        self.logger.info (results)
         if self.task.botName:
             optimizationPath = path.join(self.settings.OPTIMIZATIONS_DIR , timestr + "_" + self.task.pair + "_" + self.task.timeFrame + "_" + self.task.botName +".csv")
         else:
@@ -78,7 +76,7 @@ class BackTestRunner():
         results.to_csv(optimizationPath)
         self.userInput.write_optimized_values(optimumResult)
             
-        print("--- End of optimization: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
+        self.logger.info("--- End of optimization: {endTime} ---".format(endTime=str(datetime.fromtimestamp(time.time()))))
 
 if __name__ == '__main__':
     

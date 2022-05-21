@@ -1,15 +1,8 @@
 from datetime import datetime
-from psycopg2 import Timestamp
 from pytz import timezone
-import os
-import asyncio
-import pandas as pd
-from pytz import timezone
-from src.exchanges.kucoinFutures import KucoinFutures
-from src.exchanges.kucoinSpot import KucoinSpot
 from src.utility import Utility
 from src.databaseManager import DatabaseManager
-from os import path
+from src.logManager import get_logger
 class DataService():
 
     def __init__(self, market, pair, timeFrame, startTime, endTime, historyNeeded = 0, settings=''):
@@ -26,6 +19,7 @@ class DataService():
         self.endAtTs = self.convert_time(endTime)
         self.historyNeeded = int(historyNeeded)
         self.db = DatabaseManager(settings)
+        self.logger = get_logger(__name__, settings)
         if not settings.task == 'trade':
             self.fetch_klines()
 
@@ -36,17 +30,24 @@ class DataService():
         return int(datetime.timestamp(utc_time))
 
     def fetch_klines(self):
-        self.dataFrame = self.db.fetch_klines(self.pair, self.timeFrame, (self.startAtTs - self.historyNeeded) * 1000, self.endAtTs * 1000)
-        print(" Expected candles:", (self.endAtTs - (self.startAtTs - self.historyNeeded))/(Utility.array[self.timeFrame]*60))
-        print( "Existing candles:", self.dataFrame.shape[0])
-        print("Needed start and end time:", (self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000)
-        print("Existed start anad end time:", self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp'])
+        try:
+            self.logger.info("Fetching klines...")
+            self.dataFrame = self.db.fetch_klines(self.pair, self.timeFrame, (self.startAtTs - self.historyNeeded) * 1000, self.endAtTs * 1000)
+            self.logger.info("Expected candles:", (self.endAtTs - (self.startAtTs - self.historyNeeded))/(Utility.array[self.timeFrame]*60))
+            self.logger.info("Existing candles:", self.dataFrame.shape[0])
+            self.logger.info("Needed start and end time:", (self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000)
+            self.logger.info("Existed start anad end time:", self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp'])
+        except:
+            self.logger.error("Cannot fetch klines")
 
     def read_data_from_db(self, limit, lastState):
         return self.db.read_klines(self.dbPair, self.timeFrame, limit, lastState)
 
     def read_data_from_memory(self, limit, lastState):
-        df = self.dataFrame.loc[self.dataFrame['timestamp'] <= lastState]
-        df = df.sort_values(by='timestamp', ascending=True)
-        df.reset_index(drop=True, inplace=True)
-        return df.tail(limit)
+        try:
+            df = self.dataFrame.loc[self.dataFrame['timestamp'] <= lastState]
+            df = df.sort_values(by='timestamp', ascending=True)
+            df.reset_index(drop=True, inplace=True)
+            return df.tail(limit)
+        except:
+            self.logger.error("Cannot read klines from memory!")

@@ -34,6 +34,7 @@ class Settings:
         self.TRADES_PATH = path.join(self.SETTINGS_DIR, "trades.json")
         self.MARKET_JSON_PATH = path.join(self.SETTINGS_DIR, "markets.json")
         self.STRATEGIES_MODULE_PATH = f"accounts.{self.username}.strategies."
+        self.LOG_FILE = path.join(self.ACCOUNT_DIR, "logs.log")
 
 if __name__ == '__main__':
     print("BASE_DIR: " + Settings.BASE_DIR)

@@ -1,8 +1,8 @@
-from numpy import short
 from src.signalClass import SignalClass
 import json
 import importlib
 from os import path
+from src.logManager import get_logger
 class BotSignal():
     def __init__(self, botName, currentInput, timeFrame="default", pair="default", settings="", marketData="") -> None:
         self.lastSignal = 0
@@ -12,19 +12,28 @@ class BotSignal():
         self.strategyNames = []
         self.strategies = []
         botFile = botName + ".json"
-        json_data_file = open( path.join(settings.SIGNALS_DIR, botFile))
-        botJson = json.load(json_data_file)
+        self.logger = get_logger(__name__, settings)
+        try:
+            json_data_file = open( path.join(settings.SIGNALS_DIR, botFile))
+            botJson = json.load(json_data_file)
+        except:
+            self.logger(f"Cannot load {botFile}")
         
         for s in botJson["strategies"]:
             self.strategyNames.append(s["strategy"])
         
         for s in self.strategyNames:
-            strategies = importlib.import_module(settings.STRATEGIES_MODULE_PATH+s)
-            StrategyClass = getattr(strategies, s)
-            self.strategies.append(StrategyClass(currentInput, self.pair, marketData))
-
-        self.andEnter = botJson["and_or_strategies"]["enter_strategies_and"]
-        self.andExit = botJson["and_or_strategies"]["exit_strategies_and"]
+            try:
+                strategies = importlib.import_module(settings.STRATEGIES_MODULE_PATH+s)
+                StrategyClass = getattr(strategies, s)
+                self.strategies.append(StrategyClass(currentInput, self.pair, marketData))
+            except:
+                self.logger.error(f"Cannot import this strategy{s}")
+        try:
+            self.andEnter = botJson["and_or_strategies"]["enter_strategies_and"]
+            self.andExit = botJson["and_or_strategies"]["exit_strategies_and"]
+        except:
+            self.logger.error("This strategy does not have add_or_strategies!")
         json_data_file.close()
         
     
@@ -73,7 +82,10 @@ class BotSignal():
 
         for s in self.strategies:
             signals.append(s.decider(self.marketData, timestamp))
-        decision = self.get_final_decision(signals)
+        try:
+            decision = self.get_final_decision(signals)
+        except:
+            self.logger.error("Cannot get final decision!")
         signal = SignalClass(signals[0].pair,
                             signals[0].side,
                             signals[0].volume,
@@ -87,5 +99,4 @@ class BotSignal():
                             decision["longExit"],
                             decision["shortEnter"],
                             decision["shortExit"])
-        # print(self.marketData[-1])
         return signal

@@ -1,11 +1,8 @@
 import json
-from tabnanny import check
 import time
 import os
-
-from django.conf import settings
-
 from src.utility import Utility
+from src.logManager import get_logger
 class BackTestTask():
     def __init__(self,settings) -> None:
         self.settings = settings
@@ -21,6 +18,7 @@ class BackTestTask():
         self.optimization = ""
         self.randomInputs = ""
         self.numberOfInputs = ""
+        self.logger = get_logger(__name__, settings)
 
     def read_toDo(self):
         if os.path.exists(self.settings.TASKS_PATH):
@@ -84,38 +82,38 @@ class BackTestTask():
                             return False
 
                     else:
-                        print("There is no tasks in the queue!")
+                        self.logger.warning("There is no tasks in the queue!")
                         return False
             except:
-                print("-------------Cannot open tasks.json!-------------")    
+                self.logger.error("-------------Cannot open tasks.json!-------------")    
         else:
-            print("-------------There is no tasks.json in your account!-------------")
+            self.logger.critical("-------------There is no tasks.json in your account!-------------")
 
     def check_task(self):
         if not (self.pair and self.timeFrame and self.startAt and\
             self.endAt and self.volume and self.initialCapital and self.market):
-            print("-------------Insufficient task parameters!-------------")    
+            self.logger.error("-------------Insufficient task parameters!-------------")    
             return (False,"Insufficient task parameters")
         if self.randomInputs:
             if not self.numberOfInputs:
-                print("-------------Number of inputs is required for random input!-------------")    
+                self.logger.error("-------------Number of inputs is required for random input!-------------")    
                 return (False,"Number of inputs is required for random input")
         if not self.timeFrame in Utility.array.keys():
-            print("-------------Timeframe of this task is not valid!-------------")
+            self.logger.error("-------------Timeframe of this task is not valid!-------------")
             return (False,"Timeframe of this task is not valid")
         if self.botName:
             if not os.path.exists(os.path.join(self.settings.SIGNALS_DIR, self.botName+".json")):
-                print("-------------Bot file does not exists!-------------")
+                self.logger.error("-------------Bot file does not exists!-------------")
                 return (False,"Bot file does not exists")
         else:
             if not os.path.exists(os.path.join(self.settings.STRATEGIES_DIR, self.strategyName+".json")):
-                print("-------------Strategy file does not exists!-------------")
+                self.logger.error("-------------Strategy file does not exists!-------------")
                 return (False,"Strategy file does not exists")
         if self.startAt > self.endAt:
-            print("-------------StartAt and EndAt are not valid!-------------")    
+            self.logger.error("-------------StartAt and EndAt are not valid!-------------")    
             return (False,"StartAt and EndAt are not valid")
         if not self.market in ['spot', 'futures']:
-            print("-------------This market type in not valid!-------------")    
+            self.logger.error("-------------This market type in not valid!-------------")    
             return (False,"This market type in not valid")
         return (True,"ok")
         

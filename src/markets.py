@@ -2,12 +2,14 @@ from src.exchanges.kucoinFutures import KucoinFutures
 import json
 from src.utility import Utility
 import os
+from src.logManager import get_logger
 
 class Markets():
     def __init__(self, settings) -> None:
         self.settings = settings
         self.exchange = KucoinFutures(settings, sandBox = False)
         self.exchange.authorize()
+        self.logger = get_logger(__name__, settings)
         if os.path.exists(self.settings.MARKET_JSON_PATH):
             self.markets = self.read_file()
         else:
@@ -18,19 +20,28 @@ class Markets():
         return self.exchange.exchange.load_markets()
 
     def write_to_file(self):
-        json_data_file = open(self.settings.MARKET_JSON_PATH, "w")
-        json.dump(self.markets, json_data_file)
-        json_data_file.close()
+        try:
+            json_data_file = open(self.settings.MARKET_JSON_PATH, "w")
+            json.dump(self.markets, json_data_file)
+            json_data_file.close()
+        except:
+            self.logger.error("Cannot write market data to file!")
 
     def read_file(self):
-        json_data_file = open(self.settings.MARKET_JSON_PATH, "r")
-        json_file = json.load(json_data_file)
-        json_data_file.close()
-        return json_file
+        try:
+            json_data_file = open(self.settings.MARKET_JSON_PATH, "r")
+            json_file = json.load(json_data_file)
+            json_data_file.close()
+            return json_file
+        except:
+            self.logger.error("Cannot read market data from file!")
 
     def get_contract_size(self, pair):
-        ePair = Utility.get_exchange_format(pair)
-        return self.markets[ePair]['contractSize']
+        try:
+            ePair = Utility.get_exchange_format(pair)
+            return self.markets[ePair]['contractSize']
+        except:
+            self.logger.error(f"Cannot get contract size of {ePair}")
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@ import uuid
 from src.databaseManager import DatabaseManager
 from src.utility import Utility
 from src.markets import Markets
+from src.logManager import get_logger
 
 class PositionManager():
     def __init__(self, initialCapital, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, settings, exchange="") -> None:
@@ -20,7 +21,7 @@ class PositionManager():
         self.settings = settings
         self.db = DatabaseManager(settings)
         self.contractSize = Markets(settings).get_contract_size(pair)
-        self.echo = False
+        self.logger = get_logger(__name__, settings)
     
     def open_position(self, signal, lastState):
         positionId = uuid.uuid4().hex
@@ -30,7 +31,7 @@ class PositionManager():
                 bid = orderbook['bids'][0][0] if len (orderbook['bids']) > 0 else None
                 ask = orderbook['asks'][0][0] if len (orderbook['asks']) > 0 else None
                 spread = (ask - bid) if (bid and ask) else None
-                if self.echo: print('market price', {'bid': bid, 'ask': ask, 'spread': spread})
+                self.logger.debug('market price', {'bid': bid, 'ask': ask, 'spread': spread})
                 amount = 0
                 if signal.side == 'buy':
                     amount = self.ratioAmount * self.initialCapital / ask
@@ -40,11 +41,13 @@ class PositionManager():
             else:
                 volume = self.volume / self.contractSize
                 amount = self.volume
-                
-            self.exchange.create_market_order(signal.pair,
-                                                signal.side,
-                                                volume,
-                                                params={'leverage': self.leverage})
+            try:
+                self.exchange.create_market_order(signal.pair,
+                                                    signal.side,
+                                                    volume,
+                                                    params={'leverage': self.leverage})
+            except:
+                self.logger.error("Cannot create market order!")
             # stopLossOrderId = self.exchange.create_market_order(signal.pair,
             #                                                     Utility.opposite_side(signal.side),
             #                                                     volume,
@@ -61,27 +64,44 @@ class PositionManager():
             #                                                             'stopPrice': signal.takeProfit})
             stopLossOrderId = uuid.uuid4().hex
             takeProfitOrderId = uuid.uuid4().hex
-            self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
+            try:
+                self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
+            except:
+                self.logger.error("Cannot add new position to db!")
             newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
-            self.db.add_order(stopLossOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
-            self.db.add_order(takeProfitOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+            try:
+                self.db.add_order(stopLossOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+                self.db.add_order(takeProfitOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+            except:
+                self.logger.error("Cannot add new order to db!")
         else:
             newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, '', '', True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)
         self.openPositions.append(newPosition)
-        if self.echo: print ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
+        self.logger.info ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
 
     def close_position(self, timestamp):
         if len(self.openPositions) > 0:
             if self.exchange:
                 if self.openPositions[0].side == "buy":
-                    self.exchange.create_market_order(self.openPositions[0].pair, "sell", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})
-                    
-                    if self.echo: print ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
+                    try:
+                        self.exchange.create_market_order(self.openPositions[0].pair, "sell", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})
+                        self.logger.info ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
+                    except:
+                        self.logger.error("Cannot create market order!")
                 elif self.openPositions[0].side == "sell":
-                    self.exchange.create_market_order(self.openPositions[0].pair, "buy", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})
-                    if self.echo: print ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
-                self.db.close_position(self.openPositions[0].id)
-                self.db.close_order_by_positionId(self.openPositions[0].id)
+                    try:
+                        self.exchange.create_market_order(self.openPositions[0].pair, "buy", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})
+                        self.logger.info ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
+                    except:
+                        self.logger.error("Cannot create market order!")
+                try:
+                    self.db.close_position(self.openPositions[0].id)
+                except:
+                    self.logger.error("Cannot close position by id!")
+                try:
+                    self.db.close_order_by_positionId(self.openPositions[0].id)
+                except:
+                    self.logger.error("Cannot close order by id!")
             lastPrice = self.openPositions[0].close_position(timestamp)
             self.closedPositions.append(self.openPositions[0])
             self.openPositions = []
@@ -100,28 +120,32 @@ class PositionManager():
             if i.side == 'buy':
                 if i.takeProfit > 0:
                     if currentPrice > i.takeProfit:
-                        if self.echo: print ("Side: Buy")
-                        if self.echo: print (f"Current Price:{currentPrice}")
-                        if self.echo: print (f"Take Proft:{i.takeProfit}")
+                        self.logger.info("TP has hitted!")
+                        self.logger.info("Side: Buy")
+                        self.logger.info(f"Current Price:{currentPrice}")
+                        self.logger.info(f"Take Proft:{i.takeProfit}")
                         return False
                 if i.stopLoss > 0:
                     if currentPrice < i.stopLoss:
-                        if self.echo: print ("Side: Buy")
-                        if self.echo: print (f"Current Price:{currentPrice}")
-                        if self.echo: print (f"Stop Loss:{i.stopLoss}")
+                        self.logger.info("Sl has hitted!")
+                        self.logger.info("Side: Buy")
+                        self.logger.info(f"Current Price:{currentPrice}")
+                        self.logger.info(f"Stop Loss:{i.stopLoss}")
                         return False
             elif i.side == 'sell':
                 if i.takeProfit > 0:
                     if currentPrice < i.takeProfit:
-                        if self.echo: print ("Side: Sell")
-                        if self.echo: print (f"Current Price:{currentPrice}")
-                        if self.echo: print (f"Take Proft:{i.takeProfit}")
+                        self.logger.info("TP has hitted!")
+                        self.logger.info("Side: Sell")
+                        self.logger.info(f"Current Price:{currentPrice}")
+                        self.logger.info(f"Take Proft:{i.takeProfit}")
                         return False
                 if i.stopLoss > 0:
                     if currentPrice > i.stopLoss:
-                        if self.echo: print ("Side: Sell")
-                        if self.echo: print (f"Current Price:{currentPrice}")
-                        if self.echo: print (f"Take Proft:{i.stopLoss}")
+                        self.logger.info("SL has hitted!")
+                        self.logger.info("Side: Sell")
+                        self.logger.info(f"Current Price:{currentPrice}")
+                        self.logger.info(f"Take Proft:{i.stopLoss}")
                         return False
         return True
 
@@ -140,32 +164,30 @@ class PositionManager():
     def sync_positions(self):
         exchangePositions = self.exchange.fetch_positions()
         dbPositions = self.db.get_open_positions(Utility.get_db_format(self.pair))
-        if self.echo: print(exchangePositions)
         ep = ""
         for i in exchangePositions:
             if i["symbol"] == Utility.get_exchange_format(self.pair):
                 ep = i
         if ep == "":
-            if self.echo: print(f"-------------- There is no position with this pair({self.pair}) in exchange!--------------")
+            self.logger.info(f"-------------- There is no position with this pair({self.pair}) in exchange!--------------")
             if len(dbPositions) > 0:
-                if self.echo: print(f"-------------- There are some extra position with this pair({self.pair}) in database!--------------")
+                self.logger.info(f"-------------- There are some extra position with this pair({self.pair}) in database!--------------")
                 for index, k in dbPositions.iterrows():
-                    if self.echo: print(f"-------------- Closing position {k['id']} in database! --------------")
+                    self.logger.info(f"-------------- Closing position {k['id']} in database! --------------")
                     self.db.close_position(k["id"])
                     self.db.close_order_by_positionId(k["id"])
                 self.openPositions = []
         else:
-            if self.echo: print(f"-------------- There is a position with this pair({self.pair}) in exchange!--------------")
+            self.logger.info(f"-------------- There is a position with this pair({self.pair}) in exchange!--------------")
             volumes = 0
             pos = ""
             for index, k in dbPositions.iterrows():
                 if k["timeFrame"] == self.timeFrame:
-                    if self.echo: print(f"-------------- There is a position with this pts in database!--------------")
+                    self.logger.info(f"-------------- There is a position with this pts in database!--------------")
                     pos = k
                 volumes += k["volume"]
-            if self.echo: print(volumes, ep["contractSize"] * ep["contracts"])
             if float(volumes) == float(ep["contractSize"] * ep["contracts"]) and self.leverage == ep["leverage"]:
-                if self.echo: print(f"-------------- Positions in exchange match the positions in database! --------------")
+                self.logger.info(f"-------------- Positions in exchange match the positions in database! --------------")
                 side = pos["side"]
                 if pos["side"] == "long":
                     side = "buy"
@@ -174,16 +196,22 @@ class PositionManager():
                 positionId = uuid.uuid4().hex
                 self.openPositions.append(Position(positionId, ep["symbol"], side, ep["contractSize"] * ep["contracts"], ep["entryPrice"], ep["timestamp"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"], pos["takeProfitOrderId"], True, ep["leverage"],settings=self.settings))
             else:
-                if self.echo: print(f"-------------- Positions in exchange does not match the positions in database! --------------")
+                self.logger.warning(f"-------------- Positions in exchange does not match the positions in database! --------------")
                 for i in exchangePositions:
                     if i["side"] == "long":
-                        self.exchange.create_market_order(i["symbol"], "sell", i["contracts"], params={'leverage': self.leverage})
-                        if self.echo: print ( f"-------- Close buy position on {i['symbol']}--------")
+                        try:
+                            self.exchange.create_market_order(i["symbol"], "sell", i["contracts"], params={'leverage': self.leverage})
+                        except:
+                            self.logger.error("Cannot create market order!")
+                        self.logger.info( f"-------- Close buy position on {i['symbol']}--------")
                     elif i["side"] == "short":
-                        self.exchange.create_market_order(i["symbol"], "buy", i["contracts"], params={'leverage': self.leverage})
-                        if self.echo: print ( f"-------- Close sell position on {i['symbol']}--------")
+                        try:
+                            self.exchange.create_market_order(i["symbol"], "buy", i["contracts"], params={'leverage': self.leverage})
+                        except:
+                            self.logger.error("Cannot create market order!")
+                        self.logger.info( f"-------- Close sell position on {i['symbol']}--------")
                 for index, k in dbPositions.iterrows():
-                    if self.echo: print(f"-------------- Closing position {k['id']} in database! --------------")
+                    self.logger.info(f"-------------- Closing position {k['id']} in database! --------------")
                     self.db.close_position(k["id"])
                     self.db.close_order_by_positionId(k["id"])
                 self.openPositions = []

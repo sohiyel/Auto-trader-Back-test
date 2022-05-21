@@ -4,13 +4,14 @@ import configparser
 from src.utility import Utility
 import pandas as pd
 import time
-
+from src.logManager import get_logger
 class DatabaseManager():
     def __init__(self, settings) -> None:
         self.settings = settings
         self.conn = None
         self.connect_to_db()
         self.tables = []
+        self.logger = get_logger(__name__, settings)
 
     def connect_to_db(self):
         try:
@@ -23,9 +24,9 @@ class DatabaseManager():
             try:
                 self.conn = psycopg2.connect(database = "trader", user = username, password = password, host = host, port = port)
             except:
-                print ("Unable to connect to the database!")
+                self.logger.error ("Unable to connect to the database!")
         except:
-            print ("Cannot read db config file!")
+            self.logger.error ("Cannot read db config file!")
 
     def create_ohlcv_table(self, pair, timeFrame):
         dbPair = Utility.get_db_format(pair)
@@ -40,7 +41,7 @@ class DatabaseManager():
                         volume numeric NOT NULL
                         );'''.format(dbPair+"_"+timeFrame))
         except:
-            print ("Cannot create {} table!".format(dbPair+"_"+timeFrame))
+            self.logger.warning ("Cannot create {} table!".format(dbPair+"_"+timeFrame))
 
         self.conn.commit()
         cur.close()
@@ -65,7 +66,7 @@ class DatabaseManager():
                         takeProfitOrderId text
                         );''')
         except:
-            print ("Cannot create positions table!")
+            self.logger.warning ("Cannot create positions table!")
 
         self.conn.commit()
         cur.close()
@@ -87,7 +88,7 @@ class DatabaseManager():
                         positionId text
                         );''')
         except:
-            print ("Cannot create positions table!")
+            self.logger.warning ("Cannot create positions table!")
 
         self.conn.commit()
         cur.close()
@@ -119,8 +120,7 @@ class DatabaseManager():
                                 SET open = {k['open']}, high = {k['high']}, low = {k['low']}, close = {k['close']}, volume = {k['volume']}\
                                 WHERE dt={k['timestamp']};")
                 except:
-                    print (f"Cannot write this data to {tableName}")
-                    print (k)
+                    self.logger.error (f"Cannot write this data to {tableName}")
 
             self.conn.commit() 
             cur.close()
@@ -136,7 +136,7 @@ class DatabaseManager():
             return df
         except:
             cur.close()
-            print (f"Cannot find table {tableName}!")
+            self.logger.error (f"Cannot find table {tableName}!")
             query = []
             df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
             return df
@@ -152,7 +152,7 @@ class DatabaseManager():
             return df
         except:
             cur.close()
-            print (f"Cannot find table {tableName}!")
+            self.logger.error (f"Cannot find table {tableName}!")
             query = []
             df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
             return df
@@ -172,7 +172,7 @@ class DatabaseManager():
         except:
             self.conn.commit()
             cur.close()
-            print (f"Cannot get open positions!")
+            self.logger.error (f"Cannot get open positions!")
             query = []
             df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice',
                                              'openAt', 'closeAt', 'leverage, isOpen', 'timeFrame',
@@ -193,7 +193,7 @@ class DatabaseManager():
         except:
             self.conn.commit()
             cur.close()
-            print (f"Cannot get open positions!")
+            self.logger.error (f"Cannot get open orders!")
             query = []
             df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice', 'leverage, isOpen', 'timeFrame',
                                              'strategyName', 'botName', 'positionId'])
@@ -207,7 +207,7 @@ class DatabaseManager():
             data = (id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyName, botName, stopLossOrderId, takeProfitOrderId)
             cur.execute(SQL, data)
         except:
-            print (f"Cannot add new position to database!")
+            self.logger.error (f"Cannot add new position to database!")
 
         self.conn.commit() 
         cur.close()
@@ -220,7 +220,7 @@ class DatabaseManager():
             data = (id, pair, side, volume, entryPrice, leverage, isOpen, timeFrame, strategyName, botName, positionId)
             cur.execute(SQL, data)
         except:
-            print (f"Cannot add new order to database!")
+            self.logger.error (f"Cannot add new order to database!")
 
         self.conn.commit() 
         cur.close()
@@ -232,7 +232,7 @@ class DatabaseManager():
                         SET isopen = False, closeat = {time.time()}\
                         WHERE id='{id}';")
         except:
-            print (f"Cannot close position {id}")
+            self.logger.error (f"Cannot close position {id}")
 
         self.conn.commit() 
         cur.close()
@@ -244,7 +244,7 @@ class DatabaseManager():
                         SET isopen = False\
                         WHERE id='{id}';")
         except:
-            print (f"Cannot close order {id}")
+            self.logger.error (f"Cannot close order {id}")
 
         self.conn.commit() 
         cur.close()
@@ -256,7 +256,7 @@ class DatabaseManager():
                         SET isopen = False\
                         WHERE positionId='{id}';")
         except:
-            print (f"Cannot close order {id}")
+            self.logger.error (f"Cannot close order {id}")
 
         self.conn.commit() 
         cur.close()

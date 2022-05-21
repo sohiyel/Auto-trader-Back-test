@@ -1,4 +1,5 @@
 from src.markets import Markets
+from src.logManager import get_logger
 
 class PortfolioManager():
     def __init__(self, pair, initialCapital=1, settings="", exchange="") -> None:
@@ -15,6 +16,7 @@ class PortfolioManager():
         self.equities = []
         self.exchange = exchange
         self.contractSize = Markets(self.settings).get_contract_size(pair)
+        self.logger = get_logger(__name__, settings)
         
     def calc_poL(self):
         if self.loss != 0:
@@ -25,7 +27,7 @@ class PortfolioManager():
             self.balance -= volume * price * self.contractSize
             return True
         else:
-            print ("Insufficent balance!", self.balance, price * volume * self.contractSize)
+            self.logger.warning ("Insufficent balance!", self.balance, price * volume * self.contractSize)
             return False
 
     def close_position(self, lastPrice, commission):
@@ -44,7 +46,7 @@ class PortfolioManager():
             self.balance -= volume * price *  ( 1 + commission ) * self.contractSize
             return True
         else:
-            print ("Insufficent balance!")
+            self.logger.warning ("Insufficent balance!")
             return False
 
     def update_equity(self, lastPrice):
@@ -53,34 +55,38 @@ class PortfolioManager():
 
     def get_equity(self):
         if self.exchange:
-            response = self.exchange.fetch_balance(params={"currency":"USDT"})
-            if response['info']['code'] == '200000':
-                print(response)
-                self.equity = response['info']['data']['accountEquity']
-                self.balance = response['info']['data']['availableBalance']
-                return self.equity
-            else:
-                print("Problem in getting account equity!")
-                print (response)
-                return False
+            try:
+                response = self.exchange.fetch_balance(params={"currency":"USDT"})
+                if response['info']['code'] == '200000':
+                    self.equity = response['info']['data']['accountEquity']
+                    self.balance = response['info']['data']['availableBalance']
+                    return self.equity
+                else:
+                    self.logger.error("Problem in getting account equity!")
+                    self.logger.error (response)
+                    return False
+            except:
+                self.logger.error("Cannot fetch balance from ccxt!")
         else:
-            print("Exchange is not defined!")
+            self.logger.error("Exchange is not defined!")
             return False
 
     def get_balance(self):
         if self.exchange:
-            response = self.exchange.fetch_balance(params={"currency":"USDT"})
-            print(response)
-            if response['info']['code'] == '200000':
-                self.balance = response['info']['data']['availableBalance']
-                self.equity = response['info']['data']['accountEquity']
-                return self.balance
-            else:
-                print("Problem in getting account balance!")
-                print (response)
-                return False
+            try:
+                response = self.exchange.fetch_balance(params={"currency":"USDT"})
+                if response['info']['code'] == '200000':
+                    self.balance = response['info']['data']['availableBalance']
+                    self.equity = response['info']['data']['accountEquity']
+                    return self.balance
+                else:
+                    self.logger.error("Problem in getting account balance!")
+                    self.logger.error (response)
+                    return False
+            except:
+                self.logger.error("Cannot fetch balance from ccxt!")
         else:
-            print("Exchange is not defined!")
+            self.logger.error("Exchange is not defined!")
             return False
 
     def report(self, closedPositions):
@@ -120,32 +126,39 @@ class PortfolioManager():
             percentProfitableShorts = numOfWinShorts / numOfLossShort * 100
         else:
             percentProfitableShorts = "infinite"
+            self.logger.warning("Number of loss shorts is zero!")
         if sumOfLossShorts > 0:
             profitFactorShorts = sumOfWinShorts / sumOfLossShorts * -1
         else:
             profitFactorShorts = "infinite"
+            self.logger.warning("Number of profit factor shorts is zero!")
         if self.numLosses > 0:
             percentProfitable = self.numProfits / self.numLosses * 100
         else:
+            self.logger.warning("Number of losses is zero!")
             percentProfitable = "infinite"
         if numOfLossLong > 0:
             percentProfitableLongs = numOfWinLongs / numOfLossLong * 100
         else:
+            self.logger.warning("Number of loss longs is zero!")
             percentProfitableLongs = "infinite"
         if sumOfLossLongs > 0:
             profitFactorLongs = sumOfWinLongs / sumOfLossLongs * -1
         else:
             profitFactorLongs = "infinite"
+            self.logger.warning("Sum of loss longs is zero!")
         if self.loss < 0:
             profitFactor = self.profit / self.loss * -1
         else:
             profitFactor = "infinite"
+            self.logger.warning("Loss is zero!")
         if len(self.equities) > 0:
             maxDrawDown = self.initialCapital - min(self.equities)
             maxDrawDownPercent = (self.initialCapital - min(self.equities)) / self.initialCapital * 100
         else:
             maxDrawDown = 0
             maxDrawDownPercent = 0
+            self.logger.warning("Number of equities is zero!")
         
         return {
             "netProfit" : self.balance - self.initialCapital,

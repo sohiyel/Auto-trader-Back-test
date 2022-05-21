@@ -1,7 +1,5 @@
-import importlib
 from src.singleStrategy import SingleStrategy
 from src.botSignal import BotSignal
-import os
 
 class SignalManager():
     def __init__(self, strategyName, botName, currentInput, pair, settings, marketData) -> None:

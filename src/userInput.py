@@ -6,6 +6,7 @@ from random import shuffle
 import time
 from src.utility import Utility
 from os import path
+from src.logManager import get_logger
 
 class UserInput():
     def __init__(self, pair, timeFrame, strategyName, botName, side = "both", leverage = 1, amount = 1 , ratioAmount = 0, optimization = False, randomInput = False, settings="") -> None:
@@ -22,31 +23,84 @@ class UserInput():
         self.step = 0
         self.inputs = []
         self.randomInput = randomInput
+        self.logger = get_logger(__name__, settings)
         if botName:
-            self.inputs= self.get_bot_inputs()
+            try:
+                self.inputs= self.get_bot_inputs()
+            except:
+                self.logger.error("Cannot get bot inputs!")
         else:
-            self.inputs = self.get_strategy_inputs(strategyName)
+            try:
+                self.inputs = self.get_strategy_inputs(strategyName)
+            except:
+                self.logger.error("Cannot get strategy input!")
         if randomInput:
             shuffle(self.inputs)
 
 
     def get_strategy_inputs(self, strategyName):
         strategyFileName = strategyName + ".json"
-        json_data_file = open(path.join(self.settings.STRATEGIES_DIR , strategyFileName))
-        jsonFile = json.load(json_data_file)
+        try:
+            json_data_file = open(path.join(self.settings.STRATEGIES_DIR , strategyFileName))
+            jsonFile = json.load(json_data_file)
+        except:
+            self.logger.error(f"Cannot open {strategyFileName}!")
         inputs = []
         if self.optimization:
-            for i in jsonFile["optimization"]["inputs"]:
-                pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
-                if pi.optimization:
-                    strategyInputs = []
-                    for i in np.arange(pi.minValue, pi.maxValue, pi.step):
-                        strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded , pi.minValue, pi.maxValue, pi.step, pi.optimization))
-                    inputs.append(strategyInputs)
+            try:
+                for i in jsonFile["optimization"]["inputs"]:
+                    pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
+                    if pi.optimization:
+                        strategyInputs = []
+                        for i in np.arange(pi.minValue, pi.maxValue, pi.step):
+                            strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded , pi.minValue, pi.maxValue, pi.step, pi.optimization))
+                        inputs.append(strategyInputs)
+                    else:
+                        inputs.append([pi])
+            except:
+                self.logger.error(f"Insufficient parameters in {strategyFileName}")
+        else:
+            try:    
+                if len(jsonFile["params"]) > 0:
+                    params = jsonFile["params"][0]
+                    for p in jsonFile["params"]:
+                        if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
+                            params = p
+                    for i in params["inputs"]:
+                        pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"])
+                        inputs.append([pi])
                 else:
-                    inputs.append([pi])
-        else:    
-            if len(jsonFile["params"]) > 0:
+                    params = ""
+                    inputs = []
+            except:
+                self.logger.error(f"Insufficient parameters in {strategyFileName}")
+        
+        json_data_file.close()
+        return list( itertools.product( *inputs ) )
+
+    def get_bot_inputs(self):
+        botFileName = self.botName + ".json"
+        try:
+            json_data_file = open(path.join(self.settings.SIGNALS_DIR , botFileName))
+            jsonFile = json.load(json_data_file)
+        except:
+            self.logger.error(f"Cannot load {botFileName}!")
+        inputs = []
+        if self.optimization:
+            try:
+                for i in jsonFile["optimization"]["inputs"]:
+                    pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
+                    if pi.optimization:
+                        strategyInputs = []
+                        for i in np.arange(pi.minValue, pi.maxValue, pi.step):
+                            strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded, pi.minValue, pi.maxValue, pi.step, pi.optimization))
+                        inputs.append(strategyInputs)
+                    else:
+                        inputs.append([pi])
+            except:
+                self.logger.error(f"Insufficient parameters in {botFileName}")
+        else:
+            try:    
                 params = jsonFile["params"][0]
                 for p in jsonFile["params"]:
                     if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
@@ -54,36 +108,8 @@ class UserInput():
                 for i in params["inputs"]:
                     pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"])
                     inputs.append([pi])
-            else:
-                params = ""
-                inputs = []
-        
-        json_data_file.close()
-        return list( itertools.product( *inputs ) )
-
-    def get_bot_inputs(self):
-        botFileName = self.botName + ".json"
-        json_data_file = open(path.join(self.settings.SIGNALS_DIR , botFileName))
-        jsonFile = json.load(json_data_file)
-        inputs = []
-        if self.optimization:
-            for i in jsonFile["optimization"]["inputs"]:
-                pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
-                if pi.optimization:
-                    strategyInputs = []
-                    for i in np.arange(pi.minValue, pi.maxValue, pi.step):
-                        strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded, pi.minValue, pi.maxValue, pi.step, pi.optimization))
-                    inputs.append(strategyInputs)
-                else:
-                    inputs.append([pi])
-        else:    
-            params = jsonFile["params"][0]
-            for p in jsonFile["params"]:
-                if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
-                    params = p
-            for i in params["inputs"]:
-                pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"])
-                inputs.append([pi])
+            except:
+                self.logger.error(f"Insufficient parameters in {botFileName}")
         
         json_data_file.close()
         return list( itertools.product( *inputs ) )
@@ -94,8 +120,11 @@ class UserInput():
     def get_strategy_names(self):
         strategyNames = []
         botFileName = self.botName + ".json"
-        json_data_file = open(path.join(self.settings.SIGNALS_DIR , botFileName))
-        jsonFile = json.load(json_data_file)
+        try:
+            json_data_file = open(path.join(self.settings.SIGNALS_DIR , botFileName))
+            jsonFile = json.load(json_data_file)
+        except:
+            self.logger.error(f"Cannot load {botFileName}!")
         for s in jsonFile["strategies"]:
             strategyNames.append(s["strategy"])
         json_data_file.close()
@@ -105,16 +134,26 @@ class UserInput():
         names = []
         if self.botName:
             botFileName = self.botName + ".json"
-            with open(path.join(self.settings.SIGNALS_DIR , botFileName), 'r+') as json_data_file:
-                jsonFile = json.load(json_data_file)
+            try:
+                with open(path.join(self.settings.SIGNALS_DIR , botFileName), 'r+') as json_data_file:
+                    jsonFile = json.load(json_data_file)
+            except:
+                self.logger.error(f"Cannot load {botFileName}")
         else:
             strategyFileName = self.strategyName + ".json"
-            with open(path.join(self.settings.STRATEGIES_DIR , strategyFileName), 'r+') as json_data_file:
-                jsonFile = json.load(json_data_file)
-
-        params = jsonFile["params"][0]
-        for i in params["inputs"]:
-            names.append( (i["name"],i["strategy"],i["historyNeeded"]) )
+            try:
+                with open(path.join(self.settings.STRATEGIES_DIR , strategyFileName), 'r+') as json_data_file:
+                    jsonFile = json.load(json_data_file)
+            except:
+                self.logger.error(f"Cannot open {strategyFileName}")
+        
+        try:
+            params = jsonFile["params"][0]
+            for i in params["inputs"]:
+                names.append( (i["name"],i["strategy"],i["historyNeeded"]) )
+        except:
+            self.logger.error(f"Insufficient parameters in {strategyFileName}")
+        
         json_data_file.close()
         return names
 
@@ -122,30 +161,39 @@ class UserInput():
         inputNames = []
         if self.botName:
             botFileName = self.botName + ".json"
-            with open(path.join(self.settings.SIGNALS_DIR , botFileName), 'r+') as json_data_file:
-                jsonFile = json.load(json_data_file)
+            try:
+                with open(path.join(self.settings.SIGNALS_DIR , botFileName), 'r+') as json_data_file:
+                    jsonFile = json.load(json_data_file)
+            except:
+                self.logger.error(f"Cannot load {botFileName}!")
         else:
             strategyFileName = self.strategyName + ".json"
-            with open(path.join(self.settings.STRATEGIES_DIR , strategyFileName), 'r+') as json_data_file:
-                jsonFile = json.load(json_data_file)
+            try:
+                with open(path.join(self.settings.STRATEGIES_DIR , strategyFileName), 'r+') as json_data_file:
+                    jsonFile = json.load(json_data_file)
+            except:
+                self.logger.error(f"Cannot load {strategyFileName}!")
         inputNames = self.get_input_names()
 
         paramExist = False
-        for idx,param in enumerate(jsonFile["params"]):
-            if param["time_frame"] == self.timeFrame and param["pair"] == self.pair:
-                paramExist = True
-                for n in inputNames:
-                    value = float(report[n[1] + "_" + n[0]])
-                    inputExist = False
-                    for i in range(len(jsonFile["params"][idx]["inputs"])):
-                        if jsonFile["params"][idx]["inputs"][i]["name"] == n[0] and jsonFile["params"][idx]["inputs"][i]["strategy"] == n[1]:
-                            jsonFile["params"][idx]["inputs"][i]["value"] = value
-                            inputExist = True
-                            break
-                    if not inputExist:
-                        newInput = ParamInput(n[0], value, n[1],n[2])
-                        jsonFile["params"][idx]["inputs"].append(newInput.to_dict())
-                jsonFile["params"][idx]["optimization_date"] = time.strftime("%Y-%m-%d_%H:%M:%S")
+        try:
+            for idx,param in enumerate(jsonFile["params"]):
+                if param["time_frame"] == self.timeFrame and param["pair"] == self.pair:
+                    paramExist = True
+                    for n in inputNames:
+                        value = float(report[n[1] + "_" + n[0]])
+                        inputExist = False
+                        for i in range(len(jsonFile["params"][idx]["inputs"])):
+                            if jsonFile["params"][idx]["inputs"][i]["name"] == n[0] and jsonFile["params"][idx]["inputs"][i]["strategy"] == n[1]:
+                                jsonFile["params"][idx]["inputs"][i]["value"] = value
+                                inputExist = True
+                                break
+                        if not inputExist:
+                            newInput = ParamInput(n[0], value, n[1],n[2])
+                            jsonFile["params"][idx]["inputs"].append(newInput.to_dict())
+                    jsonFile["params"][idx]["optimization_date"] = time.strftime("%Y-%m-%d_%H:%M:%S")
+        except:
+            self.logger.error(f"Insufficient parameters in {strategyFileName}")
 
         if not paramExist:
             newParam = {}
@@ -160,12 +208,18 @@ class UserInput():
 
         if self.botName:
             botFileName = self.botName + ".json"
-            with open(path.join(self.settings.SIGNALS_DIR , botFileName), 'w') as json_data_file:
-                json.dump(jsonFile, json_data_file)
+            try:
+                with open(path.join(self.settings.SIGNALS_DIR , botFileName), 'w') as json_data_file:
+                    json.dump(jsonFile, json_data_file)
+            except:
+                self.logger.error(f"Cannot dump into {botFileName}!")
         else:
             strategyFileName = self.strategyName + ".json"
-            with open(path.join(self.settings.STRATEGIES_DIR , strategyFileName), 'w') as json_data_file:
-                json.dump(jsonFile, json_data_file)
+            try:
+                with open(path.join(self.settings.STRATEGIES_DIR , strategyFileName), 'w') as json_data_file:
+                    json.dump(jsonFile, json_data_file)
+            except:
+                self.logger.error(f"Cannot dump into {strategyFileName}!")
 
     def calc_history_needed(self):
         max = 1
