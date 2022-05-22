@@ -26,7 +26,7 @@ class BotSignal():
             try:
                 strategies = importlib.import_module(settings.STRATEGIES_MODULE_PATH+s)
                 StrategyClass = getattr(strategies, s)
-                self.strategies.append(StrategyClass(currentInput, self.pair, marketData))
+                self.strategies.append(StrategyClass(currentInput, self.pair, marketData, settings))
             except:
                 self.logger.error(f"Cannot import this strategy{s}")
         try:
