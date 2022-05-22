@@ -1,4 +1,5 @@
 import ccxt
+from src.exchanges.exchange import exchange
 from src.databaseManager import DatabaseManager
 from src.utility import Utility
 from datetime import datetime
@@ -19,7 +20,7 @@ class DataDownloader():
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
         self.dbPair = Utility.get_db_format(self.pair)
         self.tableName = self.dbPair + "_" + self.timeFrame
-        self.exchange = ccxt.kucoinfutures()
+        self.exchange = exchange(self.settings)
         self.db = DatabaseManager(settings)
         self.logger = get_logger(__name__, settings)
 
