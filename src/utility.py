@@ -61,6 +61,11 @@ class Utility:
 
     @staticmethod
     def unify_timeframe(timeframe, exchange):
+        num = "".join(filter(str.isdigit, timeframe))
+        period = timeframe.replace(num, "")[0]
+        return num + period
+
+
         if exchange == "kucoinfutures":
             if timeframe == '1m' or timeframe == '1min':
                 return '1m'
