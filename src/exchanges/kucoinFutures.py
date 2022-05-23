@@ -1,14 +1,15 @@
+from exchanges.base_exchange import base_exchange
 from src.exchanges.kucoin import Kucoin
 import requests
 import asyncio
 import ccxt
-import configparser
+
 from src.utility import Utility
 from datetime import datetime
 import time
 from src.logManager import get_logger
 
-class KucoinFutures(Kucoin):
+class KucoinFutures(base_exchange):
     def __init__(self, settings, sandBox = False):
         self.settings = settings
         super().__init__(sandBox)
@@ -16,19 +17,26 @@ class KucoinFutures(Kucoin):
         self.exchange = ccxt.kucoinfutures()
         self.exchange.set_sandbox_mode(sandBox)
         self.logger = get_logger(__name__, settings)
-
-    def authorize(self):
-        cfg = configparser.ConfigParser()
+        
+    def fetch_balance(self):
         try:
-            if self.sandBox:
-                cfg.read(self.settings.API_SANDBOX_FUTURE_PATH)
+            response = self.exchange.fetch_balance(params={"currency":"USDT"})
+            if response['info']['code'] == '200000':
+                return {
+                    'Equity' : response['info']['data']['accountEquity'],
+                    'Balance' : response['info']['data']['availableBalance']
+                }
             else:
-                cfg.read(self.settings.API_FUTURE_PATH)
-            self.exchange.apiKey = cfg.get('KEYS','api_key')
-            self.exchange.secret = cfg.get('KEYS', 'api_secret')
-            self.exchange.password = cfg.get('KEYS', 'api_passphrase')
+                self.logger.error("Problem in getting account equity!")
+                self.logger.error (response)
+                return False
         except:
-            self.logger.error("Cannot read exchange config file!")
+            self.logger.error("Cannot fetch balance from ccxt!")
+            return False
+
+
+
+
 
     def get_klines(self, symbol, timeFrame, startAt, endAt):
         symbol = Utility.get_exchange_format(symbol)

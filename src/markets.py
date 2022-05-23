@@ -1,3 +1,4 @@
+from src.exchanges.exchange import exchange
 from src.exchanges.kucoinFutures import KucoinFutures
 import json
 from src.utility import Utility
@@ -7,7 +8,7 @@ from src.logManager import get_logger
 class Markets():
     def __init__(self, settings) -> None:
         self.settings = settings
-        self.exchange = KucoinFutures(settings, sandBox = False)
+        self.exchange = exchange(settings)
         self.exchange.authorize()
         self.logger = get_logger(__name__, settings)
         if os.path.exists(self.settings.MARKET_JSON_PATH):
@@ -17,7 +18,7 @@ class Markets():
             self.write_to_file()
 
     def load_market(self):
-        return self.exchange.exchange.load_markets()
+        return self.exchange.load_markets()
 
     def write_to_file(self):
         try:

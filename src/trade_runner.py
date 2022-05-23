@@ -1,3 +1,4 @@
+from exchanges.exchange import exchange
 from src.utility import Utility
 from src.trader import Trader
 import time
@@ -10,7 +11,7 @@ class TradeRunner():
     def __init__(self, settings) -> None:
         self.settings = settings
         self.tradeIndexList = TradeIndex(settings).indexes
-        self.exchange = KucoinFutures(settings, sandBox = False)
+        self.exchange = exchange(settings)
         self.exchange.authorize()
         self.trades = []
         self.logger = get_logger(__name__, settings)
