@@ -6,8 +6,8 @@ class Settings:
         self.task = task
         self.multiProcess = False
         self.tradeSide = "both"
-        self.exchange = "okex"
-        self.sandBox = False
+        self.exchange = "kucoinfutures"
+        self.sandbox = False
         self.constantNumbers = {
             "commission" : 0.0006,
             "data_limit_future" : 200,
@@ -29,8 +29,8 @@ class Settings:
         self.API_SANDBOX_FUTURE_PATH = path.join(self.CONFIGURATIONS_DIR, "api_sandbox_future.cfg")
         
         self.API_PATH = {
-            False: path.join(self.CONFIGURATIONS_DIR, self.exchange, ".cfg"), 
-            True: path.join(self.CONFIGURATIONS_DIR, self.exchange, "_sandbox.cfg") 
+            False: path.join(self.CONFIGURATIONS_DIR, self.exchange+ ".cfg"), 
+            True: path.join(self.CONFIGURATIONS_DIR, self.exchange+ "_sandbox.cfg") 
             }[self.sandbox]
 
         self.API_SANDBOX_PATH = path.join(self.CONFIGURATIONS_DIR, "api_sandbox.cfg")

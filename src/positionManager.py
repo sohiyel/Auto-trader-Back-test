@@ -1,3 +1,4 @@
+from shutil import ExecError
 from src.position import Position
 import uuid
 from src.databaseManager import DatabaseManager
@@ -46,8 +47,8 @@ class PositionManager():
                                                     signal.side,
                                                     volume,
                                                     params={'leverage': self.leverage})
-            except:
-                self.logger.error("Cannot create market order!")
+            except Exception as e:
+                self.logger.error("Cannot create market order!" + str(e))
             # stopLossOrderId = self.exchange.create_market_order(signal.pair,
             #                                                     Utility.opposite_side(signal.side),
             #                                                     volume,
@@ -201,14 +202,14 @@ class PositionManager():
                     if i["side"] == "long":
                         try:
                             self.exchange.create_market_order(i["symbol"], "sell", i["contracts"], params={'leverage': self.leverage})
-                        except:
-                            self.logger.error("Cannot create market order!")
+                        except Exception as e:
+                            self.logger.error("Cannot create market order!" + str(e))
                         self.logger.info( f"-------- Close buy position on {i['symbol']}--------")
                     elif i["side"] == "short":
                         try:
                             self.exchange.create_market_order(i["symbol"], "buy", i["contracts"], params={'leverage': self.leverage})
-                        except:
-                            self.logger.error("Cannot create market order!")
+                        except Exception as e:
+                            self.logger.error("Cannot create market order!" + str(e))
                         self.logger.info( f"-------- Close sell position on {i['symbol']}--------")
                 for index, k in dbPositions.iterrows():
                     self.logger.info(f"-------------- Closing position {k['id']} in database! --------------")

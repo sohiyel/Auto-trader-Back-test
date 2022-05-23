@@ -1,4 +1,4 @@
-from src.exchanges.exchange import exchange
+from src.exchanges.exchange import Exchange
 from src.exchanges.kucoinFutures import KucoinFutures
 import json
 from src.utility import Utility
@@ -8,7 +8,7 @@ from src.logManager import get_logger
 class Markets():
     def __init__(self, settings) -> None:
         self.settings = settings
-        self.exchange = exchange(settings)
+        self.exchange = Exchange(settings).exchange
         self.exchange.authorize()
         self.logger = get_logger(__name__, settings)
         if os.path.exists(self.settings.MARKET_JSON_PATH):

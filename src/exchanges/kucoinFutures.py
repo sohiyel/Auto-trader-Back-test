@@ -1,6 +1,4 @@
-from exchanges.base_exchange import base_exchange
-from src.exchanges.kucoin import Kucoin
-import requests
+from src.exchanges.baseExchange import BaseExchange
 import asyncio
 import ccxt
 
@@ -9,14 +7,14 @@ from datetime import datetime
 import time
 from src.logManager import get_logger
 
-class KucoinFutures(base_exchange):
+class KucoinFutures(BaseExchange):
     def __init__(self, settings, sandBox = False):
         self.settings = settings
-        super().__init__(sandBox)
         self.baseUrl = 'https://api-futures.kucoin.com/'
         self.exchange = ccxt.kucoinfutures()
         self.exchange.set_sandbox_mode(sandBox)
         self.logger = get_logger(__name__, settings)
+        self.authorize()
         
     def fetch_balance(self):
         try:

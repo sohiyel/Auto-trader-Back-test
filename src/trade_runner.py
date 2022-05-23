@@ -1,4 +1,4 @@
-from exchanges.exchange import exchange
+from src.exchanges.exchange import Exchange
 from src.utility import Utility
 from src.trader import Trader
 import time
@@ -11,13 +11,13 @@ class TradeRunner():
     def __init__(self, settings) -> None:
         self.settings = settings
         self.tradeIndexList = TradeIndex(settings).indexes
-        self.exchange = exchange(settings)
+        self.exchange = Exchange(settings).exchange
         self.exchange.authorize()
         self.trades = []
         self.logger = get_logger(__name__, settings)
 
     def initialize_indexes(self, index):
-        trader = Trader(index,self.exchange.exchange, self.settings)
+        trader = Trader(index,self.exchange, self.settings)
         self.trades.append(trader)
         self.logger.info  (f"--------- Initialized :{index.pair} ---------")
         startTime = time.time()

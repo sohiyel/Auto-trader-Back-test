@@ -1,15 +1,8 @@
-from exchanges.base_exchange import base_exchange
-from src.exchanges.kucoin import Kucoin
-import requests
-import asyncio
+from src.exchanges.baseExchange import BaseExchange
 import ccxt
-
-from src.utility import Utility
-from datetime import datetime
-import time
 from src.logManager import get_logger
 
-class okex(base_exchange):
+class Okex(BaseExchange):
     def __init__(self, settings, sandBox = False):
         self.settings = settings
         super().__init__(sandBox)

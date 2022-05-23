@@ -65,8 +65,8 @@ class PortfolioManager():
                     self.logger.error("Problem in getting account equity!")
                     self.logger.error (response)
                     return False
-            except:
-                self.logger.error("Cannot fetch balance from ccxt!")
+            except Exception as e:
+                self.logger.error("Cannot fetch balance from ccxt!"+ str(e))
         else:
             self.logger.error("Exchange is not defined!")
             return False

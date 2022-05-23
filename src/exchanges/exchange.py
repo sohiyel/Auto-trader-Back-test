@@ -1,29 +1,19 @@
 
 import ccxt
-from src.exchanges.okex import okex
+from src.exchanges.okex import Okex
 from src.exchanges.kucoinFutures import KucoinFutures
 from src.utility import Utility
 from src.logManager import get_logger
 
-class exchange():
+class Exchange():
     def __init__(self, settings):
         self.settings = settings
-        self.sandBox = settings.sandBox
-        self.exchange = self.init_exchange()
-        self.exchange.set_sandbox_mode(self.sandBox)
+        self.sandBox = settings.sandbox
         self.logger = get_logger(__name__, settings)
-
-    def fetch_ohlcv(self, pair, timeframe):
-        return self.exchange.fetch_ohlcv(pair, timeframe)
-    
-    def fetch_ohlcv(self, pair, timeframe, since):
-        return self.exchange.fetch_ohlcv(pair, timeframe, since)
-    
-    def init_exchange(self):
-        print("exchange : " + self.settings.exchange)
+        self.logger.info("exchange : " + self.settings.exchange)
         if self.settings.exchange == 'kucoinfutures':
-            return KucoinFutures()
+            self.exchange = KucoinFutures(self.settings)
         elif self.settings.exchange == 'okex':
-            return okex()
+            self.exchange = Okex(self.settings)
         else:
-            return KucoinFutures()
+            self.exchange = KucoinFutures(self.settings)
