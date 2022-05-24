@@ -13,13 +13,13 @@ import os
 from src.logManager import get_logger
 
 class DataDownloader():
-    def __init__(self, pair, timeFrame, exchange, settings) -> None:
+    def __init__(self, pair, timeFrame, settings) -> None:
         self.settings = settings
         self.pair = Utility.get_exchange_format(pair)
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
         self.dbPair = Utility.get_db_format(self.pair)
         self.tableName = self.dbPair + "_" + self.timeFrame
-        self.exchange = exchange
+        self.exchange = Exchange(settings).exchange
         self.db = DatabaseManager(settings)
         self.logger = get_logger(__name__, settings)
 
