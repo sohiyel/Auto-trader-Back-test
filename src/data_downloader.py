@@ -15,11 +15,11 @@ from src.logManager import get_logger
 class DataDownloader():
     def __init__(self, pair, timeFrame, settings) -> None:
         self.settings = settings
-        self.pair = Utility.get_exchange_format(pair)
+        self.exchange = Exchange(settings).exchange
+        self.pair = self.exchange.change_symbol_for_data(pair)
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
         self.dbPair = Utility.get_db_format(self.pair)
         self.tableName = self.dbPair + "_" + self.timeFrame
-        self.exchange = Exchange(settings).exchange
         self.db = DatabaseManager(settings)
         self.logger = get_logger(__name__ + 'DataDownloader', settings)
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     if os.path.exists(settings.ACCOUNT_DIR):
         downloader = Downloader(settings)
         print("Len table list:" + str(len(downloader.tablesList)))
-        # with concurrent.futures.ThreadPoolExecutor() as executor:        
-        #     executor.map(downloader.initialize_indexes,downloader.tablesList)
-        downloader.initialize_indexes(downloader.tablesList[0])
+        with concurrent.futures.ThreadPoolExecutor() as executor:        
+            executor.map(downloader.initialize_indexes,downloader.tablesList)
+        # downloader.initialize_indexes(downloader.tablesList[0])
 

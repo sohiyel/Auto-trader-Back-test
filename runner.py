@@ -28,9 +28,9 @@ def run_trade():
 
 def run_data_downloader():
     downloader = Downloader(settings)
-    downloader.initialize_indexes(downloader.tablesList[0])
-    # with concurrent.futures.ThreadPoolExecutor() as executor:        
-    #     executor.map(downloader.initialize_indexes,downloader.tablesList)
+    # downloader.initialize_indexes(downloader.tablesList[0])
+    with concurrent.futures.ThreadPoolExecutor() as executor:        
+        executor.map(downloader.initialize_indexes,downloader.tablesList)
 
 def download_data(pair, timeframe, startAt, endAt):
     downloader = DataDownloader(pair, Utility.unify_timeframe(timeframe, settings.exchange), settings)
