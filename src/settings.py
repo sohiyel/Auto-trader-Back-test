@@ -6,7 +6,7 @@ class Settings:
         self.task = task
         self.multiProcess = False
         self.tradeSide = "both"
-        self.exchange = "kucoinfutures"
+        self.exchange = "okex"
         self.sandbox = False
         self.constantNumbers = {
             "commission" : 0.0006,

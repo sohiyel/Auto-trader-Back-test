@@ -19,8 +19,8 @@ class DataDownloader():
         self.pair = self.exchange.change_symbol_for_data(pair)
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
         self.dbPair = Utility.get_db_format(self.pair)
-        self.tableName = self.dbPair + "_" + self.timeFrame
         self.db = DatabaseManager(settings)
+        self.tableName = self.db.get_ohlcv_table_name(pair, timeFrame)
         self.logger = get_logger(__name__ + 'DataDownloader', settings)
 
     def get_current_klines(self):

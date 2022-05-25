@@ -22,9 +22,9 @@ def run_back_test():
 
 def run_trade():
     tradeRunner = TradeRunner(settings)
-    tradeRunner.initialize_indexes(tradeRunner.tradeIndexList[0])
-    # with concurrent.futures.ThreadPoolExecutor() as executor:        
-    #     executor.map(tradeRunner.initialize_indexes,tradeRunner.tradeIndexList)
+    # tradeRunner.initialize_indexes(tradeRunner.tradeIndexList[0])
+    with concurrent.futures.ThreadPoolExecutor() as executor:        
+        executor.map(tradeRunner.initialize_indexes,tradeRunner.tradeIndexList)
 
 def run_data_downloader():
     downloader = Downloader(settings)
