@@ -1,4 +1,3 @@
-from django.conf import settings
 from src.exchanges.exchange import Exchange
 from src.exchanges.kucoinFutures import KucoinFutures
 import json

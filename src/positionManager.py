@@ -7,19 +7,19 @@ from src.markets import Markets
 from src.logManager import get_logger
 
 class PositionManager():
-    def __init__(self, initialCapital, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, settings, exchange="") -> None:
+    def __init__(self, initialCapital, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, settings) -> None:
         self.openPositions = []
         self.closedPositions = []
         self.initialCapital = initialCapital
-        self.exchange = exchange
-        self.pair = exchange.change_symbol_for_trade(pair)
+        self.exchange = settings.exchange_service #exchange
+        self.pair = self.exchange.change_symbol_for_trade(pair)
         self.volume = volume
         self.ratioAmount = ratioAmount
         self.timeFrame = timeFrame
         self.strategyName = strategyName
         self.botName = botName
         self.leverage = leverage
-        self.exchange = settings.exchange_service #exchange
+        
         self.settings = settings
         self.db = DatabaseManager(settings)
         self.contractSize = Markets(settings).get_contract_size(pair)
