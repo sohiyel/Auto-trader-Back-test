@@ -1,5 +1,5 @@
 import sys
-from exchanges.exchange import Exchange
+from src.exchanges.exchange import Exchange
 from src.back_test_runner import BackTestRunner
 from src.trade_runner import TradeRunner
 from src.data_downloader import DataDownloader, Downloader
