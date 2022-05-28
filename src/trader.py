@@ -67,6 +67,6 @@ class Trader(Simulator):
         self.logger.info ( f"Current choice is:{choice}")
         try:
             self.processOrders(choice, signal, self.settings.constantNumbers["commission"])
-        except:
-            self.logger.error("Cannot process this signal!")
+        except Exception as e:
+            self.logger.error("Cannot process this signal!" + str(e))
         self.portfolioManager.calc_poL()

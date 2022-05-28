@@ -28,8 +28,20 @@ class DatabaseManager():
         except:
             self.logger.error ("Cannot read db config file!")
 
-    def create_ohlcv_table(self, pair, timeFrame):
+    def get_ohlcv_table_name(self, pair, timeframe):
         dbPair = Utility.get_db_format(pair)
+        return self.settings.exchange + "_" + dbPair + "_" + timeframe
+
+    @property
+    def positions_table_name(self):
+        return self.settings.exchange + "_positions"
+
+    @property
+    def orders_table_name(self):
+        return self.settings.exchange + "_orders"
+
+    def create_ohlcv_table(self, pair, timeFrame):
+        tableName = self.get_ohlcv_table_name(pair, timeFrame)
         cur = self.conn.cursor()
         try:
             cur.execute('''CREATE TABLE IF NOT EXISTS {} (
@@ -39,17 +51,18 @@ class DatabaseManager():
                         low numeric NOT NULL,
                         close numeric NOT NULL,
                         volume numeric NOT NULL
-                        );'''.format(dbPair+"_"+timeFrame))
+                        );'''.format(tableName))
         except:
-            self.logger.warning ("Cannot create {} table!".format(dbPair+"_"+timeFrame))
+            self.logger.warning ("Cannot create {} table!".format(tableName))
 
         self.conn.commit()
         cur.close()
 
     def create_positions_table(self):
+        tableName = self.positions_table_name
         cur = self.conn.cursor()
         try:
-            cur.execute('''CREATE TABLE IF NOT EXISTS positions (
+            cur.execute('''CREATE TABLE IF NOT EXISTS {} (
                         id text PRIMARY KEY,
                         pair text NOT NULL,
                         side text NOT NULL,
@@ -64,17 +77,18 @@ class DatabaseManager():
                         botName text,
                         stopLossOrderId text,
                         takeProfitOrderId text
-                        );''')
+                        );'''.format(tableName ))
         except:
-            self.logger.warning ("Cannot create positions table!")
+            self.logger.warning ("Cannot create {} table!".format(tableName))
 
         self.conn.commit()
         cur.close()
 
     def create_orders_table(self):
+        tableName = self.orders_table_name
         cur = self.conn.cursor()
         try:
-            cur.execute('''CREATE TABLE IF NOT EXISTS orders (
+            cur.execute('''CREATE TABLE IF NOT EXISTS {} (
                         id text PRIMARY KEY,
                         pair text NOT NULL,
                         side text NOT NULL,
@@ -86,9 +100,9 @@ class DatabaseManager():
                         strategyName text NOT NULL,
                         botName text,
                         positionId text
-                        );''')
+                        );'''.format(tableName))
         except:
-            self.logger.warning ("Cannot create positions table!")
+            self.logger.warning ("Cannot create {} table!".format(tableName))
 
         self.conn.commit()
         cur.close()
@@ -127,7 +141,7 @@ class DatabaseManager():
 
     def read_klines(self, pair, timeFrame, limit, lastState):
         cur = self.conn.cursor()
-        tableName = Utility.get_db_format(pair) + "_" + timeFrame
+        tableName = self.get_ohlcv_table_name(pair, timeFrame)
         try:
             cur.execute(f"SELECT * FROM {tableName} WHERE dt < {lastState} ORDER BY dt DESC LIMIT {limit};")
             query = cur.fetchall()
@@ -143,7 +157,7 @@ class DatabaseManager():
 
     def fetch_klines(self, pair, timeFrame, startAt, endAt):
         cur = self.conn.cursor()
-        tableName = Utility.get_db_format(pair) + "_" + timeFrame
+        tableName = self.get_ohlcv_table_name(pair, timeFrame)
         try:
             cur.execute(f"SELECT * FROM {tableName} WHERE dt < {endAt + 1} AND dt > {startAt - 1} ORDER BY dt ASC;")
             query = cur.fetchall()
@@ -158,9 +172,10 @@ class DatabaseManager():
             return df
 
     def get_open_positions(self, pair):
+        tableName = self.positions_table_name
         cur = self.conn.cursor()
         try:
-            SQL = "SELECT * FROM positions WHERE pair = '{0}' AND isopen = True;".format(pair)
+            SQL = "SELECT * FROM {} WHERE pair = '{}' AND isopen = True;".format(tableName, pair)
             cur.execute(SQL)
             query = cur.fetchall()
             df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice',
@@ -180,9 +195,10 @@ class DatabaseManager():
             return df
 
     def get_open_orders(self, pair):
+        tableName = self.orders_table_name
         cur = self.conn.cursor()
         try:
-            SQL = "SELECT * FROM orders WHERE pair = '{0}' AND isopen = True;".format(pair)
+            SQL = "SELECT * FROM {} WHERE pair = '{}' AND isopen = True;".format(tableName, pair)
             cur.execute(SQL)
             query = cur.fetchall()
             df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice', 'leverage', 'isOpen', 'timeFrame',
@@ -200,11 +216,12 @@ class DatabaseManager():
             return df
 
     def add_position(self, id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyName, botName, stopLossOrderId, takeProfitOrderId):
+        tableName = self.positions_table_name
         cur = self.conn.cursor()
         try:
-            SQL = "INSERT into positions (id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyname, botname, stopLossOrderId, takeProfitOrderId)\
+            SQL = "INSERT into %s (id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyname, botname, stopLossOrderId, takeProfitOrderId)\
                         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
-            data = (id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyName, botName, stopLossOrderId, takeProfitOrderId)
+            data = (tableName, id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyName, botName, stopLossOrderId, takeProfitOrderId)
             cur.execute(SQL, data)
         except:
             self.logger.error (f"Cannot add new position to database!")
@@ -213,11 +230,12 @@ class DatabaseManager():
         cur.close()
 
     def add_order(self, id, pair, side, volume, entryPrice, leverage, isOpen, timeFrame, strategyName, botName, positionId):
+        tableName = self.orders_table_name
         cur = self.conn.cursor()
         try:
-            SQL = "INSERT into orders (id, pair, side, volume, entryPrice, leverage, isOpen, timeFrame, strategyname, botname, positionId)\
+            SQL = "INSERT into %s (id, pair, side, volume, entryPrice, leverage, isOpen, timeFrame, strategyname, botname, positionId)\
                         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
-            data = (id, pair, side, volume, entryPrice, leverage, isOpen, timeFrame, strategyName, botName, positionId)
+            data = (tableName, id, pair, side, volume, entryPrice, leverage, isOpen, timeFrame, strategyName, botName, positionId)
             cur.execute(SQL, data)
         except:
             self.logger.error (f"Cannot add new order to database!")
@@ -226,9 +244,10 @@ class DatabaseManager():
         cur.close()
 
     def close_position(self, id):
+        tableName = self.positions_table_name
         cur = self.conn.cursor()
         try:
-            cur.execute(f"UPDATE positions\
+            cur.execute(f"UPDATE {tableName}\
                         SET isopen = False, closeat = {time.time()}\
                         WHERE id='{id}';")
         except:
@@ -238,9 +257,10 @@ class DatabaseManager():
         cur.close()
 
     def close_order(self, id):
+        tableName = self.orders_table_name
         cur = self.conn.cursor()
         try:
-            cur.execute(f"UPDATE orders\
+            cur.execute(f"UPDATE {tableName}\
                         SET isopen = False\
                         WHERE id='{id}';")
         except:
@@ -250,9 +270,10 @@ class DatabaseManager():
         cur.close()
 
     def close_order_by_positionId(self, id):
+        tableName = self.orders_table_name
         cur = self.conn.cursor()
         try:
-            cur.execute(f"UPDATE orders\
+            cur.execute(f"UPDATE {tableName}\
                         SET isopen = False\
                         WHERE positionId='{id}';")
         except:

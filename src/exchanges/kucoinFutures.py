@@ -1,7 +1,7 @@
 from src.exchanges.baseExchange import BaseExchange
 import asyncio
 import ccxt
-
+from math import floor
 from src.utility import Utility
 from datetime import datetime
 import time
@@ -14,7 +14,6 @@ class KucoinFutures(BaseExchange):
         self.exchange = ccxt.kucoinfutures()
         self.exchange.set_sandbox_mode(sandBox)
         self.logger = get_logger(__name__, settings)
-        self.authorize()
         
     def fetch_balance(self):
         try:
@@ -32,12 +31,8 @@ class KucoinFutures(BaseExchange):
             self.logger.error("Cannot fetch balance from ccxt!")
             return False
 
-
-
-
-
     def get_klines(self, symbol, timeFrame, startAt, endAt):
-        symbol = Utility.get_exchange_format(symbol)
+        symbol = self.exchange.change_symbol_for_trade(self.pair)
         timeFrame = Utility.unify_timeframe(timeFrame, "kucoinfutures")
         self.logger.info('requesting data for {} in timeframe {} from {} to {}'.format(symbol,timeFrame, str(datetime.fromtimestamp(startAt)), str(datetime.fromtimestamp(endAt))))
         status = True
@@ -49,18 +44,6 @@ class KucoinFutures(BaseExchange):
             else: 
                 self.logger.info('Success! recieved {} candles'.format(len(response)))
                 return(response)
-        # kLineURL = 'api/v1/kline/query?'
-        # params = {
-        #     'symbol': symbol,
-        #     'granularity': granularity,
-        #     'from': startAt,
-        #     'to': endAt
-        # }
-        # response = requests.get(self.baseUrl+kLineURL,params=params)
-        # if response.status_code ==  200:
-        #     return(response.json()['data'])
-        # else:
-        #     self.logger.error("Something went wrong. Error: "+ str(response.status_code))
 
     async def get_klines_data(self, symbol, timeFrame, startAt, endAt, limit):
         klines = []
@@ -83,3 +66,44 @@ class KucoinFutures(BaseExchange):
                 break
 
         return klines
+
+    def change_symbol_for_trade(self, symbol):
+        if "/" in symbol:
+            if ":" in symbol:
+                return symbol.upper()
+            else:
+                return symbol.upper() + ":USDT"
+        elif "_" in symbol:
+            symbols = symbol.split("_")
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
+        elif "-" in symbol:
+            symbols = symbol.split("-")
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
+
+    def change_symbol_for_data(self, symbol):
+        if "/" in symbol:
+            if ":" in symbol:
+                return symbol.upper()
+            else:
+                return symbol.upper() + ":USDT"
+        elif "_" in symbol:
+            symbols = symbol.split("_")
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
+        elif "-" in symbol:
+            symbols = symbol.split("-")
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
+
+    def lot_calculator(self, symbol, amount):
+        """
+        this function is written for calculate lot size of kucoin future
+        :param exchange:
+        :param symbol:
+        :param amount:
+        :return: size in lot
+        """
+        data = self.exchange.futuresPublicGetContractsSymbol({
+            'symbol': symbol
+        })
+        min_lot = float(data['data']['multiplier'])
+        size = floor(amount / min_lot) if amount > min_lot else 1
+        return size

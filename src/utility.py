@@ -12,13 +12,13 @@ class Utility:
             if ":" in pair:
                 return pair.upper()
             else:
-                return pair.upper() + ":USDT"
+                return pair.upper()
         elif "_" in pair:
             pairs = pair.split("_")
-            return pairs[0].upper() + "/" + pairs[1].upper() + ":USDT"
+            return pairs[0].upper() + "/" + pairs[1].upper()
         elif "-" in pair:
             pairs = pair.split("-")
-            return pairs[0].upper() + "/" + pairs[1].upper() + ":USDT"
+            return pairs[0].upper() + "/" + pairs[1].upper()
 
     @staticmethod
     def get_db_format(pair):

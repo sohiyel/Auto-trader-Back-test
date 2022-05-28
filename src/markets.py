@@ -1,9 +1,11 @@
+from django.conf import settings
 from src.exchanges.exchange import Exchange
 from src.exchanges.kucoinFutures import KucoinFutures
 import json
 from src.utility import Utility
 import os
 from src.logManager import get_logger
+from src.settings import Settings
 
 class Markets():
     def __init__(self, settings) -> None:
@@ -39,13 +41,14 @@ class Markets():
 
     def get_contract_size(self, pair):
         try:
-            ePair = Utility.get_exchange_format(pair)
+            ePair = Utility.get_exchange_format(pair+":USDT")
             return self.markets[ePair]['contractSize']
-        except:
-            self.logger.error(f"Cannot get contract size of {ePair}")
+        except Exception as e:
+            self.logger.error(f"Cannot get contract size of {ePair}" + str(e))
 
 
 if __name__ == '__main__':
-    market = Markets()
+    settings = Settings('sohiyel')
+    market = Markets(settings)
     market.load_market()
     market.write_to_file()

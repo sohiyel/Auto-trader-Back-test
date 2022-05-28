@@ -1,14 +1,17 @@
 from src.exchanges.baseExchange import BaseExchange
 import ccxt
 from src.logManager import get_logger
+import configparser
+from math import floor
 
 class Okex(BaseExchange):
     def __init__(self, settings, sandBox = False):
         self.settings = settings
-        self.exchange = ccxt.okex()
+        self.exchange = ccxt.okex5()
+        self.exchange.options['createMarketBuyOrderRequiresPrice'] = False
+        self.exchange.options['defaultType'] = 'future'
         self.exchange.set_sandbox_mode(sandBox)
         self.logger = get_logger(__name__, settings)
-        self.authorize()
         
     def fetch_balance(self):
         try:
@@ -28,9 +31,69 @@ class Okex(BaseExchange):
             return False
 
     def create_market_order(self, symbol, side, amount, price=None, params={}):
-        nparams = {
-            'tdMode': 'isolated'
-        }
-        return self.exchange.create_market_order(symbol, side, amount, nparams)
+        if side == 'buy':
+            okexParams={'tdMode': 'isolated', 'posSide': 'long'}
+        elif side == 'sell':
+            okexParams={'tdMode': 'isolated', 'posSide': 'short'}
+        self.logger.debug("Create market order with params = ",okexParams)
+        return self.exchange.create_market_order(symbol, side, amount, params=okexParams)
+
+    def authorize(self):
+        cfg = configparser.ConfigParser()
+        try:
+            cfg.read(self.settings.API_PATH)
+            self.exchange.apiKey = cfg.get('KEYS','api_key')
+            self.exchange.secret = cfg.get('KEYS', 'api_secret')
+            self.exchange.password = cfg.get('KEYS', 'api_passphrase')
+        except Exception as e:
+            self.logger.error("Cannot read exchange config file!" + str(e))
+
+    def change_symbol_for_trade(self, symbol):
+        if ":" in symbol:
+            symbol = symbol.split(":")[0]
+        if "-" in symbol:
+            if "SWAP" in symbol:
+                return symbol.upper()
+            else:
+                return symbol.upper() + "-SWAP"
+        elif "_" in symbol:
+            symbols = symbol.split("_")
+            return symbols[0].upper() + "-" + symbols[1].upper() + "-SWAP"
+        elif "/" in symbol:
+            symbols = symbol.split("/")
+            return symbols[0].upper() + "-" + symbols[1].upper() + "-SWAP"
+
+    def change_symbol_for_data(self, symbol):
+        if ":" in symbol:
+            symbol = symbol.split(":")[0]
+        if "-" in symbol:
+            if "SWAP" in symbol:
+                symbols = symbol.split("-")
+                return symbols[0].upper() + "-" + symbols[1].upper()
+            else:
+                return symbol.upper() 
+        elif "_" in symbol:
+            symbols = symbol.split("_")
+            return symbols[0].upper() + "-" + symbols[1].upper()
+        elif "/" in symbol:
+            symbols = symbol.split("/")
+            return symbols[0].upper() + "-" + symbols[1].upper()
+
+    def lot_calculator(self, symbol, amount):
+        """
+        this function is written for calculate amount size in lot (OKEx SWAP contacts)
+        :param amount:
+        :param exchange:
+        :param symbol:
+        :return: size in lot
+        """
+
+        data = self.exchange.fetch_markets_by_type(type='SWAP', params={
+            'instId': symbol
+        })
+        min_lot = float(data[0]['info']['ctVal'])
+        size = floor(amount / min_lot) if amount > min_lot else 1
+        return size
+        
 
 
