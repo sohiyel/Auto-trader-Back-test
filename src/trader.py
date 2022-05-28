@@ -12,9 +12,9 @@ from src.simulator import Simulator
 from src.logManager import get_logger
 
 class Trader(Simulator):
-    def __init__ (self, index, exchange, settings, market = 'futures'):
+    def __init__ (self, index, settings, market = 'futures'):
         self.settings = settings
-        self.exchange = exchange
+        self.exchange = settings.exchange_service
         self.pair = index.pair
         self.timeFrame = Utility.unify_timeframe(index.timeFrame, settings.exchange)
         self.side = index.side
@@ -28,14 +28,14 @@ class Trader(Simulator):
         self.lastState = self.dataService.startAtTs
         self.strategyName = index.strategyName
         self.botName = index.botName
-        self.portfolioManager = PortfolioManager(index.pair,1, settings, exchange)
+        self.portfolioManager = PortfolioManager(index.pair,1, settings)
         self.initialCapital = self.portfolioManager.get_equity()
         self.orderManager = OrderManager(self.initialCapital, index.strategyName, index.botName, index.inputs, index.pair, settings)
         self.lastCandle = ""
         self.volume = index.amount
         self.ratioAmount = index.ratioAmount
         self.leverage = index.leverage
-        self.positionManager = PositionManager(self.portfolioManager.initialCapital, self.pair, self.volume, self.ratioAmount, self.timeFrame, self.strategyName, self.botName, self.leverage,settings, exchange)
+        self.positionManager = PositionManager(self.portfolioManager.initialCapital, self.pair, self.volume, self.ratioAmount, self.timeFrame, self.strategyName, self.botName, self.leverage,settings)
         self.positionManager.sync_positions()
         self.currentInput = index
         self.df = ""

@@ -18,7 +18,7 @@ class PositionManager():
         self.strategyName = strategyName
         self.botName = botName
         self.leverage = leverage
-        self.exchange = exchange
+        self.exchange = settings.exchange_service #exchange
         self.settings = settings
         self.db = DatabaseManager(settings)
         self.contractSize = Markets(settings).get_contract_size(pair)
@@ -26,7 +26,7 @@ class PositionManager():
     
     def open_position(self, signal, lastState):
         positionId = uuid.uuid4().hex
-        if self.exchange:
+        if self.settings.task == 'trade': #self.exchange:
             if self.ratioAmount > 0:
                 orderbook = self.exchange.fetch_order_book(signal.pair)
                 bid = orderbook['bids'][0][0] if len (orderbook['bids']) > 0 else None
@@ -82,7 +82,7 @@ class PositionManager():
 
     def close_position(self, timestamp):
         if len(self.openPositions) > 0:
-            if self.exchange:
+            if self.settings.task == 'trade': #self.exchange:
                 if self.openPositions[0].side == "buy":
                     try:
                         self.exchange.create_market_order(self.openPositions[0].pair, "sell", self.openPositions[0].volume / self.contractSize, params={'leverage': self.leverage})

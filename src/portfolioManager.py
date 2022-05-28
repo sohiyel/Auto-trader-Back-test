@@ -2,7 +2,7 @@ from src.markets import Markets
 from src.logManager import get_logger
 
 class PortfolioManager():
-    def __init__(self, pair, initialCapital=1, settings="", exchange="") -> None:
+    def __init__(self, pair, initialCapital=1, settings="") -> None:
         self.settings = settings
         self.initialCapital = initialCapital
         self.balance = initialCapital
@@ -14,7 +14,7 @@ class PortfolioManager():
         self.numLosses = 0
         self.balances = []
         self.equities = []
-        self.exchange = exchange
+        self.exchange = settings.exchange_service #exchange
         self.contractSize = Markets(self.settings).get_contract_size(pair)
         self.logger = get_logger(__name__, settings)
         
@@ -54,7 +54,7 @@ class PortfolioManager():
         return self.equity
 
     def get_equity(self):
-        if self.exchange:
+        if self.settings.task == 'trade': #self.exchange:
             try:
                 response = self.exchange.fetch_balance()
                 if response:

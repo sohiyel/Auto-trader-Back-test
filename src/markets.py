@@ -8,7 +8,7 @@ from src.logManager import get_logger
 class Markets():
     def __init__(self, settings) -> None:
         self.settings = settings
-        self.exchange = Exchange(settings).exchange
+        self.exchange = settings.exchange_service #Exchange(settings).exchange
         self.exchange.authorize()
         self.logger = get_logger(__name__, settings)
         if os.path.exists(self.settings.MARKET_JSON_PATH):

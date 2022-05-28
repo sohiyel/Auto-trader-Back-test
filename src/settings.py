@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from os import path
 
 class Settings:
@@ -7,6 +8,7 @@ class Settings:
         self.multiProcess = False
         self.tradeSide = "both"
         self.exchange = "okex"
+        self.exchange_service = NULL
         self.sandbox = False
         self.constantNumbers = {
             "commission" : 0.0006,

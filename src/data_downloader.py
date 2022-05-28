@@ -19,7 +19,7 @@ class DataDownloader():
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
         self.dbPair = Utility.get_db_format(self.pair)
         self.tableName = self.dbPair + "_" + self.timeFrame
-        self.exchange = Exchange(settings).exchange
+        self.exchange = settings.exchange_service #Exchange(settings).exchange
         self.db = DatabaseManager(settings)
         self.logger = get_logger(__name__ + 'DataDownloader', settings)
 
