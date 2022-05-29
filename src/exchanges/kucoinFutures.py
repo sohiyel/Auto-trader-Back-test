@@ -5,7 +5,7 @@ from math import floor
 from src.utility import Utility
 from datetime import datetime
 import time
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class KucoinFutures(BaseExchange):
     def __init__(self, settings, sandBox = False):
@@ -13,7 +13,8 @@ class KucoinFutures(BaseExchange):
         self.baseUrl = 'https://api-futures.kucoin.com/'
         self.exchange = ccxt.kucoinfutures()
         self.exchange.set_sandbox_mode(sandBox)
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         
     def fetch_balance(self):
         try:

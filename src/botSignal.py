@@ -2,7 +2,7 @@ from src.signalClass import SignalClass
 import json
 import importlib
 from os import path
-from src.logManager import get_logger
+from src.logManager import LogService
 class BotSignal():
     def __init__(self, botName, currentInput, timeFrame="default", pair="default", settings="", marketData="") -> None:
         self.lastSignal = 0
@@ -12,7 +12,8 @@ class BotSignal():
         self.strategyNames = []
         self.strategies = []
         botFile = botName + ".json"
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         try:
             json_data_file = open( path.join(settings.SIGNALS_DIR, botFile))
             botJson = json.load(json_data_file)

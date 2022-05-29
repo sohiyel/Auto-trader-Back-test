@@ -2,7 +2,7 @@ from datetime import datetime
 from pytz import timezone
 from src.utility import Utility
 from src.databaseManager import DatabaseManager
-from src.logManager import get_logger
+from src.logManager import LogService
 class DataService():
 
     def __init__(self, market, pair, timeFrame, startTime, endTime, historyNeeded = 0, settings=''):
@@ -19,7 +19,8 @@ class DataService():
         self.endAtTs = self.convert_time(endTime)
         self.historyNeeded = int(historyNeeded)
         self.db = DatabaseManager(settings)
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         if not settings.task == 'trade':
             self.fetch_klines()
 

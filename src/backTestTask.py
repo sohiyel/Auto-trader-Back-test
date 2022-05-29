@@ -2,7 +2,7 @@ import json
 import time
 import os
 from src.utility import Utility
-from src.logManager import get_logger
+from src.logManager import LogService
 class BackTestTask():
     def __init__(self,settings) -> None:
         self.settings = settings
@@ -18,7 +18,8 @@ class BackTestTask():
         self.optimization = ""
         self.randomInputs = ""
         self.numberOfInputs = ""
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def read_toDo(self):
         if os.path.exists(self.settings.TASKS_PATH):

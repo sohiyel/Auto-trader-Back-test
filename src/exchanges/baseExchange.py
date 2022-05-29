@@ -1,11 +1,12 @@
 
-from src.logManager import get_logger
+from src.logManager import LogService
 import configparser
 
 class BaseExchange():
     def __init__(self,settings, sandBox = False):
         self.settings = settings
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         self.authorize()
 
     def fetch_ohlcv(self, pair, timeframe, since=""):

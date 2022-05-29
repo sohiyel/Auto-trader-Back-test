@@ -3,7 +3,7 @@ from src.exchanges.kucoinFutures import KucoinFutures
 import json
 from src.utility import Utility
 import os
-from src.logManager import get_logger
+from src.logManager import LogService
 from src.settings import Settings
 
 class Markets():
@@ -11,7 +11,8 @@ class Markets():
         self.settings = settings
         self.exchange = settings.exchange_service #Exchange(settings).exchange
         self.exchange.authorize()
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         if os.path.exists(self.settings.MARKET_JSON_PATH):
             self.markets = self.read_file()
         else:

@@ -5,7 +5,7 @@ import time
 from src.tradeIndex import TradeIndex
 from src.exchanges.kucoinFutures import KucoinFutures
 import concurrent.futures
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class TradeRunner():
     def __init__(self, settings) -> None:
@@ -14,7 +14,8 @@ class TradeRunner():
         self.exchange = settings.exchange_service #Exchange(settings).exchange
         self.exchange.authorize()
         self.trades = []
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def initialize_indexes(self, index):
         trader = Trader(index, self.settings)

@@ -10,7 +10,7 @@ import json
 from src.settings import Settings
 import sys
 import os
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class DataDownloader():
     def __init__(self, pair, timeFrame, settings) -> None:
@@ -23,7 +23,9 @@ class DataDownloader():
         self.exchange = settings.exchange_service #Exchange(settings).exchange
         self.db = DatabaseManager(settings)
         self.tableName = self.db.get_ohlcv_table_name(pair, timeFrame)
-        self.logger = get_logger(__name__ + 'DataDownloader', settings)
+        self.logService = LogService(__name__ + "DataDownloader", settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
+        #self.logger = get_logger(__name__ + 'DataDownloader', settings)
 
     def get_current_klines(self):
         try:
@@ -77,7 +79,9 @@ class Downloader():
         self.settings = settings
         self.tablesList = self.find_tables()
         #self.exchange = Exchange(self.settings).exchange
-        self.logger = get_logger(__name__ + 'Downloader', settings)
+        self.logService = LogService(__name__ + 'Downloader', settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
+        #self.logger = get_logger(__name__ + 'Downloader', settings)
 
     def initialize_indexes(self, table):
         downloader = DataDownloader(table[0], table[1], self.settings)

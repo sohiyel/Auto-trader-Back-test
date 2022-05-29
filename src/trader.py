@@ -9,7 +9,7 @@ from datetime import datetime
 from pytz import timezone
 import time
 from src.simulator import Simulator
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class Trader(Simulator):
     def __init__ (self, index, settings, market = 'futures'):
@@ -39,7 +39,8 @@ class Trader(Simulator):
         self.positionManager.sync_positions()
         self.currentInput = index
         self.df = ""
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def update_candle_data(self):
         self.lastState = time.time() * 1000

@@ -4,7 +4,7 @@ import uuid
 from src.databaseManager import DatabaseManager
 from src.utility import Utility
 from src.markets import Markets
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class PositionManager():
     def __init__(self, initialCapital, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, settings) -> None:
@@ -23,7 +23,8 @@ class PositionManager():
         self.settings = settings
         self.db = DatabaseManager(settings)
         self.contractSize = Markets(settings).get_contract_size(pair)
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
     
     def open_position(self, signal, lastState):
         positionId = uuid.uuid4().hex

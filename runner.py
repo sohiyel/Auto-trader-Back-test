@@ -10,11 +10,12 @@ import os
 from threading import Thread
 from src.data import DataService
 from src.utility import Utility
-from src.logManager import get_logger
+from src.logManager import LogService
 
 settings = Settings(sys.argv[2], sys.argv[1])
 
-logger = get_logger(__name__, settings)
+logService = LogService(__name__, settings)
+logger = logService.logger  #get_logger(__name__, settings)
 
 def run_back_test():
     tradeRunner = BackTestRunner(settings)

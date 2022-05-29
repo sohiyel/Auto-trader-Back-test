@@ -1,6 +1,6 @@
 from src.exchanges.baseExchange import BaseExchange
 import ccxt
-from src.logManager import get_logger
+from src.logManager import LogService
 import configparser
 from math import floor
 
@@ -11,8 +11,8 @@ class Okex(BaseExchange):
         self.exchange.options['createMarketBuyOrderRequiresPrice'] = False
         self.exchange.options['defaultType'] = 'future'
         self.exchange.set_sandbox_mode(sandBox)
-        self.logger = get_logger(__name__, settings)
-        
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
     def fetch_balance(self):
         try:
             response = self.exchange.fetch_balance()

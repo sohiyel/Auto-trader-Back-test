@@ -2,14 +2,15 @@ from src.strategy import Strategy
 from src.signalClass import SignalClass
 import pandas as pd
 import time
-from src.logManager import get_logger
+from src.logManager import LogService
 class Test02(Strategy):
     def __init__(self, currentInput, pair, marketData = "", settings = "") -> None:
         super().__init__()
         self.pair = pair
         self.startTime = time.time()
         self.currentTime = 0
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def long_enter(self):
         longEnters = [1]

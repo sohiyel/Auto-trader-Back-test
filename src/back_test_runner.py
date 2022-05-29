@@ -6,7 +6,7 @@ import concurrent.futures
 from src.backTestTask import BackTestTask
 from os import path
 from src.simulator import Simulator
-from src.logManager import get_logger
+from src.logManager import LogService
 class BackTestRunner():
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -14,7 +14,8 @@ class BackTestRunner():
         self.task = BackTestTask(self.settings)
         self.userInput = ""
         self.historyNeeded = ""
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def run_back_test(self, currentInput):
         self.logger.info  ("--------- New process started ---------")

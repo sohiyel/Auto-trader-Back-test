@@ -6,7 +6,7 @@ from random import shuffle
 import time
 from src.utility import Utility
 from os import path
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class UserInput():
     def __init__(self, pair, timeFrame, strategyName, botName, side = "both", leverage = 1, amount = 1 , ratioAmount = 0, optimization = False, randomInput = False, settings="") -> None:
@@ -23,7 +23,8 @@ class UserInput():
         self.step = 0
         self.inputs = []
         self.randomInput = randomInput
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         if botName:
             try:
                 self.inputs= self.get_bot_inputs()

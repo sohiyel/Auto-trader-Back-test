@@ -1,5 +1,5 @@
 from src.markets import Markets
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class PortfolioManager():
     def __init__(self, pair, initialCapital=1, settings="") -> None:
@@ -16,7 +16,8 @@ class PortfolioManager():
         self.equities = []
         self.exchange = settings.exchange_service #exchange
         self.contractSize = Markets(self.settings).get_contract_size(pair)
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         
     def calc_poL(self):
         if self.loss != 0:

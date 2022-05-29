@@ -4,14 +4,15 @@ import configparser
 from src.utility import Utility
 import pandas as pd
 import time
-from src.logManager import get_logger
+from src.logManager import LogService
 class DatabaseManager():
     def __init__(self, settings) -> None:
         self.settings = settings
         self.conn = None
         self.connect_to_db()
         self.tables = []
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def connect_to_db(self):
         try:

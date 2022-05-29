@@ -6,7 +6,7 @@ import ccxt as ccxt
 from datetime import datetime
 from time import sleep
 from src.utility import Utility
-from src.logManager import get_logger
+from src.logManager import LogService
 class KucoinSpot(Kucoin):
     def __init__(self, settings, sandBox = False):
         super().__init__(sandBox)
@@ -14,7 +14,8 @@ class KucoinSpot(Kucoin):
         self.baseUrl = 'https://api.kucoin.com'
         self.exchange = ccxt.kucoin()
         self.exchange.set_sandbox_mode(sandBox)
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def authorize(self):
         cfg = configparser.ConfigParser()
