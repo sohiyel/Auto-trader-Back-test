@@ -1,6 +1,7 @@
 import psycopg2
 import json
 import configparser
+from src.settings import Settings
 from src.utility import Utility
 import pandas as pd
 import time
@@ -284,6 +285,7 @@ class DatabaseManager():
         cur.close()
 
 if __name__ == '__main__':
-    dbManager = DatabaseManager()
+    settings = Settings('sohiyel')
+    dbManager = DatabaseManager(settings)
     dbManager.set_up_tables()
     dbManager.conn.close()

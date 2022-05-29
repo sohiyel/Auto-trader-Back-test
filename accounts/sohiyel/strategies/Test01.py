@@ -13,22 +13,22 @@ class Test01(Strategy):
         self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def long_enter(self):
-        longEnters = []
+        longEnters = [0]
         if self.currentTime in longEnters:
             self.decisions['longEnt'] = 1
 
     def long_exit(self):
-        longExits = []
+        longExits = [1]
         if self.currentTime in longExits:
             self.decisions['longExt'] = 1
 
     def short_enter(self):
-        shortEnters = [0]
+        shortEnters = [2]
         if self.currentTime in shortEnters:
             self.decisions['shortEnt'] = 1
 
     def short_exit(self):
-        shortExits = [1]
+        shortExits = [3]
         if self.currentTime in shortExits:
             self.decisions['shortExt'] = 1
 

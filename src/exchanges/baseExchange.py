@@ -17,7 +17,7 @@ class BaseExchange():
     def fetch_order_book(self, pair):
         return self.exchange.fetch_order_book(pair)
 
-    def create_market_order(self, symbol, side, amount, price=None, params={}):
+    def create_market_order(self, symbol, side, amount, leverage=1, price=None, params={}):
         return self.exchange.create_market_order(symbol, side, amount, params)
 
     def fetch_positions(self, symbols=None, params={}):

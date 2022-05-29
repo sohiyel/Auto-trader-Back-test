@@ -47,7 +47,8 @@ class PositionManager():
             try:
                 self.exchange.create_market_order(self.pair,
                                                     signal.side,
-                                                    volume)
+                                                    volume,
+                                                    self.leverage)
             except Exception as e:
                 self.logger.error("Cannot create market order!" + str(e))
             # stopLossOrderId = self.exchange.create_market_order(signal.pair,
@@ -86,13 +87,13 @@ class PositionManager():
             if self.settings.task == 'trade': #self.exchange:
                 if self.openPositions[0].side == "buy":
                     try:
-                        self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "sell", self.openPositions[0].volume / self.contractSize)
+                        self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "sell", self.openPositions[0].volume / self.contractSize,self.leverage)
                         self.logger.info ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
                     except Exception as e:
                         self.logger.error("Cannot create market order!" + str(e))
                 elif self.openPositions[0].side == "sell":
                     try:
-                        self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "buy", self.openPositions[0].volume / self.contractSize)
+                        self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "buy", self.openPositions[0].volume / self.contractSize,self.leverage)
                         self.logger.info ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
                     except Exception as e:
                         self.logger.error("Cannot create market order!" + str(e))
@@ -202,13 +203,13 @@ class PositionManager():
                 for i in exchangePositions:
                     if i["side"] == "long":
                         try:
-                            self.exchange.create_market_order(i["symbol"], "sell", i["contracts"], params={'leverage': self.leverage})
+                            self.exchange.create_market_order(i["symbol"], "sell", i["contracts"],self.leverage, params={'leverage': self.leverage})
                         except Exception as e:
                             self.logger.error("Cannot create market order!" + str(e))
                         self.logger.info( f"-------- Close buy position on {i['symbol']}--------")
                     elif i["side"] == "short":
                         try:
-                            self.exchange.create_market_order(i["symbol"], "buy", i["contracts"], params={'leverage': self.leverage})
+                            self.exchange.create_market_order(i["symbol"], "buy", i["contracts"],self.leverage, params={'leverage': self.leverage})
                         except Exception as e:
                             self.logger.error("Cannot create market order!" + str(e))
                         self.logger.info( f"-------- Close sell position on {i['symbol']}--------")

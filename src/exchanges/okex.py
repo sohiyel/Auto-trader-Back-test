@@ -30,10 +30,12 @@ class Okex(BaseExchange):
             self.logger.error("Cannot fetch balance from ccxt!"+ str(e))
             return False
 
-    def create_market_order(self, symbol, side, amount, price=None, params={}):
+    def create_market_order(self, symbol, side, amount, leverage = 1, price=None, params={}):
         if side == 'buy':
+            self.exchange.set_leverage(leverage,symbol,params={'mgnMode': 'isolated','posSide': 'long'})
             okexParams={'tdMode': 'isolated', 'posSide': 'long'}
         elif side == 'sell':
+            self.exchange.set_leverage(leverage,symbol,params={'mgnMode': 'isolated','posSide': 'short'})
             okexParams={'tdMode': 'isolated', 'posSide': 'short'}
         self.logger.debug("Create market order with params = ",okexParams)
         return self.exchange.create_market_order(symbol, side, amount, params=okexParams)
