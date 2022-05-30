@@ -26,4 +26,34 @@ class LogService():
         file_handler = TimedRotatingFileHandler(LOG_FILE, when='midnight')
         file_handler.setFormatter(self.FORMATTER)
         return file_handler
+        
+    def set_pts_formatter(self, pts):
+        self.filter = PtsFilter()
+        self.filter.update_information(pts)
+        self.logger.addFilter(self.filter)
+        self.FORMATTER = logging.Formatter("[%(asctime)s - %(name)s - %(levelname)s] / [%(pair)s - %(timeFrame)s - %(strategyName)s] : %(message)s")
+        #self.logger.LoggerAdapter(self.logger, {'pair': self.pair, 'timefriame': self.timeframe, 'strategy': self.strategy})
+        for handler in self.logger.handlers:
+            handler.setFormatter(self.FORMATTER)
+
+
+class PtsFilter(logging.Filter):
+    """
+    This is a filter which injects contextual information into the log.
+    """
+
+    def update_information(self, pts):
+        self.pair = pts['pair']
+        self.timeFrame = pts['timeFrame']
+        self.strategyName = pts['strategyName']
+
+
+    def filter(self, record):
+
+        record.pair = self.pair
+        record.timeFrame = self.timeFrame
+        record.strategyName = self.strategyName
+        return True
+
+
 

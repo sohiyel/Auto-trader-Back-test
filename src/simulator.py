@@ -40,6 +40,8 @@ class Simulator():
         self.side = settings.tradeSide
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
+        self.logService.set_pts_formatter(pts)
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:

@@ -17,6 +17,8 @@ class PortfolioManager():
         self.exchange = settings.exchange_service #exchange
         self.contractSize = Markets(self.settings).get_contract_size(pair)
         self.logService = LogService(__name__, settings)
+        pts = {'pair': pair, 'timeFrame': '', 'strategyName': ''}
+        self.logService.set_pts_formatter(pts)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
         
     def calc_poL(self):

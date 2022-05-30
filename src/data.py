@@ -21,6 +21,8 @@ class DataService():
         self.db = DatabaseManager(settings)
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': ''}
+        self.logService.set_pts_formatter(pts)
         if not settings.task == 'trade':
             self.fetch_klines()
 
