@@ -18,10 +18,10 @@ class DataService():
         self.startAtTs = self.convert_time(startTime)
         self.endAtTs = self.convert_time(endTime)
         self.historyNeeded = int(historyNeeded)
-        self.db = DatabaseManager(settings)
+        self.db = DatabaseManager(settings, pair, timeFrame)
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
-        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': ''}
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': 'NaN'}
         self.logService.set_pts_formatter(pts)
         if not settings.task == 'trade':
             self.fetch_klines()

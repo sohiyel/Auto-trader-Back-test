@@ -2,7 +2,7 @@ from src.markets import Markets
 from src.logManager import LogService
 
 class PortfolioManager():
-    def __init__(self, pair, initialCapital=1, settings="") -> None:
+    def __init__(self, pair,timeFrame,StrategyName, initialCapital=1, settings="") -> None:
         self.settings = settings
         self.initialCapital = initialCapital
         self.balance = initialCapital
@@ -17,7 +17,7 @@ class PortfolioManager():
         self.exchange = settings.exchange_service #exchange
         self.contractSize = Markets(self.settings).get_contract_size(pair)
         self.logService = LogService(__name__, settings)
-        pts = {'pair': pair, 'timeFrame': '', 'strategyName': ''}
+        pts = {'pair': pair, 'timeFrame': timeFrame, 'strategyName': StrategyName}
         self.logService.set_pts_formatter(pts)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
         

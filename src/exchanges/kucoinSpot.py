@@ -31,6 +31,8 @@ class KucoinSpot(Kucoin):
             self.logger.error("Cannot read exchange config file!")
 
     def get_klines(self, symbol, timeFrame, startAt, endAt):
+        pts = {'pair': symbol, 'timeFrame': timeFrame, 'strategyName': 'NaN'}
+        self.logService.set_pts_formatter(pts)
         kLineURL = '/api/v1/market/candles?'
         timeFrame = Utility.unify_timeframe(timeFrame, "kucoin")
         params = {

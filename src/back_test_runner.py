@@ -17,7 +17,10 @@ class BackTestRunner():
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
 
+
     def run_back_test(self, currentInput):
+        pts = {'pair': self.task.pair, 'timeFrame': self.task.timeFrame, 'strategyName': self.task.strategyName}
+        self.logService.set_pts_formatter(pts)
         self.logger.info("--------- New process started ---------")
         self.historyNeeded = self.userInput.calc_history_needed()
         self.logger.info(f'Number of history needed in secnds: {self.historyNeeded}')

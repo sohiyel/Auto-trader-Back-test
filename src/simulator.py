@@ -28,9 +28,9 @@ class Simulator():
             self.dataframe = self.dataService.dataFrame
         else:
             self.dataframe = ""
-        self.orderManager = OrderManager(initialCapital, strategyName, botName, currentInput, pair, settings, self.dataframe)
+        self.orderManager = OrderManager(initialCapital, strategyName,timeFrame, botName, currentInput, pair, settings, self.dataframe)
         self.positionManager = PositionManager(initialCapital, pair, volume, 0, self.timeFrame, strategyName, botName, 1, settings)
-        self.portfolioManager = PortfolioManager(pair, initialCapital, settings)
+        self.portfolioManager = PortfolioManager(pair,self.timeFrame, self.strategyName, initialCapital, settings)
         self.plotter =  Plotter(self.pair + "_" + str(self.startAtTS) + "_" + str(self.endAtTS) + "_" + self.timeFrame + ".csv", settings)
         self.volume = volume
         self.currentInput = currentInput

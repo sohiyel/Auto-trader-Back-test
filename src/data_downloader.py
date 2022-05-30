@@ -25,7 +25,8 @@ class DataDownloader():
         self.tableName = self.db.get_ohlcv_table_name(pair, timeFrame)
         self.logService = LogService(__name__ + "DataDownloader", settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
-        #self.logger = get_logger(__name__ + 'DataDownloader', settings)
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': 'NaN'}
+        self.logService.set_pts_formatter(pts)
 
     def get_current_klines(self):
         try:
@@ -81,7 +82,8 @@ class Downloader():
         #self.exchange = Exchange(self.settings).exchange
         self.logService = LogService(__name__ + 'Downloader', settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
-        #self.logger = get_logger(__name__ + 'Downloader', settings)
+        pts = {'pair': 'NaN', 'timeFrame': 'NaN', 'strategyName': 'NaN'}
+        self.logService.set_pts_formatter(pts)
 
     def initialize_indexes(self, table):
         downloader = DataDownloader(table[0], table[1], self.settings)

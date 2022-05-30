@@ -2,7 +2,7 @@ from src.signalManager import SignalManager
 from src.logManager import LogService
 
 class OrderManager():
-    def __init__(self, initialCapital, strategyName, botName, currentInput, pair, settings, marketData="") -> None:
+    def __init__(self, initialCapital, strategyName,timeFrame, botName, currentInput, pair, settings, marketData="") -> None:
         self.initialCapital = initialCapital
         self.equity = initialCapital
         self.positionSize = 0
@@ -10,7 +10,12 @@ class OrderManager():
         self.signalManager = SignalManager(strategyName, botName, currentInput, pair, settings, marketData)
         self.lastSignal = 0
         self.logService = LogService(__name__, settings)
+        self.pair = pair
+        self.strategyName = strategyName
+        self.timeFrame = timeFrame
         self.logger = self.logService.logger  #get_logger(__name__, settings)
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
+        self.logService.set_pts_formatter(pts)
 
     def decider(self, marketData, equity, initialCapital, positionAveragePrice, positionSize, timeStamp = ""):
         signal = self.signalManager.getSignal(marketData, timeStamp)

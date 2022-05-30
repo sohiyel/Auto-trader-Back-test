@@ -28,9 +28,9 @@ class Trader(Simulator):
         self.lastState = self.dataService.startAtTs
         self.strategyName = index.strategyName
         self.botName = index.botName
-        self.portfolioManager = PortfolioManager(index.pair,1, settings)
+        self.portfolioManager = PortfolioManager(index.pair, self.timeFrame, self.strategyName, 1, settings)
         self.initialCapital = self.portfolioManager.get_equity()
-        self.orderManager = OrderManager(self.initialCapital, index.strategyName, index.botName, index.inputs, index.pair, settings)
+        self.orderManager = OrderManager(self.initialCapital, index.strategyName,self.timeFrame, index.botName, index.inputs, index.pair, settings)
         self.lastCandle = ""
         self.volume = index.amount
         self.ratioAmount = index.ratioAmount
@@ -41,6 +41,8 @@ class Trader(Simulator):
         self.df = ""
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': 'NaN'}
+        self.logService.set_pts_formatter(pts)
 
     def update_candle_data(self):
         self.lastState = time.time() * 1000
