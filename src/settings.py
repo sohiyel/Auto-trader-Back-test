@@ -7,7 +7,9 @@ class Settings:
         self.task = task
         self.multiProcess = False
         self.tradeSide = "both"
-        self.exchange = "okex"
+        self.exchanges = ['kucoinfutures', 
+                        'okex']
+        self.exchange = self.exchanges[0]
         self.exchange_service = NULL
         self.sandbox = False
         self.constantNumbers = {
