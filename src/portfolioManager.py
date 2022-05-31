@@ -1,8 +1,8 @@
 from src.markets import Markets
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class PortfolioManager():
-    def __init__(self, pair, initialCapital=1, settings="", exchange="") -> None:
+    def __init__(self, pair, initialCapital=1, settings="") -> None:
         self.settings = settings
         self.initialCapital = initialCapital
         self.balance = initialCapital
@@ -14,9 +14,12 @@ class PortfolioManager():
         self.numLosses = 0
         self.balances = []
         self.equities = []
-        self.exchange = exchange
+        self.exchange = settings.exchange_service #exchange
         self.contractSize = Markets(self.settings).get_contract_size(pair)
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        pts = {'pair': pair, 'timeFrame': '', 'strategyName': ''}
+        self.logService.set_pts_formatter(pts)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         
     def calc_poL(self):
         if self.loss != 0:
@@ -54,40 +57,40 @@ class PortfolioManager():
         return self.equity
 
     def get_equity(self):
-        if self.exchange:
+        if self.settings.task == 'trade': #self.exchange:
             try:
-                response = self.exchange.fetch_balance(params={"currency":"USDT"})
-                if response['info']['code'] == '200000':
-                    self.equity = response['info']['data']['accountEquity']
-                    self.balance = response['info']['data']['availableBalance']
+                response = self.exchange.fetch_balance()
+                if response:
+                    self.equity = response['Equity']
+                    self.balance = response['Balance']
                     return self.equity
                 else:
                     self.logger.error("Problem in getting account equity!")
                     self.logger.error (response)
                     return False
-            except:
-                self.logger.error("Cannot fetch balance from ccxt!")
+            except Exception as e:
+                self.logger.error("Cannot fetch balance from ccxt!"+ str(e))
         else:
             self.logger.error("Exchange is not defined!")
             return False
 
-    def get_balance(self):
-        if self.exchange:
-            try:
-                response = self.exchange.fetch_balance(params={"currency":"USDT"})
-                if response['info']['code'] == '200000':
-                    self.balance = response['info']['data']['availableBalance']
-                    self.equity = response['info']['data']['accountEquity']
-                    return self.balance
-                else:
-                    self.logger.error("Problem in getting account balance!")
-                    self.logger.error (response)
-                    return False
-            except:
-                self.logger.error("Cannot fetch balance from ccxt!")
-        else:
-            self.logger.error("Exchange is not defined!")
-            return False
+    # def get_balance(self):
+    #     if self.exchange:
+    #         try:
+    #             response = self.exchange.fetch_balance(params={"currency":"USDT"})
+    #             if response['info']['code'] == '200000':
+    #                 self.balance = response['info']['data']['availableBalance']
+    #                 self.equity = response['info']['data']['accountEquity']
+    #                 return self.balance
+    #             else:
+    #                 self.logger.error("Problem in getting account balance!")
+    #                 self.logger.error (response)
+    #                 return False
+    #         except:
+    #             self.logger.error("Cannot fetch balance from ccxt!")
+    #     else:
+    #         self.logger.error("Exchange is not defined!")
+    #         return False
 
     def report(self, closedPositions):
         numOfTrades = len(closedPositions)

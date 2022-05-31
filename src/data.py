@@ -2,7 +2,7 @@ from datetime import datetime
 from pytz import timezone
 from src.utility import Utility
 from src.databaseManager import DatabaseManager
-from src.logManager import get_logger
+from src.logManager import LogService
 class DataService():
 
     def __init__(self, market, pair, timeFrame, startTime, endTime, historyNeeded = 0, settings=''):
@@ -19,7 +19,10 @@ class DataService():
         self.endAtTs = self.convert_time(endTime)
         self.historyNeeded = int(historyNeeded)
         self.db = DatabaseManager(settings)
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': ''}
+        self.logService.set_pts_formatter(pts)
         if not settings.task == 'trade':
             self.fetch_klines()
 
@@ -33,8 +36,8 @@ class DataService():
         try:
             self.logger.info("Fetching klines...")
             self.dataFrame = self.db.fetch_klines(self.pair, self.timeFrame, (self.startAtTs - self.historyNeeded) * 1000, self.endAtTs * 1000)
-            self.logger.info("Expected candles:", (self.endAtTs - (self.startAtTs - self.historyNeeded))/(Utility.array[self.timeFrame]*60))
-            self.logger.info("Existing candles:", self.dataFrame.shape[0])
+            self.logger.info("Expected candles:", (self.endAtTs - (self.startAtTs - self.historyNeeded))/(Utility.array[self.timeFrame]*60)[0])
+            self.logger.info("Existing candles:", self.dataFrame.shape[0][0])
             self.logger.info("Needed start and end time:", (self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000)
             self.logger.info("Existed start anad end time:", self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp'])
         except:

@@ -6,7 +6,7 @@ import concurrent.futures
 from src.backTestTask import BackTestTask
 from os import path
 from src.simulator import Simulator
-from src.logManager import get_logger
+from src.logManager import LogService
 class BackTestRunner():
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -14,10 +14,11 @@ class BackTestRunner():
         self.task = BackTestTask(self.settings)
         self.userInput = ""
         self.historyNeeded = ""
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def run_back_test(self, currentInput):
-        self.logger.info  ("--------- New process started ---------")
+        self.logger.info("--------- New process started ---------")
         self.historyNeeded = self.userInput.calc_history_needed()
         self.logger.info(f'Number of history needed in secnds: {self.historyNeeded}')
         trader = Simulator(market = self.task.market,
@@ -48,6 +49,8 @@ class BackTestRunner():
                                   randomInput = self.task.randomInputs,
                                   settings = self.settings)
             start_time = time.time()
+            pts = {'pair': self.userInput.pair, 'timeFrame': self.userInput.timeFrame, 'strategyName': self.userInput.strategyName}
+            self.logService.set_pts_formatter(pts)
             self.logger.info("Number of steps: " + str(len(self.userInput.inputs)))
             results = []
             if not self.task.randomInputs:

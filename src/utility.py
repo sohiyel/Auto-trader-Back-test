@@ -12,13 +12,13 @@ class Utility:
             if ":" in pair:
                 return pair.upper()
             else:
-                return pair.upper() + ":USDT"
+                return pair.upper()
         elif "_" in pair:
             pairs = pair.split("_")
-            return pairs[0].upper() + "/" + pairs[1].upper() + ":USDT"
+            return pairs[0].upper() + "/" + pairs[1].upper()
         elif "-" in pair:
             pairs = pair.split("-")
-            return pairs[0].upper() + "/" + pairs[1].upper() + ":USDT"
+            return pairs[0].upper() + "/" + pairs[1].upper()
 
     @staticmethod
     def get_db_format(pair):
@@ -61,6 +61,11 @@ class Utility:
 
     @staticmethod
     def unify_timeframe(timeframe, exchange):
+        num = "".join(filter(str.isdigit, timeframe))
+        period = timeframe.replace(num, "")[0]
+        return num + period
+
+
         if exchange == "kucoinfutures":
             if timeframe == '1m' or timeframe == '1min':
                 return '1m'

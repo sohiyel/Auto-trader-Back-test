@@ -1,12 +1,13 @@
 import json
 from src.userInput import UserInput
 from src.utility import Utility
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class TradeIndex():
     def __init__(self, settings) -> None:
         self.indexes = []
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         try:
             with open(settings.TRADES_PATH,"r") as json_data_file:
                 self.jsonFile = json.load(json_data_file)

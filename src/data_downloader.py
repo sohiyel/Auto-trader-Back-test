@@ -1,4 +1,4 @@
-import ccxt
+from src.exchanges.exchange import Exchange
 from src.databaseManager import DatabaseManager
 from src.utility import Utility
 from datetime import datetime
@@ -10,24 +10,28 @@ import json
 from src.settings import Settings
 import sys
 import os
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class DataDownloader():
     def __init__(self, pair, timeFrame, settings) -> None:
         self.settings = settings
-        self.pair = Utility.get_exchange_format(pair)
+        self.exchange = Exchange(settings).exchange
+        self.pair = self.exchange.change_symbol_for_data(pair)
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
         self.dbPair = Utility.get_db_format(self.pair)
         self.tableName = self.dbPair + "_" + self.timeFrame
-        self.exchange = ccxt.kucoinfutures()
+        self.exchange = settings.exchange_service #Exchange(settings).exchange
         self.db = DatabaseManager(settings)
-        self.logger = get_logger(__name__, settings)
+        self.tableName = self.db.get_ohlcv_table_name(pair, timeFrame)
+        self.logService = LogService(__name__ + "DataDownloader", settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
+        #self.logger = get_logger(__name__ + 'DataDownloader', settings)
 
     def get_current_klines(self):
         try:
             klines = self.exchange.fetch_ohlcv(self.pair, self.timeFrame)
-        except:
-            self.logger.error("Cannot fetch_ohlcv!")
+        except Exception as e:
+            self.logger.error("Cannot fetch_ohlcv!" + str(e))
         df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
         return df
 
@@ -61,6 +65,7 @@ class DataDownloader():
         return diff
 
     def main_loop(self):
+        self.logger.debug("Enter main loop")
         while True:
             klines = self.get_current_klines()
             self.db.create_ohlcv_table(self.pair,self.timeFrame)
@@ -73,7 +78,10 @@ class Downloader():
     def __init__(self, settings) -> None:
         self.settings = settings
         self.tablesList = self.find_tables()
-        self.logger = get_logger(__name__, settings)
+        #self.exchange = Exchange(self.settings).exchange
+        self.logService = LogService(__name__ + 'Downloader', settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
+        #self.logger = get_logger(__name__ + 'Downloader', settings)
 
     def initialize_indexes(self, table):
         downloader = DataDownloader(table[0], table[1], self.settings)
@@ -95,6 +103,8 @@ if __name__ == '__main__':
     settings = Settings(sys.argv[1])
     if os.path.exists(settings.ACCOUNT_DIR):
         downloader = Downloader(settings)
+        print("Len table list:" + str(len(downloader.tablesList)))
         with concurrent.futures.ThreadPoolExecutor() as executor:        
             executor.map(downloader.initialize_indexes,downloader.tablesList)
+        # downloader.initialize_indexes(downloader.tablesList[0])
 

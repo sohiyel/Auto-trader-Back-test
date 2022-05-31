@@ -9,12 +9,12 @@ from datetime import datetime
 from pytz import timezone
 import time
 from src.simulator import Simulator
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class Trader(Simulator):
-    def __init__ (self, index, exchange, settings, market = 'futures'):
+    def __init__ (self, index, settings, market = 'futures'):
         self.settings = settings
-        self.exchange = exchange
+        self.exchange = settings.exchange_service
         self.pair = index.pair
         self.timeFrame = Utility.unify_timeframe(index.timeFrame, settings.exchange)
         self.side = index.side
@@ -28,18 +28,19 @@ class Trader(Simulator):
         self.lastState = self.dataService.startAtTs
         self.strategyName = index.strategyName
         self.botName = index.botName
-        self.portfolioManager = PortfolioManager(index.pair,1, settings, exchange)
+        self.portfolioManager = PortfolioManager(index.pair,1, settings)
         self.initialCapital = self.portfolioManager.get_equity()
         self.orderManager = OrderManager(self.initialCapital, index.strategyName, index.botName, index.inputs, index.pair, settings)
         self.lastCandle = ""
         self.volume = index.amount
         self.ratioAmount = index.ratioAmount
         self.leverage = index.leverage
-        self.positionManager = PositionManager(self.portfolioManager.initialCapital, self.pair, self.volume, self.ratioAmount, self.timeFrame, self.strategyName, self.botName, self.leverage,settings, exchange)
+        self.positionManager = PositionManager(self.portfolioManager.initialCapital, self.pair, self.volume, self.ratioAmount, self.timeFrame, self.strategyName, self.botName, self.leverage,settings)
         self.positionManager.sync_positions()
         self.currentInput = index
         self.df = ""
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def update_candle_data(self):
         self.lastState = time.time() * 1000
@@ -67,6 +68,6 @@ class Trader(Simulator):
         self.logger.info ( f"Current choice is:{choice}")
         try:
             self.processOrders(choice, signal, self.settings.constantNumbers["commission"])
-        except:
-            self.logger.error("Cannot process this signal!")
+        except Exception as e:
+            self.logger.error("Cannot process this signal!" + str(e))
         self.portfolioManager.calc_poL()

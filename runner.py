@@ -1,4 +1,5 @@
 import sys
+from src.exchanges.exchange import Exchange
 from src.back_test_runner import BackTestRunner
 from src.trade_runner import TradeRunner
 from src.data_downloader import DataDownloader, Downloader
@@ -9,10 +10,12 @@ import os
 from threading import Thread
 from src.data import DataService
 from src.utility import Utility
-from src.logManager import get_logger
+from src.logManager import LogService
 
 settings = Settings(sys.argv[2], sys.argv[1])
-logger = get_logger(__name__, settings)
+
+logService = LogService(__name__, settings)
+logger = logService.logger  #get_logger(__name__, settings)
 
 def run_back_test():
     tradeRunner = BackTestRunner(settings)
@@ -22,12 +25,13 @@ def run_back_test():
 
 def run_trade():
     tradeRunner = TradeRunner(settings)
-    tradeRunner.initialize_indexes(tradeRunner.tradeIndexList[0])
-    # with concurrent.futures.ThreadPoolExecutor() as executor:        
-    #     executor.map(tradeRunner.initialize_indexes,tradeRunner.tradeIndexList)
+    # tradeRunner.initialize_indexes(tradeRunner.tradeIndexList[0])
+    with concurrent.futures.ThreadPoolExecutor() as executor:        
+        executor.map(tradeRunner.initialize_indexes,tradeRunner.tradeIndexList)
 
 def run_data_downloader():
     downloader = Downloader(settings)
+    # downloader.initialize_indexes(downloader.tablesList[0])
     with concurrent.futures.ThreadPoolExecutor() as executor:        
         executor.map(downloader.initialize_indexes,downloader.tablesList)
 
@@ -39,22 +43,24 @@ def download_data(pair, timeframe, startAt, endAt):
     downloader.fetch_klines(startAtTs, endAtTs)
 
 if __name__ == '__main__':
+    settings = Settings(sys.argv[2], sys.argv[1])
+    settings.exchange_service = Exchange(settings).exchange
     if sys.argv[1] == "backtest":
-        settings = Settings(sys.argv[2], "backtest")
+        #settings = Settings(sys.argv[2], "backtest")
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start backtesting!")
             run_back_test()
         else:
             logger.warning (f"There is no account with this informations!")
     if sys.argv[1] == "fast_backtest":
-        settings = Settings(sys.argv[2], "fast_backtest")
+        #settings = Settings(sys.argv[2], "fast_backtest")
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start fast backtesting!")
             run_back_test()
         else:
             logger.warning (f"There is no account with this informations!")
     elif sys.argv[1] == "trade":
-        settings = Settings(sys.argv[2], "trade")
+        #settings = Settings(sys.argv[2], "trade")
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start trading!")
             thread01 = Thread(target= run_data_downloader)
@@ -65,14 +71,14 @@ if __name__ == '__main__':
         else:
             logger.warning (f"There is no account with this informations!")
     elif sys.argv[1] == "live_data":
-        settings = Settings(sys.argv[2], "live_data")
+        #settings = Settings(sys.argv[2], "live_data")
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start downloading live data!")
             run_data_downloader()
         else:
             logger.warning (f"There is no account with this informations!")
     elif sys.argv[1] == "download_data":
-        settings = Settings(sys.argv[2], "download_data")
+        #settings = Settings(sys.argv[2], "download_data")
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start downloading backtest data!")
             download_data(sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6])

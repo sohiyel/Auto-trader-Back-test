@@ -8,7 +8,7 @@ from datetime import datetime
 from pytz import timezone
 from src.plotter import Plotter
 import time
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class Simulator():
     def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization, historyNeeded, settings):
@@ -38,7 +38,10 @@ class Simulator():
         self.historyNeeded = int(historyNeeded)
         self.lastCandle = ""
         self.side = settings.tradeSide
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
+        self.logService.set_pts_formatter(pts)
 
     def openPosition(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:

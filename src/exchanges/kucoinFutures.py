@@ -1,37 +1,39 @@
-from src.exchanges.kucoin import Kucoin
-import requests
+from src.exchanges.baseExchange import BaseExchange
 import asyncio
 import ccxt
-import configparser
+from math import floor
 from src.utility import Utility
 from datetime import datetime
 import time
-from src.logManager import get_logger
+from src.logManager import LogService
 
-class KucoinFutures(Kucoin):
+class KucoinFutures(BaseExchange):
     def __init__(self, settings, sandBox = False):
         self.settings = settings
-        super().__init__(sandBox)
         self.baseUrl = 'https://api-futures.kucoin.com/'
         self.exchange = ccxt.kucoinfutures()
         self.exchange.set_sandbox_mode(sandBox)
-        self.logger = get_logger(__name__, settings)
-
-    def authorize(self):
-        cfg = configparser.ConfigParser()
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
+        
+    def fetch_balance(self):
         try:
-            if self.sandBox:
-                cfg.read(self.settings.API_SANDBOX_FUTURE_PATH)
+            response = self.exchange.fetch_balance(params={"currency":"USDT"})
+            if response['info']['code'] == '200000':
+                return {
+                    'Equity' : response['info']['data']['accountEquity'],
+                    'Balance' : response['info']['data']['availableBalance']
+                }
             else:
-                cfg.read(self.settings.API_FUTURE_PATH)
-            self.exchange.apiKey = cfg.get('KEYS','api_key')
-            self.exchange.secret = cfg.get('KEYS', 'api_secret')
-            self.exchange.password = cfg.get('KEYS', 'api_passphrase')
+                self.logger.error("Problem in getting account equity!")
+                self.logger.error (response)
+                return False
         except:
-            self.logger.error("Cannot read exchange config file!")
+            self.logger.error("Cannot fetch balance from ccxt!")
+            return False
 
     def get_klines(self, symbol, timeFrame, startAt, endAt):
-        symbol = Utility.get_exchange_format(symbol)
+        symbol = self.exchange.change_symbol_for_trade(self.pair)
         timeFrame = Utility.unify_timeframe(timeFrame, "kucoinfutures")
         self.logger.info('requesting data for {} in timeframe {} from {} to {}'.format(symbol,timeFrame, str(datetime.fromtimestamp(startAt)), str(datetime.fromtimestamp(endAt))))
         status = True
@@ -43,18 +45,6 @@ class KucoinFutures(Kucoin):
             else: 
                 self.logger.info('Success! recieved {} candles'.format(len(response)))
                 return(response)
-        # kLineURL = 'api/v1/kline/query?'
-        # params = {
-        #     'symbol': symbol,
-        #     'granularity': granularity,
-        #     'from': startAt,
-        #     'to': endAt
-        # }
-        # response = requests.get(self.baseUrl+kLineURL,params=params)
-        # if response.status_code ==  200:
-        #     return(response.json()['data'])
-        # else:
-        #     self.logger.error("Something went wrong. Error: "+ str(response.status_code))
 
     async def get_klines_data(self, symbol, timeFrame, startAt, endAt, limit):
         klines = []
@@ -77,3 +67,44 @@ class KucoinFutures(Kucoin):
                 break
 
         return klines
+
+    def change_symbol_for_trade(self, symbol):
+        if "/" in symbol:
+            if ":" in symbol:
+                return symbol.upper()
+            else:
+                return symbol.upper() + ":USDT"
+        elif "_" in symbol:
+            symbols = symbol.split("_")
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
+        elif "-" in symbol:
+            symbols = symbol.split("-")
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
+
+    def change_symbol_for_data(self, symbol):
+        if "/" in symbol:
+            if ":" in symbol:
+                return symbol.upper()
+            else:
+                return symbol.upper() + ":USDT"
+        elif "_" in symbol:
+            symbols = symbol.split("_")
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
+        elif "-" in symbol:
+            symbols = symbol.split("-")
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
+
+    def lot_calculator(self, symbol, amount):
+        """
+        this function is written for calculate lot size of kucoin future
+        :param exchange:
+        :param symbol:
+        :param amount:
+        :return: size in lot
+        """
+        data = self.exchange.futuresPublicGetContractsSymbol({
+            'symbol': symbol
+        })
+        min_lot = float(data['data']['multiplier'])
+        size = floor(amount / min_lot) if amount > min_lot else 1
+        return size

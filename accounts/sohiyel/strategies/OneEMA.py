@@ -2,14 +2,15 @@ from src.strategy import Strategy
 from src.signalClass import SignalClass
 import pandas as pd
 import pandas_ta as ta
-from src.logManager import get_logger
+from src.logManager import LogService
 class OneEMA(Strategy):
     def __init__(self, currentInput, pair, marketData = "", settings="") -> None:
         super().__init__()
         self.pair = pair
         self.marketData = []
         self.df = marketData
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
         if type(currentInput[0]) == tuple:
             for i in currentInput:

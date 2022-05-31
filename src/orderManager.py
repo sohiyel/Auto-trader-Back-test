@@ -1,5 +1,5 @@
 from src.signalManager import SignalManager
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class OrderManager():
     def __init__(self, initialCapital, strategyName, botName, currentInput, pair, settings, marketData="") -> None:
@@ -9,7 +9,8 @@ class OrderManager():
         self.positionAveragePrice = 0
         self.signalManager = SignalManager(strategyName, botName, currentInput, pair, settings, marketData)
         self.lastSignal = 0
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def decider(self, marketData, equity, initialCapital, positionAveragePrice, positionSize, timeStamp = ""):
         signal = self.signalManager.getSignal(marketData, timeStamp)

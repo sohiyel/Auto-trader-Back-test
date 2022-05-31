@@ -1,17 +1,18 @@
 import importlib
-from src.logManager import get_logger
+from src.logManager import LogService
 
 class SingleStrategy():
     def __init__(self, strategyName, currentInput, pair, settings, marketData) -> None:
         self.lastSignal = 0
         self.marketData = []
-        self.logger = get_logger(__name__, settings)
+        self.logService = LogService(__name__, settings)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         try:
             strategies = importlib.import_module(settings.STRATEGIES_MODULE_PATH+strategyName)
             self.StrategyClass = getattr(strategies, strategyName)
-            self.strategy = self.StrategyClass(currentInput, pair, marketData)
+            self.strategy = self.StrategyClass(currentInput, pair, marketData, settings)
         except:
-            self.logger.error(f"Cannot import {strategyName}!")
+            self.logger.error(f"Cannot import {settings.STRATEGIES_MODULE_PATH+strategyName}!")
         
     def decider(self, marketData, timeStamp):
         self.marketData = marketData
