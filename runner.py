@@ -11,6 +11,7 @@ from threading import Thread
 from src.data import DataService
 from src.utility import Utility
 from src.logManager import LogService
+from src.markets import Markets
 
 settings = Settings(sys.argv[2], sys.argv[1])
 
@@ -42,27 +43,30 @@ def download_data(pair, timeframe, startAt, endAt):
     downloader.db.create_ohlcv_table(pair, timeframe)
     downloader.fetch_klines(startAtTs, endAtTs)
 
+def get_market_data():
+    market = Markets(settings)
+    market.load_market()
+    market.write_to_file()
+
 if __name__ == '__main__':
     settings = Settings(sys.argv[2], sys.argv[1])
     settings.exchange_service = Exchange(settings).exchange
     if sys.argv[1] == "backtest":
-        #settings = Settings(sys.argv[2], "backtest")
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start backtesting!")
             run_back_test()
         else:
             logger.warning (f"There is no account with this informations!")
     if sys.argv[1] == "fast_backtest":
-        #settings = Settings(sys.argv[2], "fast_backtest")
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start fast backtesting!")
             run_back_test()
         else:
             logger.warning (f"There is no account with this informations!")
     elif sys.argv[1] == "trade":
-        #settings = Settings(sys.argv[2], "trade")
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start trading!")
+            get_market_data()
             thread01 = Thread(target= run_data_downloader)
             thread01.start()
             time.sleep(5)
@@ -71,17 +75,21 @@ if __name__ == '__main__':
         else:
             logger.warning (f"There is no account with this informations!")
     elif sys.argv[1] == "live_data":
-        #settings = Settings(sys.argv[2], "live_data")
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start downloading live data!")
             run_data_downloader()
         else:
             logger.warning (f"There is no account with this informations!")
     elif sys.argv[1] == "download_data":
-        #settings = Settings(sys.argv[2], "download_data")
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start downloading backtest data!")
             download_data(sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6])
+        else:
+            logger.warning (f"There is no account with this informations!")
+    elif sys.argv[1] == "load_markets":
+        if os.path.exists(settings.ACCOUNT_DIR):
+            logger.info ("Start downloading market data!")
+            get_market_data()
         else:
             logger.warning (f"There is no account with this informations!")
     else:

@@ -10,17 +10,17 @@ class Markets():
     def __init__(self, settings) -> None:
         self.settings = settings
         self.exchange = settings.exchange_service #Exchange(settings).exchange
-        self.exchange.authorize()
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
+        self.markets = ""
         if os.path.exists(self.settings.MARKET_JSON_PATH):
-            self.markets = self.read_file()
+            self.read_file()
         else:
-            self.markets = self.load_market()
+            self.load_market()
             self.write_to_file()
 
     def load_market(self):
-        return self.exchange.load_markets()
+        self.markets = self.exchange.load_markets()
 
     def write_to_file(self):
         try:
@@ -35,20 +35,23 @@ class Markets():
             json_data_file = open(self.settings.MARKET_JSON_PATH, "r")
             json_file = json.load(json_data_file)
             json_data_file.close()
-            return json_file
+            self.markets = json_file
         except:
             self.logger.error("Cannot read market data from file!")
 
     def get_contract_size(self, pair):
         try:
-            ePair = Utility.get_exchange_format(pair+":USDT")
-            return self.markets[ePair]['contractSize']
+            ePair = self.exchange.change_symbol_for_markets(pair) #Utility.get_exchange_format(pair+":USDT")
+            marketData = self.markets[ePair]
+            return marketData['contractSize']
         except Exception as e:
             self.logger.error(f"Cannot get contract size of {ePair}" + str(e))
 
 
 if __name__ == '__main__':
     settings = Settings('sohiyel')
+    settings.exchange_service = Exchange(settings).exchange
     market = Markets(settings)
-    market.load_market()
-    market.write_to_file()
+    # market.load_market()
+    # market.write_to_file()
+    market.logger.debug(market.get_contract_size("ADA_USDT"))

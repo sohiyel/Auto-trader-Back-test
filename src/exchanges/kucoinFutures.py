@@ -96,6 +96,9 @@ class KucoinFutures(BaseExchange):
             symbols = symbol.split("-")
             return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
 
+    def change_symbol_for_markets(self, symbol):
+        return self.change_symbol_for_data(symbol)
+
     def lot_calculator(self, symbol, amount):
         """
         this function is written for calculate lot size of kucoin future
