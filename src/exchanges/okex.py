@@ -31,6 +31,8 @@ class Okex(BaseExchange):
             return False
 
     def create_market_order(self, symbol, side, amount, leverage = 1, comment="", price=None, params={}):
+        pts = {'pair': symbol, 'timeFrame': 'NaN', 'strategyName': 'NaN'}
+        self.logService.set_pts_formatter(pts)
         if comment == 'open_buy':
             self.exchange.set_leverage(leverage,symbol,params={'mgnMode': 'isolated','posSide': 'long'})
             okexParams={'tdMode': 'isolated', 'posSide': 'long'}

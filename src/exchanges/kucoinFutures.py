@@ -33,6 +33,8 @@ class KucoinFutures(BaseExchange):
             return False
 
     def get_klines(self, symbol, timeFrame, startAt, endAt):
+        pts = {'pair': symbol, 'timeFrame': timeFrame, 'strategyName': 'NaN'}
+        self.logService.set_pts_formatter(pts)
         symbol = self.exchange.change_symbol_for_trade(self.pair)
         timeFrame = Utility.unify_timeframe(timeFrame, "kucoinfutures")
         self.logger.info('requesting data for {} in timeframe {} from {} to {}'.format(symbol,timeFrame, str(datetime.fromtimestamp(startAt)), str(datetime.fromtimestamp(endAt))))

@@ -7,13 +7,17 @@ import pandas as pd
 import time
 from src.logManager import LogService
 class DatabaseManager():
-    def __init__(self, settings) -> None:
+    def __init__(self, settings, pair, timeFrame) -> None:
         self.settings = settings
         self.conn = None
         self.connect_to_db()
         self.tables = []
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
+        self.pair = pair
+        self.timeFrame = timeFrame
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': 'NaN'}
+        self.logService.set_pts_formatter(pts)
 
     def connect_to_db(self):
         try:

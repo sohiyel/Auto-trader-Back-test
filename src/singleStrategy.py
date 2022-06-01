@@ -7,6 +7,8 @@ class SingleStrategy():
         self.marketData = []
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
+        pts = {'pair': pair, 'timeFrame': 'NaN', 'strategyName': strategyName}
+        self.logService.set_pts_formatter(pts)
         try:
             strategies = importlib.import_module(settings.STRATEGIES_MODULE_PATH+strategyName)
             self.StrategyClass = getattr(strategies, strategyName)

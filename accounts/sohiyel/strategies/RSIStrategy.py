@@ -11,6 +11,8 @@ class RSIStrategy(Strategy):
         self.marketData = []
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
+        pts = {'pair': self.pair, 'timeFrame': 'NaN', 'strategyName': 'RSIStrategy'}
+        self.logService.set_pts_formatter(pts)
         self.df = marketData
         if type(currentInput[0]) == tuple:
             for i in currentInput:

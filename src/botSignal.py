@@ -14,6 +14,8 @@ class BotSignal():
         botFile = botName + ".json"
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': 'NaN'}
+        self.logService.set_pts_formatter(pts)
         try:
             json_data_file = open( path.join(settings.SIGNALS_DIR, botFile))
             botJson = json.load(json_data_file)
