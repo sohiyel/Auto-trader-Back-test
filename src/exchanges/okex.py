@@ -95,15 +95,15 @@ class Okex(BaseExchange):
         if "-" in symbol:
             if "SWAP" in symbol:
                 symbols = symbol.split("-")
-                return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT-220603"
+                return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
             else:
                 return symbol.upper() + ":USDT-220603"
         elif "_" in symbol:
             symbols = symbol.split("_")
-            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT-220603"
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
         elif "/" in symbol:
             symbols = symbol.split("/")
-            return symbols[0].upper() + "-" + symbols[1].upper() + ":USDT-220603"
+            return symbols[0].upper() + "-" + symbols[1].upper() + ":USDT"
 
     def lot_calculator(self, symbol, amount):
         """

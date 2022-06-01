@@ -9,7 +9,7 @@ class Settings:
         self.tradeSide = "both"
         self.exchanges = ['kucoinfutures', 
                         'okex']
-        self.exchange = self.exchanges[0]
+        self.exchange = self.exchanges[1]
         self.exchange_service = NULL
         self.sandbox = False
         self.constantNumbers = {
