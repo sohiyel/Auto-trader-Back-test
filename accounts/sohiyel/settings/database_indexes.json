@@ -6,8 +6,9 @@
         }, {
             "pair": "ETH_USDT",
             "tf": "1m"
-        }, {
-            "pair": "ADA_USDT",
+        },{
+            "pair": "SUSHI_USDT",
             "tf": "1m"
-        }]
+        }
+    ]
 }
