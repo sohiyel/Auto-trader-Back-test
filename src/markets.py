@@ -42,6 +42,11 @@ class Markets():
     def get_contract_size(self, pair):
         try:
             ePair = self.exchange.change_symbol_for_markets(pair) #Utility.get_exchange_format(pair+":USDT")
+            for i in self.markets:
+                if ePair in i:
+                    self.logger.debug(i)
+                    ePair = i
+                    break
             marketData = self.markets[ePair]
             return marketData['contractSize']
         except Exception as e:
@@ -54,4 +59,4 @@ if __name__ == '__main__':
     market = Markets(settings)
     # market.load_market()
     # market.write_to_file()
-    market.logger.debug(market.get_contract_size("ADA_USDT"))
+    market.logger.debug(market.get_contract_size("trx_USDT"))
