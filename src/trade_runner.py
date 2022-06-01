@@ -18,6 +18,8 @@ class TradeRunner():
         self.logger = self.logService.logger  #get_logger(__name__, settings)
 
     def initialize_indexes(self, index):
+        pts = {'pair': index.pair, 'timeFrame': index.timeFrame, 'strategyName': 'NaN'}
+        self.logService.set_pts_formatter(pts)
         trader = Trader(index, self.settings)
         self.trades.append(trader)
         self.logger.info  (f"--------- Initialized :{index.pair} ---------")

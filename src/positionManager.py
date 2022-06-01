@@ -21,7 +21,7 @@ class PositionManager():
         self.leverage = leverage
         
         self.settings = settings
-        self.db = DatabaseManager(settings)
+        self.db = DatabaseManager(settings, self.pair, self.timeFrame)
         self.contractSize = Markets(settings).get_contract_size(pair)
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
