@@ -288,6 +288,6 @@ class DatabaseManager():
 
 if __name__ == '__main__':
     settings = Settings('sohiyel')
-    dbManager = DatabaseManager(settings)
+    dbManager = DatabaseManager(settings, "sushi-usdt", "1m")
     dbManager.set_up_tables()
     dbManager.conn.close()

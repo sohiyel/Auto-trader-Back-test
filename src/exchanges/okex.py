@@ -93,11 +93,8 @@ class Okex(BaseExchange):
         if ":" in symbol:
             symbol = symbol.split(":")[0]
         if "-" in symbol:
-            if "SWAP" in symbol:
-                symbols = symbol.split("-")
-                return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
-            else:
-                return symbol.upper() + ":USDT-220603"
+            symbols = symbol.split("-")
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
         elif "_" in symbol:
             symbols = symbol.split("_")
             return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"

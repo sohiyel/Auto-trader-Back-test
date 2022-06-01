@@ -15,22 +15,22 @@ class Test02(Strategy):
         self.logService.set_pts_formatter(pts)
 
     def long_enter(self):
-        longEnters = [1]
+        longEnters = [4]
         if self.currentTime in longEnters:
             self.decisions['longEnt'] = 1
 
     def long_exit(self):
-        longExits = []
+        longExits = [5]
         if self.currentTime in longExits:
             self.decisions['longExt'] = 1
 
     def short_enter(self):
-        shortEnters = [0,3]
+        shortEnters = [1]
         if self.currentTime in shortEnters:
             self.decisions['shortEnt'] = 1
 
     def short_exit(self):
-        shortExits = [4]
+        shortExits = []
         if self.currentTime in shortExits:
             self.decisions['shortExt'] = 1
 

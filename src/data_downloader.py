@@ -21,7 +21,7 @@ class DataDownloader():
         self.dbPair = Utility.get_db_format(self.pair)
         self.tableName = self.dbPair + "_" + self.timeFrame
         self.exchange = settings.exchange_service #Exchange(settings).exchange
-        self.db = DatabaseManager(settings)
+        self.db = DatabaseManager(settings, pair, timeFrame)
         self.tableName = self.db.get_ohlcv_table_name(pair, timeFrame)
         self.logService = LogService(__name__ + "DataDownloader", settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
