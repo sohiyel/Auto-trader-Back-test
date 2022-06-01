@@ -89,6 +89,22 @@ class Okex(BaseExchange):
             symbols = symbol.split("/")
             return symbols[0].upper() + "-" + symbols[1].upper()
 
+    def change_symbol_for_markets(self, symbol):
+        if ":" in symbol:
+            symbol = symbol.split(":")[0]
+        if "-" in symbol:
+            if "SWAP" in symbol:
+                symbols = symbol.split("-")
+                return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT-220603"
+            else:
+                return symbol.upper() + ":USDT-220603"
+        elif "_" in symbol:
+            symbols = symbol.split("_")
+            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT-220603"
+        elif "/" in symbol:
+            symbols = symbol.split("/")
+            return symbols[0].upper() + "-" + symbols[1].upper() + ":USDT-220603"
+
     def lot_calculator(self, symbol, amount):
         """
         this function is written for calculate amount size in lot (OKEx SWAP contacts)
