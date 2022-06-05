@@ -4,7 +4,7 @@ from src.logManager import LogService
 import configparser
 from math import floor
 
-class Okex(BaseExchange):
+class OkexSpot(BaseExchange):
     def __init__(self, settings, sandBox = False):
         self.settings = settings
         self.exchange = ccxt.okex5()
