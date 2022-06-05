@@ -1,10 +1,6 @@
 from src.exchanges.baseExchange import BaseExchange
-import asyncio
 import ccxt
 from math import floor
-from src.utility import Utility
-from datetime import datetime
-import time
 from src.logManager import LogService
 
 class KucoinFutures(BaseExchange):
@@ -32,44 +28,6 @@ class KucoinFutures(BaseExchange):
             self.logger.error("Cannot fetch balance from ccxt!")
             return False
 
-    def get_klines(self, symbol, timeFrame, startAt, endAt):
-        pts = {'pair': symbol, 'timeFrame': timeFrame, 'strategyName': 'NaN'}
-        self.logService.set_pts_formatter(pts)
-        symbol = self.exchange.change_symbol_for_trade(self.pair)
-        timeFrame = Utility.unify_timeframe(timeFrame, "kucoinfutures")
-        self.logger.info('requesting data for {} in timeframe {} from {} to {}'.format(symbol,timeFrame, str(datetime.fromtimestamp(startAt)), str(datetime.fromtimestamp(endAt))))
-        status = True
-        while status:
-            response = self.exchange.fetch_ohlcv(symbol, timeFrame, startAt)
-            if len(response) == 0:
-                self.logger.error('Something went wrong. Error: respones is empty sleeping ... ')
-                time.sleep(10)
-            else: 
-                self.logger.info('Success! recieved {} candles'.format(len(response)))
-                return(response)
-
-    async def get_klines_data(self, symbol, timeFrame, startAt, endAt, limit):
-        klines = []
-        startAt = startAt * 1000
-        endAt = endAt * 1000
-        timeFrame = Utility.unify_timeframe(timeFrame, "kucoinfutures")
-        step = limit * Utility.array[timeFrame]
-        for i in range(startAt,endAt,step):
-            temp = []
-            if (i+step < endAt):
-                temp.extend(self.get_klines(symbol, timeFrame, i, i+step))
-            else:
-                temp.extend(self.get_klines(symbol, timeFrame, i, endAt))
-            if temp:
-                if len(temp) > 0:
-                    klines.extend(temp)
-                    await asyncio.sleep(2.5)
-            else:
-                self.logger.warning("The data is null!")
-                break
-
-        return klines
-
     def change_symbol_for_trade(self, symbol):
         if "/" in symbol:
             if ":" in symbol:
@@ -84,17 +42,7 @@ class KucoinFutures(BaseExchange):
             return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
 
     def change_symbol_for_data(self, symbol):
-        if "/" in symbol:
-            if ":" in symbol:
-                return symbol.upper()
-            else:
-                return symbol.upper() + ":USDT"
-        elif "_" in symbol:
-            symbols = symbol.split("_")
-            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
-        elif "-" in symbol:
-            symbols = symbol.split("-")
-            return symbols[0].upper() + "/" + symbols[1].upper() + ":USDT"
+        return self.change_symbol_for_trade(symbol)
 
     def change_symbol_for_markets(self, symbol):
         return self.change_symbol_for_data(symbol)
@@ -113,3 +61,20 @@ class KucoinFutures(BaseExchange):
         min_lot = float(data['data']['multiplier'])
         size = floor(amount / min_lot) if amount > min_lot else 1
         return size
+
+    def get_contract_size(self, markets, pair):
+        try:
+            ePair = self.change_symbol_for_markets(pair) #Utility.get_exchange_format(pair+":USDT")
+            for i in markets:
+                if ePair in i:
+                    self.logger.debug(i)
+                    ePair = i
+                    break
+            marketData = markets[ePair]
+            if marketData['contractSize']:
+                return marketData['contractSize']
+            else:
+                self.logger.error(f"Cannot find contractSize of {ePair}!")
+                raise ValueError(f'Cannot find contractSize of {ePair}!')
+        except Exception as e:
+            self.logger.error(f"Cannot get contract size of {ePair}" + str(e))

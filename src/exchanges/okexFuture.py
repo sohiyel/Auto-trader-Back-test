@@ -118,5 +118,21 @@ class OkexFuture(BaseExchange):
         size = floor(amount / min_lot) if amount > min_lot else 1
         return size
         
+    def get_contract_size(self, markets, pair):
+        try:
+            ePair = self.change_symbol_for_markets(pair) #Utility.get_exchange_format(pair+":USDT")
+            for i in markets:
+                if ePair in i:
+                    self.logger.debug(i)
+                    ePair = i
+                    break
+            marketData = markets[ePair]
+            if marketData['contractSize']:
+                return marketData['contractSize']
+            else:
+                self.logger.error(f"Cannot find contractSize of {ePair}!")
+                raise ValueError(f'Cannot find contractSize of {ePair}!')
+        except Exception as e:
+            self.logger.error(f"Cannot get contract size of {ePair}" + str(e))
 
 
