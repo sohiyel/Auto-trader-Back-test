@@ -175,6 +175,8 @@ class PositionManager():
         return 0
 
     def sync_positions(self):
+        if self.settings.isSpot:
+            return
         exchangePositions = self.exchange.fetch_positions()
         dbPositions = self.db.get_open_positions(Utility.get_db_format(self.pair))
         ep = ""
