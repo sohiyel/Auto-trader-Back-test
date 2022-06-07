@@ -47,17 +47,19 @@ class PositionManager():
                         volume = amount
                     else:
                         volume = self.contractSize
+                        self.logger.warning("Volume size is lower than the minimum size!")
                 else:
                     volume = amount / self.contractSize
             else:
                 if self.settings.isSpot:
-                    if amount > self.contractSize:
+                    if self.volume > self.contractSize:
                         volume = self.volume
                     else:
                         volume = self.contractSize
+                        self.logger.warning("Volume size is lower than the minimum size!")
                 else:
                     volume = self.volume / self.contractSize
-                amount = volume
+            amount = volume
             try:
                 if signal.side == 'buy':
                     self.exchange.create_market_order(self.pair,
@@ -192,7 +194,9 @@ class PositionManager():
         balance = 0
         if self.settings.isSpot:
             response = self.exchange.fetch_balance(self.pair)
-            balance = response['Balance']
+            self.logger.debug(response)
+            balance = round(float(response['Balance']),3)
+            self.logger.debug("balance:"+str(balance))
         else:
             exchangePositions = self.exchange.fetch_positions()
             for i in exchangePositions:
@@ -210,19 +214,28 @@ class PositionManager():
         else:
             self.logger.info(f"-------------- There is a position with this pair({self.pair}) in exchange!--------------")
             volumes = 0
-            pos = ""
+            pos = None
             for index, k in dbPositions.iterrows():
                 if k["timeFrame"] == self.timeFrame and (k["strategyName"] == self.strategyName or k["botName"] == self.botName):
                     self.logger.info(f"-------------- There is a position with this pts in database!--------------")
                     pos = k
                 volumes += k["volume"]
+            self.logger.debug("volume:"+str(volumes))
             if self.settings.isSpot:
-                if float(volumes) == balance and pos:
+                if float(volumes) == balance:
                     self.logger.info(f"-------------- Positions in exchange match the positions in database! --------------")
-                    self.openPositions.append(Position(positionId, pos["pair"], side, pos["volume"], pos["entryPrice"],
-                                                        pos["openAt"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"],
-                                                        pos["takeProfitOrderId"], True, pos["leverage"],settings=self.settings))
-                    return
+                    if pos is None:
+                        self.logger.warning(f"-------------- Cannot find database position! --------------")
+                    else:
+                        self.logger.info(f"-------------- Adding database position to ram! --------------")
+                        positionId = uuid.uuid4().hex
+                        try:
+                            self.openPositions.append(Position(positionId, pos["pair"], pos["side"], float(pos["volume"]), float(pos["entryPrice"]),
+                                                                pos["openAt"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"],
+                                                                pos["takeProfitOrderId"], True, int(pos["leverage"]),settings=self.settings))
+                        except Exception as e:
+                            self.logger.error("Cannot add position to openPositions:"+ str(e))
+                        return
             else:
                 if float(volumes) == float(ep["contractSize"] * ep["contracts"]) and self.leverage == ep["leverage"] and pos:
                     self.logger.info(f"-------------- Positions in exchange match the positions in database! --------------")
@@ -240,7 +253,8 @@ class PositionManager():
             self.logger.warning(f"-------------- Positions in exchange does not match the positions in database! --------------")
             if self.settings.isSpot:
                 try:
-                    self.exchange.create_market_order(self.pair, "sell", float(volumes))
+                    self.logger.info(f"-------------- Closing position in exchange! --------------")
+                    self.exchange.create_market_order(self.pair, "sell", balance)
                 except Exception as e:
                     self.logger.error("Cannot create market order!" + str(e))
             else:

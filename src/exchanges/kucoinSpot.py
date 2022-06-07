@@ -30,10 +30,19 @@ class KucoinSpot(BaseExchange):
     def change_symbol_for_markets(self, symbol):
         return self.change_symbol_for_data(symbol)
 
-    def fetch_balance(self, currency=""):
-        if not currency:
+    def get_second_currency(self, symbol):
+        symbols = symbol.split("/")
+        for i in symbols:
+            if i != self.settings.baseCurrency:
+                return i
+
+    def fetch_balance(self, symbol=""):
+        if symbol:
+            currency = self.get_second_currency(symbol)
+        else:
             currency = self.settings.baseCurrency
         response = self.exchange.fetch_accounts()
+        self.logger.debug(response)
         for i in response:
             if i['type'] == 'trade' and i['currency'] == currency:
                 return {'Balance': i['info']['balance'],
