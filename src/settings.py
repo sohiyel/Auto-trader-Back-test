@@ -11,8 +11,9 @@ class Settings:
                         2: 'kucoin_spot',
                         3: 'okex_future',
                         4: 'okex_spot'}
-        self.exchange = self.exchanges[2]
+        self.exchange = self.exchanges[1]
         self.isSpot = True if self.exchange.split('_')[1] == 'spot' else False
+        self.baseCurrency = "USDT"
         self.exchange_service = NULL
         self.sandbox = False
         self.constantNumbers = {

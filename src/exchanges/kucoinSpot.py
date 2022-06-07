@@ -33,7 +33,7 @@ class KucoinSpot(BaseExchange):
     def fetch_balance(self):
         response = self.exchange.fetch_accounts()
         for i in response:
-            if i['type'] == 'trade':
+            if i['type'] == 'trade' and i['currency'] == self.settings.baseCurrency:
                 return {'Balance': i['info']['balance'],
                         'Equity': i['info']['available']}
         return
