@@ -30,13 +30,16 @@ class KucoinSpot(BaseExchange):
     def change_symbol_for_markets(self, symbol):
         return self.change_symbol_for_data(symbol)
 
-    def fetch_balance(self):
+    def fetch_balance(self, currency=""):
+        if not currency:
+            currency = self.settings.baseCurrency
         response = self.exchange.fetch_accounts()
         for i in response:
-            if i['type'] == 'trade' and i['currency'] == self.settings.baseCurrency:
+            if i['type'] == 'trade' and i['currency'] == currency:
                 return {'Balance': i['info']['balance'],
                         'Equity': i['info']['available']}
-        return
+        return {'Balance': 0,
+                'Equity': 0}
 
     def get_contract_size(self, markets, pair):
         try:

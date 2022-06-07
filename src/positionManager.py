@@ -42,10 +42,22 @@ class PositionManager():
                     amount = self.ratioAmount * self.initialCapital / ask
                 elif signal.side == 'sell':
                     amount = self.ratioAmount * self.initialCapital / bid
-                volume = amount / self.contractSize
+                if self.settings.isSpot:
+                    if amount > self.contractSize:
+                        volume = amount
+                    else:
+                        volume = self.contractSize
+                else:
+                    volume = amount / self.contractSize
             else:
-                volume = self.volume / self.contractSize
-                amount = self.volume
+                if self.settings.isSpot:
+                    if amount > self.contractSize:
+                        volume = self.volume
+                    else:
+                        volume = self.contractSize
+                else:
+                    volume = self.volume / self.contractSize
+                amount = volume
             try:
                 if signal.side == 'buy':
                     self.exchange.create_market_order(self.pair,
@@ -175,15 +187,18 @@ class PositionManager():
         return 0
 
     def sync_positions(self):
-        if self.settings.isSpot:
-            return
-        exchangePositions = self.exchange.fetch_positions()
         dbPositions = self.db.get_open_positions(Utility.get_db_format(self.pair))
         ep = ""
-        for i in exchangePositions:
-            if i["symbol"] == self.exchange.change_symbol_for_trade(self.pair):
-                ep = i
-        if ep == "":
+        balance = 0
+        if self.settings.isSpot:
+            response = self.exchange.fetch_balance(self.pair)
+            balance = response['Balance']
+        else:
+            exchangePositions = self.exchange.fetch_positions()
+            for i in exchangePositions:
+                if i["symbol"] == self.exchange.change_symbol_for_trade(self.pair):
+                    ep = i
+        if ep == "" and balance == 0:
             self.logger.info(f"-------------- There is no position with this pair({self.pair}) in exchange!--------------")
             if len(dbPositions) > 0:
                 self.logger.info(f"-------------- There are some extra position with this pair({self.pair}) in database!--------------")
@@ -197,36 +212,53 @@ class PositionManager():
             volumes = 0
             pos = ""
             for index, k in dbPositions.iterrows():
-                if k["timeFrame"] == self.timeFrame:
+                if k["timeFrame"] == self.timeFrame and (k["strategyName"] == self.strategyName or k["botName"] == self.botName):
                     self.logger.info(f"-------------- There is a position with this pts in database!--------------")
                     pos = k
                 volumes += k["volume"]
-            if float(volumes) == float(ep["contractSize"] * ep["contracts"]) and self.leverage == ep["leverage"]:
-                self.logger.info(f"-------------- Positions in exchange match the positions in database! --------------")
-                side = pos["side"]
-                if pos["side"] == "long":
-                    side = "buy"
-                elif pos["side"] == "short":
-                    side = "sell"
-                positionId = uuid.uuid4().hex
-                self.openPositions.append(Position(positionId, ep["symbol"], side, ep["contractSize"] * ep["contracts"], ep["entryPrice"], ep["timestamp"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"], pos["takeProfitOrderId"], True, ep["leverage"],settings=self.settings))
+            if self.settings.isSpot:
+                if float(volumes) == balance and pos:
+                    self.logger.info(f"-------------- Positions in exchange match the positions in database! --------------")
+                    self.openPositions.append(Position(positionId, pos["pair"], side, pos["volume"], pos["entryPrice"],
+                                                        pos["openAt"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"],
+                                                        pos["takeProfitOrderId"], True, pos["leverage"],settings=self.settings))
+                    return
             else:
-                self.logger.warning(f"-------------- Positions in exchange does not match the positions in database! --------------")
+                if float(volumes) == float(ep["contractSize"] * ep["contracts"]) and self.leverage == ep["leverage"] and pos:
+                    self.logger.info(f"-------------- Positions in exchange match the positions in database! --------------")
+                    side = pos["side"]
+                    if pos["side"] == "long":
+                        side = "buy"
+                    elif pos["side"] == "short":
+                        side = "sell"
+                    positionId = uuid.uuid4().hex
+                    self.openPositions.append(Position(positionId, ep["symbol"], side, ep["contractSize"] * ep["contracts"], ep["entryPrice"],
+                                                        ep["timestamp"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"],
+                                                        pos["takeProfitOrderId"], True, ep["leverage"],settings=self.settings))
+                    return
+            
+            self.logger.warning(f"-------------- Positions in exchange does not match the positions in database! --------------")
+            if self.settings.isSpot:
+                try:
+                    self.exchange.create_market_order(self.pair, "sell", float(volumes))
+                except Exception as e:
+                    self.logger.error("Cannot create market order!" + str(e))
+            else:
                 for i in exchangePositions:
-                    if i["side"] == "long":
+                    if i["side"] == "long" and i["symbol"] == self.pair:
                         try:
                             self.exchange.create_market_order(i["symbol"], "sell", i["contracts"],self.leverage, params={'leverage': self.leverage})
                         except Exception as e:
                             self.logger.error("Cannot create market order!" + str(e))
                         self.logger.info( f"-------- Close buy position on {i['symbol']}--------")
-                    elif i["side"] == "short":
+                    elif i["side"] == "short" and i["symbol"] == self.pair:
                         try:
                             self.exchange.create_market_order(i["symbol"], "buy", i["contracts"],self.leverage, params={'leverage': self.leverage})
                         except Exception as e:
                             self.logger.error("Cannot create market order!" + str(e))
                         self.logger.info( f"-------- Close sell position on {i['symbol']}--------")
-                for index, k in dbPositions.iterrows():
-                    self.logger.info(f"-------------- Closing position {k['id']} in database! --------------")
-                    self.db.close_position(k["id"])
-                    self.db.close_order_by_positionId(k["id"])
-                self.openPositions = []
+            for index, k in dbPositions.iterrows():
+                self.logger.info(f"-------------- Closing position {k['id']} in database! --------------")
+                self.db.close_position(k["id"])
+                self.db.close_order_by_positionId(k["id"])
+            self.openPositions = []
