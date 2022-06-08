@@ -45,8 +45,8 @@ class KucoinSpot(BaseExchange):
         self.logger.debug(response)
         for i in response:
             if i['type'] == 'trade' and i['currency'] == currency:
-                return {'Balance': i['info']['balance'],
-                        'Equity': i['info']['available']}
+                return {'Balance': round(float(i['info']['balance']),3),
+                        'Equity': round(float(i['info']['available']),3)}
         return {'Balance': 0,
                 'Equity': 0}
 
