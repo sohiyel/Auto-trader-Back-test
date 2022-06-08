@@ -13,15 +13,23 @@ class OkexFuture(BaseExchange):
         self.exchange.set_sandbox_mode(sandBox)
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
+    
     def fetch_balance(self):
+        currency = self.settings.baseCurrency
         try:
             response = self.exchange.fetch_balance()
             self.logger.debug("Fetch balance response: ", response)
             if response['info']['code'] == '0':
-                return {
-                    'Equity' : float(response['info']['data'][0]['details'][0]['availEq']),
-                    'Balance' : float(response['info']['data'][0]['details'][0]['cashBal'])
-                }
+                try:
+                    return {
+                        'Equity' : float(response[currency]['free']),
+                        'Balance' : float(response[currency]['total'])
+                    }
+                except:
+                    return {
+                        'Equity' : 0,
+                        'Balance' : 0
+                    }
             else:
                 self.logger.error("Problem in getting account equity!")
                 self.logger.error (response)
