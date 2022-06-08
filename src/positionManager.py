@@ -111,13 +111,19 @@ class PositionManager():
             if self.settings.task == 'trade': #self.exchange:
                 if self.openPositions[0].side == "buy":
                     try:
-                        self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "sell", self.openPositions[0].volume / self.contractSize,self.leverage, 'close_buy')
+                        if self.settings.isSpot:
+                            self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "sell", self.openPositions[0].volume)
+                        else:
+                            self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "sell", self.openPositions[0].volume / self.contractSize,self.leverage, 'close_buy')
                         self.logger.info ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
                     except Exception as e:
                         self.logger.error("Cannot create market order!" + str(e))
                 elif self.openPositions[0].side == "sell":
                     try:
-                        self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "buy", self.openPositions[0].volume / self.contractSize,self.leverage, 'close_sell')
+                        if self.settings.isSpot:
+                            self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "buy", self.openPositions[0].volume)
+                        else:
+                            self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "buy", self.openPositions[0].volume / self.contractSize,self.leverage, 'close_sell')
                         self.logger.info ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
                     except Exception as e:
                         self.logger.error("Cannot create market order!" + str(e))
@@ -195,7 +201,7 @@ class PositionManager():
         if self.settings.isSpot:
             response = self.exchange.fetch_balance(self.pair)
             self.logger.debug(response)
-            balance = round(float(response['Balance']),3)
+            balance = response['Balance']
             self.logger.debug("balance:"+str(balance))
         else:
             exchangePositions = self.exchange.fetch_positions()
