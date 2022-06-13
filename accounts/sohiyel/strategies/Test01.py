@@ -20,7 +20,7 @@ class Test01(Strategy):
             self.decisions['longEnt'] = 1
 
     def long_exit(self):
-        longExits = []
+        longExits = [1]
         if self.currentTime in longExits:
             self.decisions['longExt'] = 1
 

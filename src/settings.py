@@ -7,9 +7,13 @@ class Settings:
         self.task = task
         self.multiProcess = False
         self.tradeSide = "both"
-        self.exchanges = ['kucoinfutures', 
-                        'okex']
-        self.exchange = self.exchanges[1]
+        self.exchanges = {1: 'kucoin_futures', 
+                        2: 'kucoin_spot',
+                        3: 'okex_future',
+                        4: 'okex_spot'}
+        self.exchange = self.exchanges[2]
+        self.isSpot = True if self.exchange.split('_')[1] == 'spot' else False
+        self.baseCurrency = "USDT"
         self.exchange_service = NULL
         self.sandbox = False
         self.constantNumbers = {

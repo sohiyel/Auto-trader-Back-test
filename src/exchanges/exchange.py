@@ -1,8 +1,7 @@
-
-import ccxt
-from src.exchanges.okex import Okex
+from src.exchanges.okexFuture import OkexFuture
+from src.exchanges.okexSpot import OkexSpot
 from src.exchanges.kucoinFutures import KucoinFutures
-from src.utility import Utility
+from src.exchanges.kucoinSpot import KucoinSpot
 from src.logManager import LogService
 
 class Exchange():
@@ -10,11 +9,16 @@ class Exchange():
         self.settings = settings
         self.sandBox = settings.sandbox
         self.logService = LogService(__name__, settings)
-        self.logger = self.logService.logger  #get_logger(__name__, settings)
+        self.logger = self.logService.logger
         self.logger.info("exchange : " + self.settings.exchange)
-        if self.settings.exchange == 'kucoinfutures':
+        if self.settings.exchange == 'kucoin_futures':
             self.exchange = KucoinFutures(self.settings)
-        elif self.settings.exchange == 'okex':
-            self.exchange = Okex(self.settings)
+        elif self.settings.exchange == 'kucoin_spot':
+            self.exchange = KucoinSpot(self.settings)
+        elif self.settings.exchange == 'okex_future':
+            self.exchange = OkexFuture(self.settings)
+        elif self.settings.exchange == 'okex_spot':
+            self.exchange = OkexSpot(self.settings)
         else:
-            self.exchange = KucoinFutures(self.settings)
+            self.logger.error("Invalid exchange name!")
+            raise ValueError("Invalid exchange name!")

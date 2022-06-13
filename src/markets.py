@@ -40,17 +40,7 @@ class Markets():
             self.logger.error("Cannot read market data from file!")
 
     def get_contract_size(self, pair):
-        try:
-            ePair = self.exchange.change_symbol_for_markets(pair) #Utility.get_exchange_format(pair+":USDT")
-            for i in self.markets:
-                if ePair in i:
-                    self.logger.debug(i)
-                    ePair = i
-                    break
-            marketData = self.markets[ePair]
-            return marketData['contractSize']
-        except Exception as e:
-            self.logger.error(f"Cannot get contract size of {ePair}" + str(e))
+        return float(self.exchange.get_contract_size(self.markets, pair))
 
 
 if __name__ == '__main__':

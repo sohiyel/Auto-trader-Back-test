@@ -60,6 +60,12 @@ class Utility:
             return 'down'
 
     @staticmethod
+    def truncate(num, n):
+        integer = int(num * (10**n))/(10**n)
+        return float(integer)
+
+
+    @staticmethod
     def unify_timeframe(timeframe, exchange):
         num = "".join(filter(str.isdigit, timeframe))
         period = timeframe.replace(num, "")[0]

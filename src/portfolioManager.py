@@ -26,12 +26,15 @@ class PortfolioManager():
             self.pol = abs( self.profit / self.loss )
 
     def open_position(self, volume, price, commission):
-        if volume * float(price) *  ( 1 + commission ) * self.contractSize < self.balance:
-            self.balance -= volume * price * self.contractSize
-            return True
-        else:
-            self.logger.warning ("Insufficent balance!", self.balance, price * volume * self.contractSize)
-            return False
+        try:
+            if volume * float(price) *  ( 1 + commission ) * self.contractSize < self.balance:
+                self.balance -= volume * price * self.contractSize
+                return True
+            else:
+                self.logger.warning ("Insufficent balance!", self.balance, price * volume * self.contractSize)
+                return False
+        except Exception as e:
+            self.logger.error("Cannot open position:" + str(e))
 
     def close_position(self, lastPrice, commission):
         self.balance += lastPrice
@@ -61,8 +64,8 @@ class PortfolioManager():
             try:
                 response = self.exchange.fetch_balance()
                 if response:
-                    self.equity = response['Equity']
-                    self.balance = response['Balance']
+                    self.equity = float(response['Equity'])
+                    self.balance = float(response['Balance'])
                     return self.equity
                 else:
                     self.logger.error("Problem in getting account equity!")

@@ -12,6 +12,7 @@ from src.data import DataService
 from src.utility import Utility
 from src.logManager import LogService
 from src.markets import Markets
+from src.databaseManager import DatabaseManager
 
 settings = Settings(sys.argv[2], sys.argv[1])
 
@@ -48,6 +49,11 @@ def get_market_data():
     market.load_market()
     market.write_to_file()
 
+def set_up_tables():
+    dbManager = DatabaseManager(settings, "Nan", "Nan")
+    dbManager.set_up_tables()
+    dbManager.conn.close()
+
 if __name__ == '__main__':
     settings = Settings(sys.argv[2], sys.argv[1])
     settings.exchange_service = Exchange(settings).exchange
@@ -67,6 +73,7 @@ if __name__ == '__main__':
         if os.path.exists(settings.ACCOUNT_DIR):
             logger.info ("Start trading!")
             get_market_data()
+            set_up_tables()
             thread01 = Thread(target= run_data_downloader)
             thread01.start()
             time.sleep(5)
@@ -92,5 +99,12 @@ if __name__ == '__main__':
             get_market_data()
         else:
             logger.warning (f"There is no account with this informations!")
+    elif sys.argv[1] == "setup_tables":
+        if os.path.exists(settings.ACCOUNT_DIR):
+            logger.info ("Start downloading market data!")
+            set_up_tables()
+        else:
+            logger.warning (f"There is no account with this informations!")
+
     else:
         logger.error ("Wrong command!")
