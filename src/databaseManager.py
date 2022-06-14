@@ -6,6 +6,8 @@ from src.utility import Utility
 import pandas as pd
 import time
 from src.logManager import LogService
+from datetime import datetime
+import os
 class DatabaseManager():
     def __init__(self, settings, pair, timeFrame) -> None:
         self.settings = settings
@@ -34,8 +36,10 @@ class DatabaseManager():
         except Exception as e:
             self.logger.error ("Cannot read db config file!" + str(e))
 
-    def get_ohlcv_table_name(self, pair, timeframe):
+    def get_ohlcv_table_name(self, pair, timeframe, exchange=""):
         dbPair = Utility.get_db_format(pair)
+        if exchange:
+            return exchange + "_" + dbPair + "_" + timeframe
         return self.settings.exchange + "_" + dbPair + "_" + timeframe
 
     @property
@@ -46,8 +50,8 @@ class DatabaseManager():
     def orders_table_name(self):
         return self.settings.username + "_" + self.settings.exchange + "_orders"
 
-    def create_ohlcv_table(self, pair, timeFrame):
-        tableName = self.get_ohlcv_table_name(pair, timeFrame)
+    def create_ohlcv_table(self, pair, timeFrame, exchange=""):
+        tableName = self.get_ohlcv_table_name(pair, timeFrame, exchange)
         cur = self.conn.cursor()
         try:
             cur.execute('''CREATE TABLE IF NOT EXISTS {} (
@@ -286,8 +290,38 @@ class DatabaseManager():
         self.conn.commit() 
         cur.close()
 
+    def store_csv_to_db(self, deleteFile=False):
+        files = os.listdir(self.settings.CSV_DATA)
+        if len(files) < 1:
+            self.logger.warning("There is no file is csv directory!")
+        for f in files:
+            try:
+                exchange, symbol,timeFrame = f.split('.')[0].split('_')
+            except Exception as e:
+                self.logger.error("Wrong naming for csv data file:" + str(e))
+            self.logger.debug("Storing " + f)
+            filePath = os.path.join(self.settings.CSV_DATA, f)
+            try:
+                df = pd.read_csv(filePath)
+            except Exception as e:
+                self.logger.error("Cannot read "+ str(filePath) + " : " + str(e))
+            self.create_ohlcv_table(symbol,timeFrame, exchange)
+            df.columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
+            dates = pd.to_datetime(df['timestamp'])
+            for i,d in enumerate(dates):
+                dates[i] = datetime.timestamp(d)*1000
+            df['timestamp'] = dates
+            tableName = self.get_ohlcv_table_name(symbol, timeFrame, exchange)
+            self.store_klines(df,tableName)
+            if deleteFile:
+                try:
+                    os.remove(filePath)
+                except Exception as e:
+                    self.logger.error("Cannot remove "+ str(filePath) + " : " + str(e))
+
 if __name__ == '__main__':
     settings = Settings('sohiyel')
     dbManager = DatabaseManager(settings, "sushi-usdt", "1m")
     dbManager.set_up_tables()
+    dbManager.store_csv_to_db('D:/My Projects/Trader/Sohayl/test/USA500IDXUSD_M5.csv', 'sohiyel', 'S-P500', '5m')
     dbManager.conn.close()

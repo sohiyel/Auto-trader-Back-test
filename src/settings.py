@@ -49,6 +49,7 @@ class Settings:
         self.MARKET_JSON_PATH = path.join(self.SETTINGS_DIR, "markets.json")
         self.STRATEGIES_MODULE_PATH = f"accounts.{self.username}.strategies."
         self.LOG_FILE = path.join(self.ACCOUNT_DIR, "logs.log")
+        self.CSV_DATA = path.join(self.ACCOUNT_DIR,"csv")
 
 if __name__ == '__main__':
     print("BASE_DIR: " + Settings.BASE_DIR)

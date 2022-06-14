@@ -54,6 +54,12 @@ def set_up_tables():
     dbManager.set_up_tables()
     dbManager.conn.close()
 
+def store_csv_to_db(deleteFile=False):
+    dbManager = DatabaseManager(settings, "Nan", "Nan")
+    dbManager.store_csv_to_db(deleteFile)
+    dbManager.conn.close()
+
+
 if __name__ == '__main__':
     settings = Settings(sys.argv[2], sys.argv[1])
     settings.exchange_service = Exchange(settings).exchange
@@ -101,8 +107,17 @@ if __name__ == '__main__':
             logger.warning (f"There is no account with this informations!")
     elif sys.argv[1] == "setup_tables":
         if os.path.exists(settings.ACCOUNT_DIR):
-            logger.info ("Start downloading market data!")
+            logger.info ("Start setuping tables!")
             set_up_tables()
+        else:
+            logger.warning (f"There is no account with this informations!")
+    elif sys.argv[1] == "csv_to_db":
+        if os.path.exists(settings.ACCOUNT_DIR):
+            logger.info ("Start storing data!")
+            if len(sys.argv) > 3:
+                store_csv_to_db(True)
+            else:
+                store_csv_to_db()
         else:
             logger.warning (f"There is no account with this informations!")
 
