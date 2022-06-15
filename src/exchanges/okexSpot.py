@@ -2,8 +2,9 @@ from src.exchanges.baseExchange import BaseExchange
 import ccxt
 from src.logManager import LogService
 import configparser
-from math import floor
+import math
 from src.utility import Utility
+from src.markets import Markets
 
 class OkexSpot(BaseExchange):
     def __init__(self, settings, sandBox = False):
@@ -31,10 +32,17 @@ class OkexSpot(BaseExchange):
             self.logger.debug("Fetch balance response: ", response)
             if response['info']['code'] == '0':
                 try:
-                    return {
-                        'Equity' : Utility.truncate(float(response[currency]['free']),1),
-                        'Balance' : Utility.truncate(float(response[currency]['total']),1)
-                    }
+                    if symbol:
+                        roundNumber = int(abs(math.log10(Markets(self.settings).get_contract_size(symbol)) ))
+                        return {
+                            'Equity' : Utility.truncate(float(response[currency]['free']),roundNumber),
+                            'Balance' : Utility.truncate(float(response[currency]['total']),roundNumber)
+                        }
+                    else:
+                        return {
+                            'Equity' : float(response[currency]['free']),
+                            'Balance' : float(response[currency]['total'])
+                        }
                 except:
                     return {
                         'Equity' : 0,

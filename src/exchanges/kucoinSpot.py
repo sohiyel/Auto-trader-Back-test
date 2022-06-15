@@ -1,6 +1,9 @@
 from src.exchanges.baseExchange import BaseExchange
 import ccxt as ccxt
 from src.logManager import LogService
+from src.markets import Markets
+import math
+from src.utility import Utility
 class KucoinSpot(BaseExchange):
     def __init__(self, settings, sandBox = False):
         self.settings = settings
@@ -37,16 +40,21 @@ class KucoinSpot(BaseExchange):
                 return i
 
     def fetch_balance(self, symbol=""):
-        if symbol:
-            currency = self.get_second_currency(symbol)
-        else:
-            currency = self.settings.baseCurrency
         response = self.exchange.fetch_accounts()
         self.logger.debug(response)
-        for i in response:
-            if i['type'] == 'trade' and i['currency'] == currency:
-                return {'Balance': round(float(i['info']['balance']),3),
-                        'Equity': round(float(i['info']['available']),3)}
+        if symbol:
+            currency = self.get_second_currency(symbol)
+            for i in response:
+                if i['type'] == 'trade' and i['currency'] == currency:
+                    roundNumber = int(abs(math.log10(Markets(self.settings).get_contract_size(symbol)) ))
+                    return {'Balance': Utility.truncate(float(i['info']['balance']),roundNumber),
+                            'Equity': Utility.truncate(float(i['info']['available']),roundNumber)}
+        else:
+            currency = self.settings.baseCurrency
+            for i in response:
+                if i['type'] == 'trade' and i['currency'] == currency:
+                    return {'Balance': float(i['info']['balance']),
+                            'Equity': float(i['info']['available'])}
         return {'Balance': 0,
                 'Equity': 0}
 
