@@ -19,7 +19,6 @@ class PositionManager():
         self.strategyName = strategyName
         self.botName = botName
         self.leverage = leverage
-        
         self.settings = settings
         self.db = DatabaseManager(settings, self.pair, self.timeFrame)
         self.contractSize = Markets(settings).get_contract_size(pair)
@@ -27,10 +26,34 @@ class PositionManager():
         self.logger = self.logService.logger  #get_logger(__name__, settings)
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
         self.logService.set_pts_formatter(pts)
+
+    def check_open_position(self):
+        dbPositions = self.db.get_open_positions(Utility.get_db_format(self.pair))        
+        totalMargin = 0
+        for index, k in dbPositions.iterrows():
+            if k["side"] == "buy":
+                totalMargin += k["volume"] * k["entryPrice"]
+            else:
+                totalMargin -= k["volume"] * k["entryPrice"]
+        totalMargin = abs(float(totalMargin))
+        self.logger.debug("Total Margin: "+str(totalMargin))
+        self.logger.debug("Initial Deposit: "+str(self.initialCapital))
+        self.logger.debug("Total Margin / Initial Deposit: "+str(totalMargin / self.initialCapital))
+        self.logger.debug("Valid Margin Ratio: "+ str(self.settings.constantNumbers["marginRatio"]))
+        if totalMargin / self.initialCapital < self.settings.constantNumbers["marginRatio"]:
+            self.logger.debug("Open position is possible!")
+            return True
+        self.logger.debug("Open position is impossible!")
+        return False
     
     def open_position(self, signal, lastState):
         positionId = uuid.uuid4().hex
-        if self.settings.task == 'trade': #self.exchange:
+        if self.settings.task == 'trade':
+            if self.check_open_position():
+                pass
+            else:
+                self.logger.warning(f"This pair({self.pair}) has reached the maximum ratio of your initial deposit!")
+                return
             if self.ratioAmount > 0:
                 orderbook = self.exchange.fetch_order_book(signal.pair)
                 bid = orderbook['bids'][0][0] if len (orderbook['bids']) > 0 else None
@@ -243,7 +266,7 @@ class PositionManager():
                             self.logger.error("Cannot add position to openPositions:"+ str(e))
                         return
             else:
-                if float(volumes) == float(ep["contractSize"] * ep["contracts"]) and self.leverage == ep["leverage"] and pos:
+                if float(volumes) == float(ep["contractSize"] * ep["contracts"]) and self.leverage == ep["leverage"] and pos is not None:
                     self.logger.info(f"-------------- Positions in exchange match the positions in database! --------------")
                     side = pos["side"]
                     if pos["side"] == "long":

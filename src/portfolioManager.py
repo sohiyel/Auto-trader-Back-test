@@ -4,9 +4,15 @@ from src.logManager import LogService
 class PortfolioManager():
     def __init__(self, pair,timeFrame,StrategyName, initialCapital=1, settings="") -> None:
         self.settings = settings
-        self.initialCapital = initialCapital
+        self.logService = LogService(__name__, settings)
+        self.exchange = settings.exchange_service #exchange
+        pts = {'pair': pair, 'timeFrame': timeFrame, 'strategyName': StrategyName}
+        self.logService.set_pts_formatter(pts)
+        self.logger = self.logService.logger  #get_logger(__name__, settings)
         self.balance = initialCapital
         self.equity = initialCapital
+        self.get_equity()
+        self.initialCapital = self.balance
         self.profit = 0.0
         self.loss = 0.0
         self.pol = 0.0
@@ -14,12 +20,7 @@ class PortfolioManager():
         self.numLosses = 0
         self.balances = []
         self.equities = []
-        self.exchange = settings.exchange_service #exchange
         self.contractSize = Markets(self.settings).get_contract_size(pair)
-        self.logService = LogService(__name__, settings)
-        pts = {'pair': pair, 'timeFrame': timeFrame, 'strategyName': StrategyName}
-        self.logService.set_pts_formatter(pts)
-        self.logger = self.logService.logger  #get_logger(__name__, settings)
         
     def calc_poL(self):
         if self.loss != 0:

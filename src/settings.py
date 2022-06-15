@@ -11,7 +11,7 @@ class Settings:
                         2: 'kucoin_spot',
                         3: 'okex_future',
                         4: 'okex_spot'}
-        self.exchange = self.exchanges[4]
+        self.exchange = self.exchanges[1]
         self.isSpot = True if self.exchange.split('_')[1] == 'spot' else False
         self.baseCurrency = "USDT"
         self.exchange_service = NULL
@@ -19,7 +19,8 @@ class Settings:
         self.constantNumbers = {
             "commission" : 0.0006,
             "data_limit_future" : 200,
-            "data_limit_spot" : 1440
+            "data_limit_spot" : 1440,
+            "marginRatio" : 0.2
         }
         self.BASE_DIR = path.abspath(path.curdir)
         self.ACCOUNT_DIR = path.join(self.BASE_DIR,"accounts",self.username)
