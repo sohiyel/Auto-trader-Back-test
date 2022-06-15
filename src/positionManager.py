@@ -27,7 +27,7 @@ class PositionManager():
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
         self.logService.set_pts_formatter(pts)
 
-    def check_open_position(self):
+    def check_open_position(self, price):
         dbPositions = self.db.get_open_positions(Utility.get_db_format(self.pair))        
         totalMargin = 0
         for index, k in dbPositions.iterrows():
@@ -35,7 +35,7 @@ class PositionManager():
                 totalMargin += k["volume"] * k["entryPrice"]
             else:
                 totalMargin -= k["volume"] * k["entryPrice"]
-        totalMargin = abs(float(totalMargin))
+        totalMargin = abs(float(totalMargin)) + price
         self.logger.debug("Total Margin: "+str(totalMargin))
         self.logger.debug("Initial Deposit: "+str(self.initialCapital))
         self.logger.debug("Total Margin / Initial Deposit: "+str(totalMargin / self.initialCapital))
@@ -49,22 +49,15 @@ class PositionManager():
     def open_position(self, signal, lastState):
         positionId = uuid.uuid4().hex
         if self.settings.task == 'trade':
-            if self.check_open_position():
-                pass
-            else:
-                self.logger.warning(f"This pair({self.pair}) has reached the maximum ratio of your initial deposit!")
-                return
+            orderbook = self.exchange.fetch_order_book(self.pair)
+            bid = orderbook['bids'][0][0] if len (orderbook['bids']) > 0 else None
+            ask = orderbook['asks'][0][0] if len (orderbook['asks']) > 0 else None
+            spread = (ask - bid) if (bid and ask) else None
+            self.logger.debug('market price', {'bid': bid, 'ask': ask, 'spread': spread})
+            price = bid if signal.side == 'buy' else ask
+            
             if self.ratioAmount > 0:
-                orderbook = self.exchange.fetch_order_book(signal.pair)
-                bid = orderbook['bids'][0][0] if len (orderbook['bids']) > 0 else None
-                ask = orderbook['asks'][0][0] if len (orderbook['asks']) > 0 else None
-                spread = (ask - bid) if (bid and ask) else None
-                self.logger.debug('market price', {'bid': bid, 'ask': ask, 'spread': spread})
-                amount = 0
-                if signal.side == 'buy':
-                    amount = self.ratioAmount * self.initialCapital / ask
-                elif signal.side == 'sell':
-                    amount = self.ratioAmount * self.initialCapital / bid
+                amount = self.ratioAmount * self.initialCapital / price
                 if self.settings.isSpot:
                     if amount > self.contractSize:
                         volume = amount
@@ -73,6 +66,11 @@ class PositionManager():
                         self.logger.warning("Volume size is lower than the minimum size!")
                 else:
                     volume = amount / self.contractSize
+                if self.check_open_position(self.ratioAmount * self.initialCapital):
+                    pass
+                else:
+                    self.logger.warning(f"This pair({self.pair}) has reached the maximum ratio of your initial deposit!")
+                    return
             else:
                 if self.settings.isSpot:
                     if self.volume > self.contractSize:
@@ -82,6 +80,11 @@ class PositionManager():
                         self.logger.warning("Volume size is lower than the minimum size!")
                 else:
                     volume = self.volume / self.contractSize
+                if self.check_open_position(self.volume * price):
+                    pass
+                else:
+                    self.logger.warning(f"This pair({self.pair}) has reached the maximum ratio of your initial deposit!")
+                    return
             amount = volume
             try:
                 if signal.side == 'buy':
