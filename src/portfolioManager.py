@@ -7,6 +7,7 @@ class PortfolioManager():
         self.logService = LogService(__name__, settings)
         self.exchange = settings.exchange_service #exchange
         pts = {'pair': pair, 'timeFrame': timeFrame, 'strategyName': StrategyName}
+        self.pair = pair
         self.logService.set_pts_formatter(pts)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
         self.balance = initialCapital
@@ -27,6 +28,17 @@ class PortfolioManager():
             self.pol = abs( self.profit / self.loss )
 
     def open_position(self, volume, price, commission):
+        try:
+            if self.settings.task == 'trade':
+                self.logger.debug("Balance: "+ str(self.balance))
+                self.logger.debug("Current order value: "+ str(price * volume))
+                self.logger.debug("Balance / Initialcapital: "+str((self.balance - (price * volume)) / self.initialCapital))
+                self.logger.debug("Valid free balance: "+ str(self.settings.constantNumbers["free_balance"]))
+                if (self.balance - (price * volume)) / self.initialCapital < self.settings.constantNumbers["free_balance"]:
+                    self.logger.debug(f"Not enough free balance to open new order on this pair({self.pair})")
+                    return False
+        except Exception as e:
+            self.logger.error("Cannot check free valid balance: " + str(e))
         try:
             if volume * float(price) *  ( 1 + commission ) * self.contractSize < self.balance:
                 self.balance -= volume * price * self.contractSize

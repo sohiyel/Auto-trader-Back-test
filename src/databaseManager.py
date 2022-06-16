@@ -181,11 +181,14 @@ class DatabaseManager():
             df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
             return df
 
-    def get_open_positions(self, pair):
+    def get_open_positions(self, pair=""):
         tableName = self.positions_table_name
         cur = self.conn.cursor()
         try:
-            SQL = "SELECT * FROM {} WHERE pair = '{}' AND isopen = True;".format(tableName, pair)
+            if pair:
+                SQL = "SELECT * FROM {} WHERE pair = '{}' AND isopen = True;".format(tableName, pair)
+            else:
+                SQL = "SELECT * FROM {} WHERE isopen = True;".format(tableName, pair)
             cur.execute(SQL)
             query = cur.fetchall()
             df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice',

@@ -20,7 +20,8 @@ class Settings:
             "commission" : 0.0006,
             "data_limit_future" : 200,
             "data_limit_spot" : 1440,
-            "marginRatio" : 0.2
+            "marginRatio" : 0.2,
+            "free_balance": 0.2
         }
         self.BASE_DIR = path.abspath(path.curdir)
         self.ACCOUNT_DIR = path.join(self.BASE_DIR,"accounts",self.username)
