@@ -1,11 +1,10 @@
-from shutil import ExecError
 from src.position import Position
 import uuid
 from src.databaseManager import DatabaseManager
 from src.utility import Utility
 from src.markets import Markets
 from src.logManager import LogService
-
+import time
 class PositionManager():
     def __init__(self, initialCapital, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, settings) -> None:
         self.openPositions = []
@@ -27,10 +26,11 @@ class PositionManager():
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
         self.logService.set_pts_formatter(pts)
 
-    def check_open_position(self, price):
-        dbPositions = self.db.get_open_positions(Utility.get_db_format(self.pair))        
+    def check_open_position(self, newMargin):
+        #Check margin
+        dbOpenPositions = self.db.get_open_positions(Utility.get_db_format(self.pair))        
         totalMargin = 0
-        for index, k in dbPositions.iterrows():
+        for index, k in dbOpenPositions.iterrows():
             if k["side"] == "buy":
                 totalMargin += k["volume"] * k["entryPrice"]
             else:
@@ -38,16 +38,32 @@ class PositionManager():
                     totalMargin -= k["volume"] * k["entryPrice"]
                 else:
                     totalMargin += k["volume"] * k["entryPrice"]
-        totalMargin = abs(float(totalMargin)) + price
+        totalMargin = abs(float(totalMargin)) + newMargin
         self.logger.debug("Total Margin: "+str(totalMargin))
         self.logger.debug("Initial Deposit: "+str(self.initialCapital))
         self.logger.debug("Total Margin / Initial Deposit: "+str(totalMargin / self.initialCapital))
         self.logger.debug("Valid Margin Ratio: "+ str(self.settings.constantNumbers["margin_ratio"]))
-        if totalMargin / self.initialCapital < self.settings.constantNumbers["margin_ratio"]:
-            self.logger.debug("Open position is possible!")
-            return True
-        self.logger.debug("Open position is impossible!")
-        return False
+        if totalMargin / self.initialCapital > self.settings.constantNumbers["margin_ratio"]:
+            self.logger.warning(f"This pair({self.pair}) has reached the maximum ratio of your initial deposit!")
+            return False
+        
+        #Check time difference between orders
+        dbPositions = self.db.get_positions(Utility.get_db_format(self.pair))
+        if dbPositions.shape[0] > 0:
+            if self.botName:
+                lastOrderTimestamp = int(dbPositions.loc[dbPositions["botName"] == self.botName].iloc[-1]["openAt"])
+            else:
+                lastOrderTimestamp = int(dbPositions.loc[dbPositions["strategyName"] == self.strategyName].iloc[-1]["openAt"])
+            timeDifference = (time.time() * 1000) - lastOrderTimestamp
+            validTimeDifference = Utility.array[self.timeFrame] * 60000 * self.settings.constantNumbers["open_position_delays"]
+            self.logger.debug("Current time difference between orders: " + str(timeDifference / 60000))
+            self.logger.debug("Valid time difference between orders: " + str(validTimeDifference / 60000))
+            if timeDifference < validTimeDifference:
+                self.logger.warning(f"Time deference between positions is less that {self.settings.constantNumbers['open_position_delays']} candles!")
+                return False
+
+        return True
+
     
     def open_position(self, signal, lastState):
         positionId = uuid.uuid4().hex
@@ -72,7 +88,7 @@ class PositionManager():
                 if self.check_open_position(self.ratioAmount * self.initialCapital):
                     pass
                 else:
-                    self.logger.warning(f"This pair({self.pair}) has reached the maximum ratio of your initial deposit!")
+                    self.logger.warning("Cannot open this order!")
                     return
             else:
                 if self.settings.isSpot:
@@ -86,7 +102,7 @@ class PositionManager():
                 if self.check_open_position(self.volume * price):
                     pass
                 else:
-                    self.logger.warning(f"This pair({self.pair}) has reached the maximum ratio of your initial deposit!")
+                    self.logger.warning("Cannot open this order!")
                     return
             amount = volume
             try:
@@ -102,6 +118,20 @@ class PositionManager():
                                                         volume,
                                                         self.leverage,
                                                         'open_sell')
+                stopLossOrderId = uuid.uuid4().hex
+                takeProfitOrderId = uuid.uuid4().hex
+                try:
+                    self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
+                    newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
+                    self.openPositions.append(newPosition)
+                    self.logger.info ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
+                    try:
+                        self.db.add_order(stopLossOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+                        self.db.add_order(takeProfitOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+                    except:
+                        self.logger.error("Cannot add new order to db!")
+                except:
+                    self.logger.error("Cannot add new position to db!")
             except Exception as e:
                 self.logger.error("Cannot create market order!" + str(e))
             # stopLossOrderId = self.exchange.create_market_order(signal.pair,
@@ -118,22 +148,10 @@ class PositionManager():
             #                                                             'stop': Utility.get_profit_side(signal.side),
             #                                                             'stopPriceType': 'MP',
             #                                                             'stopPrice': signal.takeProfit})
-            stopLossOrderId = uuid.uuid4().hex
-            takeProfitOrderId = uuid.uuid4().hex
-            try:
-                self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
-            except:
-                self.logger.error("Cannot add new position to db!")
-            newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
-            try:
-                self.db.add_order(stopLossOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
-                self.db.add_order(takeProfitOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
-            except:
-                self.logger.error("Cannot add new order to db!")
         else:
             newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, '', '', True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)
-        self.openPositions.append(newPosition)
-        self.logger.info ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
+            self.openPositions.append(newPosition)
+            self.logger.info ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
 
     def close_position(self, timestamp):
         if len(self.openPositions) > 0:
@@ -169,6 +187,7 @@ class PositionManager():
             self.openPositions = []
             return lastPrice
         else:
+            self.logger.warning("There is no position to close!")
             return
 
     def add_volume(self, price, volume):

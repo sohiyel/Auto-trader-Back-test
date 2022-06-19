@@ -20,6 +20,12 @@ class DatabaseManager():
         self.timeFrame = timeFrame
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': 'NaN'}
         self.logService.set_pts_formatter(pts)
+        self.positionColumns = ['id', 'pair', 'side', 'volume', 'entryPrice',
+                                             'openAt', 'closeAt', 'leverage', 'isOpen', 'timeFrame',
+                                             'strategyName', 'botName', 'stopLossOrderId', 'takeProfitOrderId']
+        self.orderColumns = ['id', 'pair', 'side', 'volume', 'entryPrice', 'leverage', 'isOpen', 'timeFrame',
+                                                'strategyName', 'botName', 'positionId']
+        self.klineColumns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
 
     def connect_to_db(self):
         try:
@@ -155,14 +161,14 @@ class DatabaseManager():
         try:
             cur.execute(f"SELECT * FROM {tableName} WHERE dt < {lastState} ORDER BY dt DESC LIMIT {limit};")
             query = cur.fetchall()
-            df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'], dtype=float)
+            df = pd.DataFrame(query, columns=self.klineColumns, dtype=float)
             cur.close()
             return df
         except Exception as e:
             cur.close()
             self.logger.error (f"Cannot find table {tableName}!" + str(e))
             query = []
-            df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+            df = pd.DataFrame(query, columns=self.klineColumns)
             return df
 
     def fetch_klines(self, pair, timeFrame, startAt, endAt):
@@ -171,14 +177,14 @@ class DatabaseManager():
         try:
             cur.execute(f"SELECT * FROM {tableName} WHERE dt < {endAt + 1} AND dt > {startAt - 1} ORDER BY dt ASC;")
             query = cur.fetchall()
-            df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'], dtype=float)
+            df = pd.DataFrame(query, columns=self.klineColumns, dtype=float)
             cur.close()
             return df
         except Exception as e:
             cur.close()
             self.logger.error (f"Cannot find table {tableName}!" + str(e))
             query = []
-            df = pd.DataFrame(query, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+            df = pd.DataFrame(query, columns=self.klineColumns)
             return df
 
     def get_open_positions(self, pair=""):
@@ -188,12 +194,10 @@ class DatabaseManager():
             if pair:
                 SQL = "SELECT * FROM {} WHERE pair = '{}' AND isopen = True;".format(tableName, pair)
             else:
-                SQL = "SELECT * FROM {} WHERE isopen = True;".format(tableName, pair)
+                SQL = "SELECT * FROM {} WHERE isopen = True;".format(tableName)
             cur.execute(SQL)
             query = cur.fetchall()
-            df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice',
-                                                'openAt', 'closeAt', 'leverage', 'isOpen', 'timeFrame',
-                                                'strategyName', 'botName', 'stopLossOrderId', 'takeProfitOrderId'])
+            df = pd.DataFrame(query, columns=self.positionColumns)
             self.conn.commit()
             cur.close()
             return df
@@ -202,9 +206,29 @@ class DatabaseManager():
             cur.close()
             self.logger.error (f"Cannot get open positions!" + str(e))
             query = []
-            df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice',
-                                             'openAt', 'closeAt', 'leverage, isOpen', 'timeFrame',
-                                             'strategyName', 'botName', 'stopLossOrderId', 'takeProfitOrderId'])
+            df = pd.DataFrame(query, columns=self.positionColumns)
+            return df
+
+    def get_positions(self, pair=""):
+        tableName = self.positions_table_name
+        cur = self.conn.cursor()
+        try:
+            if pair:
+                SQL = "SELECT * FROM {} WHERE pair = '{}' ORDER BY openAt ASC;".format(tableName, pair)
+            else:
+                SQL = "SELECT * FROM {} ORDER BY openAt ASC;".format(tableName)
+            cur.execute(SQL)
+            query = cur.fetchall()
+            df = pd.DataFrame(query, columns=self.positionColumns)
+            self.conn.commit()
+            cur.close()
+            return df
+        except Exception as e:
+            self.conn.commit()
+            cur.close()
+            self.logger.error (f"Cannot get positions!" + str(e))
+            query = []
+            df = pd.DataFrame(query, columns=self.positionColumns)
             return df
 
     def get_open_orders(self, pair):
@@ -214,8 +238,7 @@ class DatabaseManager():
             SQL = "SELECT * FROM {} WHERE pair = '{}' AND isopen = True;".format(tableName, pair)
             cur.execute(SQL)
             query = cur.fetchall()
-            df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice', 'leverage', 'isOpen', 'timeFrame',
-                                                'strategyName', 'botName', 'positionId'])
+            df = pd.DataFrame(query, columns=self.orderColumns)
             self.conn.commit()
             cur.close()
             return df
@@ -224,16 +247,15 @@ class DatabaseManager():
             cur.close()
             self.logger.error ("Cannot get open orders!" + str(e))
             query = []
-            df = pd.DataFrame(query, columns=['id', 'pair', 'side', 'volume', 'entryPrice', 'leverage, isOpen', 'timeFrame',
-                                             'strategyName', 'botName', 'positionId'])
+            df = pd.DataFrame(query, columns=self.orderColumns)
             return df
 
     def add_position(self, id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyName, botName, stopLossOrderId, takeProfitOrderId):
         tableName = self.positions_table_name
         cur = self.conn.cursor()
         try:
-            SQL = f"INSERT into {tableName} (id, pair, side, volume, entryPrice, openAt, leverage, isOpen, timeFrame, strategyname, botname, stopLossOrderId, takeProfitOrderId)\
-                        VALUES ('{id}','{pair}','{side}','{volume}','{entryPrice}','{openAt}','{leverage}','{isOpen}','{timeFrame}','{strategyName}','{botName}','{stopLossOrderId}','{takeProfitOrderId}');"
+            SQL = f"INSERT into {tableName} (id, pair, side, volume, entryPrice, openAt, closeAt, leverage, isOpen, timeFrame, strategyname, botname, stopLossOrderId, takeProfitOrderId)\
+                        VALUES ('{id}','{pair}','{side}','{volume}','{entryPrice}','{openAt}','-1','{leverage}','{isOpen}','{timeFrame}','{strategyName}','{botName}','{stopLossOrderId}','{takeProfitOrderId}');"
             cur.execute(SQL)
         except Exception as e:
             self.logger.error ("Cannot add new position to database!" + str(e))
@@ -309,7 +331,7 @@ class DatabaseManager():
             except Exception as e:
                 self.logger.error("Cannot read "+ str(filePath) + " : " + str(e))
             self.create_ohlcv_table(symbol,timeFrame, exchange)
-            df.columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
+            df.columns = self.klineColumns
             dates = pd.to_datetime(df['timestamp'])
             for i,d in enumerate(dates):
                 dates[i] = datetime.timestamp(d)*1000
@@ -325,6 +347,7 @@ class DatabaseManager():
 if __name__ == '__main__':
     settings = Settings('sohiyel')
     dbManager = DatabaseManager(settings, "sushi-usdt", "1m")
-    dbManager.set_up_tables()
-    dbManager.store_csv_to_db('D:/My Projects/Trader/Sohayl/test/USA500IDXUSD_M5.csv', 'sohiyel', 'S-P500', '5m')
+    # dbManager.set_up_tables()
+    lastTimeStamp=int(dbManager.get_positions(Utility.get_db_format("SUSHI_USDT")).iloc[-1]['openAt'])
+    print((time.time() * 1000 - lastTimeStamp)/60000)
     dbManager.conn.close()

@@ -48,7 +48,8 @@ class Settings:
                                                                                                     "data_limit_future" : 200,
                                                                                                     "data_limit_spot" : 1440,
                                                                                                     "margin_ratio" : 0.2,
-                                                                                                    "free_balance": 0.2
+                                                                                                    "free_balance": 0.2,
+                                                                                                    "open_position_delays": 3
                                                                                                 }
         self.isSpot = True if self.exchange.split('_')[1] == 'spot' else False
         self.tradeSide = self.tradeSide if self.isSpot == False else "long"
