@@ -41,7 +41,7 @@ class Trader(Simulator):
         self.df = ""
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
-        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': 'NaN'}
+        pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': index.strategyName}
         self.logService.set_pts_formatter(pts)
 
     def update_candle_data(self):

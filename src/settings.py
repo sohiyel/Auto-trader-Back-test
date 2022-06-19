@@ -6,13 +6,13 @@ class Settings:
         self.username = username
         self.task = task
         self.multiProcess = False
-        self.tradeSide = "both"
         self.exchanges = {1: 'kucoin_futures', 
                         2: 'kucoin_spot',
                         3: 'okex_future',
                         4: 'okex_spot'}
         self.exchange = self.exchanges[1]
         self.isSpot = True if self.exchange.split('_')[1] == 'spot' else False
+        self.tradeSide = "both" if self.isSpot == False else "long"
         self.baseCurrency = "USDT"
         self.exchange_service = NULL
         self.sandbox = False
@@ -20,7 +20,7 @@ class Settings:
             "commission" : 0.0006,
             "data_limit_future" : 200,
             "data_limit_spot" : 1440,
-            "marginRatio" : 0.2,
+            "margin_ratio" : 0.2,
             "free_balance": 0.2
         }
         self.BASE_DIR = path.abspath(path.curdir)

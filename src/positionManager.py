@@ -34,13 +34,16 @@ class PositionManager():
             if k["side"] == "buy":
                 totalMargin += k["volume"] * k["entryPrice"]
             else:
-                totalMargin -= k["volume"] * k["entryPrice"]
+                if self.settings.isSpot:
+                    totalMargin -= k["volume"] * k["entryPrice"]
+                else:
+                    totalMargin += k["volume"] * k["entryPrice"]
         totalMargin = abs(float(totalMargin)) + price
         self.logger.debug("Total Margin: "+str(totalMargin))
         self.logger.debug("Initial Deposit: "+str(self.initialCapital))
         self.logger.debug("Total Margin / Initial Deposit: "+str(totalMargin / self.initialCapital))
-        self.logger.debug("Valid Margin Ratio: "+ str(self.settings.constantNumbers["marginRatio"]))
-        if totalMargin / self.initialCapital < self.settings.constantNumbers["marginRatio"]:
+        self.logger.debug("Valid Margin Ratio: "+ str(self.settings.constantNumbers["margin_ratio"]))
+        if totalMargin / self.initialCapital < self.settings.constantNumbers["margin_ratio"]:
             self.logger.debug("Open position is possible!")
             return True
         self.logger.debug("Open position is impossible!")
