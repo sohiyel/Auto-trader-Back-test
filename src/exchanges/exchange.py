@@ -15,7 +15,7 @@ class Exchange():
             self.exchange = KucoinFutures(self.settings)
         elif self.settings.exchange == 'kucoin_spot':
             self.exchange = KucoinSpot(self.settings)
-        elif self.settings.exchange == 'okex_future':
+        elif self.settings.exchange == 'okex_futures':
             self.exchange = OkexFuture(self.settings)
         elif self.settings.exchange == 'okex_spot':
             self.exchange = OkexSpot(self.settings)

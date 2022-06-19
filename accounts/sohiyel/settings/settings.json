@@ -1,8 +1,14 @@
 {
-    "backtest":{
+    "multiProcess": false,
+    "exchange": "kucoin_futures",
+    "tradeSide": "both",
+    "baceCurrency": "USDT",
+    "sandbox": false,
+    "constantNumbers":{
         "commission" : 0.0006,
         "data_limit_future" : 200,
         "data_limit_spot" : 1440,
-        
+        "margin_ratio": 0.2,
+        "free_balance": 0.2
     }
 }
