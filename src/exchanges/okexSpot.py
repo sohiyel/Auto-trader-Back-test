@@ -56,6 +56,26 @@ class OkexSpot(BaseExchange):
             self.logger.error("Cannot fetch balance from ccxt!"+ str(e))
             return False
 
+    def fetch_accounts(self):
+        wallet = {}
+        try:
+            response = self.exchange.fetch_balance()
+            self.logger.debug(response)
+            if response['info']['code'] == '0':
+                for i in response['free']:
+                    if not i == self.settings.baseCurrency:
+                        pair = i+"-"+self.settings.baseCurrency
+                        roundNumber = int(abs(math.log10(Markets(self.settings).get_contract_size(pair)) ))
+                        wallet[i] = Utility.truncate(float(response['free'][i]),roundNumber)
+                return wallet
+            else:
+                self.logger.error("Problem in getting account balance!")
+                self.logger.error (response)
+                return False
+        except Exception as e:
+            self.logger.error("Cannot fetch balance from ccxt!"+ str(e))
+            return False
+
     def authorize(self):
         cfg = configparser.ConfigParser()
         try:

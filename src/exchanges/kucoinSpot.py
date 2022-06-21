@@ -1,3 +1,4 @@
+from urllib import response
 from src.exchanges.baseExchange import BaseExchange
 import ccxt as ccxt
 from src.logManager import LogService
@@ -57,6 +58,19 @@ class KucoinSpot(BaseExchange):
                             'Equity': float(i['info']['available'])}
         return {'Balance': 0,
                 'Equity': 0}
+
+    def fetch_accounts(self):
+        wallet = {}
+        try:
+            response = self.exchange.fetch_accounts()
+            for i in response:
+                if i['type'] == 'trade':
+                    if not i['currency'] == self.settings.baseCurrency:
+                        wallet[i['currency']] = i['info']['balance']
+            return wallet
+        except Exception as e:
+            self.logger.error("Cannot fetch accounts!")
+            return wallet
 
     def get_contract_size(self, markets, pair):
         try:

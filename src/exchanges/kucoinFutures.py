@@ -2,6 +2,7 @@ from src.exchanges.baseExchange import BaseExchange
 import ccxt
 from math import floor
 from src.logManager import LogService
+import time
 
 class KucoinFutures(BaseExchange):
     def __init__(self, settings, sandBox = False):
@@ -78,3 +79,31 @@ class KucoinFutures(BaseExchange):
                 raise ValueError(f'Cannot find contractSize of {ePair}!')
         except Exception as e:
             self.logger.error(f"Cannot get contract size of {ePair}" + str(e))
+
+    def close_positions(self):
+        exchangePositions = self.exchange.fetch_positions()
+        self.logger.debug(exchangePositions)
+        for i in exchangePositions:
+            done = True
+            attempt = 0
+            while done and attempt < 3:
+                if i["side"] == "long":
+                    try:
+                        self.exchange.create_market_order(i["symbol"], "sell", i["contracts"],i["leverage"], params={'leverage': i["leverage"]})
+                        self.logger.info( f"-------- Close buy position on {i['symbol']}--------")
+                        time.sleep(1)
+                        done = False
+                    except Exception as e:
+                        self.logger.error("Cannot create market order!" + str(e))
+                        time.sleep(10)
+                        attempt += 1
+                elif i["side"] == "short":
+                    try:
+                        self.exchange.create_market_order(i["symbol"], "buy", i["contracts"],i["leverage"], params={'leverage': i["leverage"]})
+                        self.logger.info( f"-------- Close sell position on {i['symbol']}--------")
+                        time.sleep(1)
+                        done = False
+                    except Exception as e:
+                        self.logger.error("Cannot create market order!" + str(e))
+                        time.sleep(10)
+                        attempt += 1

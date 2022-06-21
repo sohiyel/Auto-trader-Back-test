@@ -3,6 +3,7 @@ import ccxt
 from src.logManager import LogService
 import configparser
 from math import floor
+import time
 
 class OkexFuture(BaseExchange):
     def __init__(self, settings, sandBox = False):
@@ -143,4 +144,20 @@ class OkexFuture(BaseExchange):
         except Exception as e:
             self.logger.error(f"Cannot get contract size of {ePair}" + str(e))
 
+    def fetch_positions(self):
+        try:
+            return self.exchange.privateGetAccountPositions()['data']
+        except Exception as e:
+            self.logger.error("Cannot get positions! "+str(e))
+            return False
+
+    def close_positions(self):
+        positions = self.fetch_positions()
+        if positions:
+            try:
+                for p in positions:
+                    self.exchange.private_post_trade_close_position(params={'instId': p['instId'],'mgnMode': p['mgnMode'],'posSide': p['posSide']})
+                    time.sleep(1)
+            except Exception as e:
+                self.logger.error("Cannot close positions! " + str(e))
 

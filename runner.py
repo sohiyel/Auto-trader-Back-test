@@ -13,6 +13,7 @@ from src.utility import Utility
 from src.logManager import LogService
 from src.markets import Markets
 from src.databaseManager import DatabaseManager
+from src.terminator import Terminator
 
 settings = Settings(sys.argv[2], sys.argv[1])
 
@@ -59,24 +60,22 @@ def store_csv_to_db(deleteFile=False):
     dbManager.store_csv_to_db(deleteFile)
     dbManager.conn.close()
 
+def terminate():
+    terminator = Terminator(settings)
+    terminator.close_all_positions()
+
 
 if __name__ == '__main__':
     settings = Settings(sys.argv[2], sys.argv[1])
     settings.exchange_service = Exchange(settings).exchange
-    if sys.argv[1] == "backtest":
-        if os.path.exists(settings.ACCOUNT_DIR):
+    if os.path.exists(settings.ACCOUNT_DIR):
+        if sys.argv[1] == "backtest":
             logger.info ("Start backtesting!")
             run_back_test()
-        else:
-            logger.warning (f"There is no account with this informations!")
-    if sys.argv[1] == "fast_backtest":
-        if os.path.exists(settings.ACCOUNT_DIR):
+        elif sys.argv[1] == "fast_backtest":
             logger.info ("Start fast backtesting!")
             run_back_test()
-        else:
-            logger.warning (f"There is no account with this informations!")
-    elif sys.argv[1] == "trade":
-        if os.path.exists(settings.ACCOUNT_DIR):
+        elif sys.argv[1] == "trade":
             logger.info ("Start trading!")
             get_market_data()
             set_up_tables()
@@ -85,41 +84,27 @@ if __name__ == '__main__':
             time.sleep(5)
             thread02 = Thread(target=run_trade)
             thread02.start()
-        else:
-            logger.warning (f"There is no account with this informations!")
-    elif sys.argv[1] == "live_data":
-        if os.path.exists(settings.ACCOUNT_DIR):
+        elif sys.argv[1] == "live_data":
             logger.info ("Start downloading live data!")
             run_data_downloader()
-        else:
-            logger.warning (f"There is no account with this informations!")
-    elif sys.argv[1] == "download_data":
-        if os.path.exists(settings.ACCOUNT_DIR):
+        elif sys.argv[1] == "download_data":
             logger.info ("Start downloading backtest data!")
             download_data(sys.argv[3],sys.argv[4],sys.argv[5],sys.argv[6])
-        else:
-            logger.warning (f"There is no account with this informations!")
-    elif sys.argv[1] == "load_markets":
-        if os.path.exists(settings.ACCOUNT_DIR):
+        elif sys.argv[1] == "load_markets":
             logger.info ("Start downloading market data!")
             get_market_data()
-        else:
-            logger.warning (f"There is no account with this informations!")
-    elif sys.argv[1] == "setup_tables":
-        if os.path.exists(settings.ACCOUNT_DIR):
+        elif sys.argv[1] == "setup_tables":
             logger.info ("Start setuping tables!")
             set_up_tables()
-        else:
-            logger.warning (f"There is no account with this informations!")
-    elif sys.argv[1] == "csv_to_db":
-        if os.path.exists(settings.ACCOUNT_DIR):
+        elif sys.argv[1] == "csv_to_db":
             logger.info ("Start storing data!")
             if len(sys.argv) > 3:
                 store_csv_to_db(True)
             else:
                 store_csv_to_db()
+        elif sys.argv[1] == "terminate":
+            logger.info ("Terminating all positions!")
+            get_market_data()
+            terminate()
         else:
-            logger.warning (f"There is no account with this informations!")
-
-    else:
-        logger.error ("Wrong command!")
+            logger.error ("Wrong command!")
