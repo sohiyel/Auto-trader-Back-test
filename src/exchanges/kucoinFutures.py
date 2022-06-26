@@ -1,8 +1,10 @@
+from turtle import position
 from src.exchanges.baseExchange import BaseExchange
 import ccxt
 from math import floor
 from src.logManager import LogService
 import time
+from src.exchangePosition import ExchangePosition
 
 class KucoinFutures(BaseExchange):
     def __init__(self, settings, sandBox = False):
@@ -80,27 +82,37 @@ class KucoinFutures(BaseExchange):
         except Exception as e:
             self.logger.error(f"Cannot get contract size of {ePair}" + str(e))
 
-    def close_positions(self):
+    def fetch_positions(self):
         exchangePositions = self.exchange.fetch_positions()
+        positions = []
+        for p in exchangePositions:
+            positions.append(ExchangePosition(p["symbol"], p["side"], p["contracts"] , p["contractSize"], p["leverage"]))
+        return positions
+
+    def close_positions(self, pair = ""):
+        exchangePositions = self.fetch_positions()
         self.logger.debug(exchangePositions)
         for i in exchangePositions:
+            if pair:
+                if not i.pair == pair:
+                    continue
             done = True
             attempt = 0
             while done and attempt < 3:
-                if i["side"] == "long":
+                if i.side == "long":
                     try:
-                        self.exchange.create_market_order(i["symbol"], "sell", i["contracts"],i["leverage"], params={'leverage': i["leverage"]})
-                        self.logger.info( f"-------- Close buy position on {i['symbol']}--------")
+                        self.exchange.create_market_order(i.pair, "sell", i.contracts, i.leverage, params={'leverage': i.leverage})
+                        self.logger.info( f"-------- Close buy position on {i.pair}--------")
                         time.sleep(1)
                         done = False
                     except Exception as e:
                         self.logger.error("Cannot create market order!" + str(e))
                         time.sleep(10)
                         attempt += 1
-                elif i["side"] == "short":
+                elif i.side == "short":
                     try:
-                        self.exchange.create_market_order(i["symbol"], "buy", i["contracts"],i["leverage"], params={'leverage': i["leverage"]})
-                        self.logger.info( f"-------- Close sell position on {i['symbol']}--------")
+                        self.exchange.create_market_order(i.pair, "buy", i.contracts,i.leverage, params={'leverage': i.leverage})
+                        self.logger.info( f"-------- Close sell position on {i.pair}--------")
                         time.sleep(1)
                         done = False
                     except Exception as e:

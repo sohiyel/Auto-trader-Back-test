@@ -21,10 +21,10 @@ class DatabaseManager():
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': 'NaN'}
         self.logService.set_pts_formatter(pts)
         self.positionColumns = ['id', 'pair', 'side', 'volume', 'entryPrice',
-                                             'openAt', 'closeAt', 'leverage', 'isOpen', 'timeFrame',
-                                             'strategyName', 'botName', 'stopLossOrderId', 'takeProfitOrderId']
+                                'openAt', 'closeAt', 'leverage', 'isOpen', 'timeFrame',
+                                'strategyName', 'botName', 'stopLossOrderId', 'takeProfitOrderId']
         self.orderColumns = ['id', 'pair', 'side', 'volume', 'entryPrice', 'leverage', 'isOpen', 'timeFrame',
-                                                'strategyName', 'botName', 'positionId']
+                            'strategyName', 'botName', 'positionId']
         self.klineColumns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
 
     def connect_to_db(self):

@@ -1,6 +1,6 @@
 {
     "multiProcess": false,
-    "exchange": "kucoin_futures",
+    "exchange": "okex_futures",
     "tradeSide": "both",
     "baceCurrency": "USDT",
     "sandbox": false,

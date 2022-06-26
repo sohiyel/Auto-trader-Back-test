@@ -4,6 +4,7 @@ from src.logManager import LogService
 import configparser
 from math import floor
 import time
+from src.exchangePosition import ExchangePosition
 
 class OkexFuture(BaseExchange):
     def __init__(self, settings, sandBox = False):
@@ -42,6 +43,7 @@ class OkexFuture(BaseExchange):
     def create_market_order(self, symbol, side, amount, leverage = 1, comment="", price=None, params={}):
         pts = {'pair': symbol, 'timeFrame': 'NaN', 'strategyName': 'NaN'}
         self.logService.set_pts_formatter(pts)
+        self.logger.debug("Volume: "+ str(amount))
         if comment == 'open_buy':
             self.exchange.set_leverage(leverage,symbol,params={'mgnMode': 'isolated','posSide': 'long'})
             okexParams={'tdMode': 'isolated', 'posSide': 'long'}
@@ -146,17 +148,25 @@ class OkexFuture(BaseExchange):
 
     def fetch_positions(self):
         try:
-            return self.exchange.privateGetAccountPositions()['data']
+            exchangePositions = self.exchange.privateGetAccountPositions()['data']
+            self.logger.debug(exchangePositions)
+            positions = []
+            for p in exchangePositions:
+                positions.append(ExchangePosition(p["instId"], p["posSide"], p["availPos"] , 1, p["lever"]))
+            return positions
         except Exception as e:
             self.logger.error("Cannot get positions! "+str(e))
             return False
 
-    def close_positions(self):
+    def close_positions(self, pair=""):
         positions = self.fetch_positions()
         if positions:
             try:
                 for p in positions:
-                    self.exchange.private_post_trade_close_position(params={'instId': p['instId'],'mgnMode': p['mgnMode'],'posSide': p['posSide']})
+                    if pair:
+                        if not pair == p.pair:
+                            continue
+                    self.exchange.private_post_trade_close_position(params={'instId': p.pair,'mgnMode': 'isolated','posSide': p.side})
                     time.sleep(1)
             except Exception as e:
                 self.logger.error("Cannot close positions! " + str(e))
