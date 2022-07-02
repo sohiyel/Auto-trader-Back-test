@@ -1,3 +1,4 @@
+from ast import Raise
 from src.exchanges.exchange import Exchange
 from src.databaseManager import DatabaseManager
 from src.utility import Utility
@@ -13,14 +14,14 @@ import os
 from src.logManager import LogService
 
 class DataDownloader():
-    def __init__(self, pair, timeFrame, settings) -> None:
+    def __init__(self, pair, timeFrame, settings, db) -> None:
         self.settings = settings
         self.exchange = settings.exchange_service
         self.pair = self.exchange.change_symbol_for_data(pair)
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
         self.dbPair = Utility.get_db_format(self.pair)
         self.tableName = self.dbPair + "_" + self.timeFrame
-        self.db = DatabaseManager(settings, pair, timeFrame)
+        self.db = db
         self.tableName = self.db.get_ohlcv_table_name(pair, timeFrame)
         self.logService = LogService(__name__ + "DataDownloader", settings)
         self.logger = self.logService.logger
@@ -30,10 +31,13 @@ class DataDownloader():
             klines = self.exchange.fetch_ohlcv(self.pair, self.timeFrame)
         except Exception as e:
             self.logger.error("Cannot fetch_ohlcv!" + str(e))
+            raise ConnectionError("Cannot fetch_ohlcv!" + str(e))
         df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
         return df
 
     def fetch_klines(self, startAt, endAt):
+        if startAt > endAt:
+            raise ValueError("Start time must be lower that end time!")
         klinesList = []
         lastDate = startAt
         while lastDate < endAt+1:
@@ -43,7 +47,7 @@ class DataDownloader():
                 time.sleep(10)
             else:
                 self.logger.info('Success! recieved {} candles'.format(len(klines)))
-                lastDate = klines[-1][0]
+                lastDate = klines[-1][0]+1
                 klinesList.extend(klines)
                 df = pd.DataFrame(klines, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
                 self.db.store_klines(df, self.tableName)

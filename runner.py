@@ -39,7 +39,8 @@ def run_data_downloader():
         executor.map(downloader.initialize_indexes,downloader.tablesList)
 
 def download_data(pair, timeframe, startAt, endAt):
-    downloader = DataDownloader(pair, Utility.unify_timeframe(timeframe, settings.exchange), settings)
+    db = DatabaseManager(settings, pair, timeframe)
+    downloader = DataDownloader(pair, Utility.unify_timeframe(timeframe, settings.exchange), settings, db)
     startAtTs = DataService.convert_time(startAt) * 1000
     endAtTs = DataService.convert_time(endAt) * 1000
     downloader.db.create_ohlcv_table(pair, timeframe)
