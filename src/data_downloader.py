@@ -15,17 +15,15 @@ from src.logManager import LogService
 class DataDownloader():
     def __init__(self, pair, timeFrame, settings) -> None:
         self.settings = settings
-        self.exchange = Exchange(settings).exchange
+        self.exchange = settings.exchange_service
         self.pair = self.exchange.change_symbol_for_data(pair)
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
         self.dbPair = Utility.get_db_format(self.pair)
         self.tableName = self.dbPair + "_" + self.timeFrame
-        self.exchange = settings.exchange_service #Exchange(settings).exchange
         self.db = DatabaseManager(settings, pair, timeFrame)
         self.tableName = self.db.get_ohlcv_table_name(pair, timeFrame)
         self.logService = LogService(__name__ + "DataDownloader", settings)
-        self.logger = self.logService.logger  #get_logger(__name__, settings)
-        #self.logger = get_logger(__name__ + 'DataDownloader', settings)
+        self.logger = self.logService.logger
 
     def get_current_klines(self):
         try:
