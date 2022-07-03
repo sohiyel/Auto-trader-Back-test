@@ -7,7 +7,7 @@ from src.tests.testValues import TestValue
 
 @pytest.fixture
 def settings() -> Settings:
-    username = "sohiyel"
+    username = "test"
     task =  "download_data"
     setting = Settings(username, task)
     setting.exchange_service = ExchangeMock()
@@ -19,14 +19,12 @@ def dataDownloader(settings) -> DataDownloader:
     timeFrame = "4h"
     db = DBMock()
     return DataDownloader(pair, timeFrame, settings, db)
-
 class ExchangeMock:
     def fetch_ohlcv(self, pair, timeFrane, lastDate=""):
         klines = TestValue.klines1
         return klines
     def change_symbol_for_data(self, pair):
         return pair
-
 class DBMock:
     def store_klines(self,df, tableName):
         print(f"A dataframe with {df.shape[0]} indexes stored in {tableName}!")
@@ -52,6 +50,11 @@ def test_find_new_data(dataDownloader):
     if diff.shape[0] == 1:
         df = pd.DataFrame([[1618171200000,59758.0,60216.0,59540.0,60092.0,1390353.0,'left_only']], columns=['timestamp', 'open', 'high', 'low', 'close', 'volume','_merge'],index=[199])
         assert diff.iloc[0]['timestamp'] == df.iloc[0]['timestamp']
+
+def test_find_tables(settings):
+    downloader = Downloader(settings)
+    testTables = [("BTC_USDT","1m"),("ETH_USDT","1m"),("SUSHI_USDT","1m")]
+    assert downloader.tablesList == testTables
 
 if __name__ == '__main__':
     diff = TestValue.df2.merge(TestValue.df1, how = 'outer', indicator = True).loc[ lambda x : x['_merge'] == 'left_only']

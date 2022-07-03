@@ -97,6 +97,7 @@ class Downloader():
                 jsonFile = json.load(json_data_file)
             except:
                 self.logger.error(f"Cannot load {self.settings.DATABASE_INDEXES_PATH}")
+                raise FileNotFoundError(f"Cannot load {self.settings.DATABASE_INDEXES_PATH}")
             ptss = jsonFile["tables"]
             for pts in ptss:
                 tables.append( (pts["pair"], pts["tf"]))
