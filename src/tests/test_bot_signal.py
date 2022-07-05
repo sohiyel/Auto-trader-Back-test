@@ -1,11 +1,8 @@
 import pytest
 from src.botSignal import BotSignal
 from src.settings import Settings
-import pandas as pd
 from src.tests.testValues import TestValue
 from src.paramInput import ParamInput
-from accounts.test.strategies.OneEMA import OneEMA
-from accounts.test.strategies.TwoEMA import TwoEMA
 from src.signalClass import SignalClass
 
 @pytest.fixture

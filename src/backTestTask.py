@@ -22,75 +22,79 @@ class BackTestTask():
         self.logger = self.logService.logger  #get_logger(__name__, settings)
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
         self.logService.set_pts_formatter(pts)
-
-    def read_toDo(self):
+    
+    def read_task_file(self):
         if os.path.exists(self.settings.TASKS_PATH):
             try:
                 with open(self.settings.TASKS_PATH, "r") as json_data_file:
                     self.jsonFile = json.load(json_data_file)
-                    if len(self.jsonFile["To_Do"]) > 0:
-                        if "pair" in self.jsonFile["To_Do"][0]:
-                            self.pair = self.jsonFile["To_Do"][0]["pair"]
-                        else:
-                            self.pair = ""
-                        if "timeFrame" in self.jsonFile["To_Do"][0]:
-                            self.timeFrame = Utility.unify_timeframe(self.jsonFile["To_Do"][0]["timeFrame"], self.settings.exchange)
-                        else:
-                            self.timeFrame = ""
-                        if "strategyName" in self.jsonFile["To_Do"][0]:
-                            self.strategyName = self.jsonFile["To_Do"][0]["strategyName"]
-                        else:
-                            self.strategyName = ""
-                        if "botName" in self.jsonFile["To_Do"][0]:
-                            self.botName = self.jsonFile["To_Do"][0]["botName"]
-                        else:
-                            self.botName = ""
-                        if "startAt" in self.jsonFile["To_Do"][0]:
-                            self.startAt = self.jsonFile["To_Do"][0]["startAt"]
-                        else:
-                            self.startAt = ""
-                        if "endAt" in self.jsonFile["To_Do"][0]:
-                            self.endAt = self.jsonFile["To_Do"][0]["endAt"]
-                        else:
-                            self.endAt = ""
-                        if "volume" in self.jsonFile["To_Do"][0]:
-                            self.volume = self.jsonFile["To_Do"][0]["volume"]
-                        else:
-                            self.volume = ""
-                        if "initialCapital" in self.jsonFile["To_Do"][0]:
-                            self.initialCapital = self.jsonFile["To_Do"][0]["initialCapital"]
-                        else:
-                            self.initialCapital = ""
-                        if "market" in self.jsonFile["To_Do"][0]:
-                            self.market = self.jsonFile["To_Do"][0]["market"]
-                        else:
-                            self.market = ""
-                        if "optimization" in self.jsonFile["To_Do"][0]:
-                            self.optimization = self.jsonFile["To_Do"][0]["optimization"]
-                        else:
-                            self.optimization = ""
-                        if "randomInputs" in self.jsonFile["To_Do"][0]:
-                            self.randomInputs = self.jsonFile["To_Do"][0]["randomInputs"]
-                        else:
-                            self.randomInputs = ""
-                        if "numberOfInputs" in self.jsonFile["To_Do"][0]:
-                            self.numberOfInputs = self.jsonFile["To_Do"][0]["numberOfInputs"]
-                        else:
-                            self.numberOfInputs = ""
-                        checked, error = self.check_task()
-                        if checked:
-                            return True
-                        else:
-                            self.done_task(error)
-                            return False
-
-                    else:
-                        self.logger.warning("There is no tasks in the queue!")
-                        return False
             except:
                 self.logger.error("-------------Cannot open tasks.json!-------------")    
+                raise FileNotFoundError("-------------Cannot open tasks.json!-------------")
         else:
             self.logger.critical("-------------There is no tasks.json in your account!-------------")
+            raise FileNotFoundError("-------------There is no tasks.json in your account!-------------")
+
+    def read_toDo(self):
+        if len(self.jsonFile["To_Do"]) > 0:
+            if "pair" in self.jsonFile["To_Do"][0]:
+                self.pair = self.jsonFile["To_Do"][0]["pair"]
+            else:
+                self.pair = ""
+            if "timeFrame" in self.jsonFile["To_Do"][0]:
+                self.timeFrame = Utility.unify_timeframe(self.jsonFile["To_Do"][0]["timeFrame"], self.settings.exchange)
+            else:
+                self.timeFrame = ""
+            if "strategyName" in self.jsonFile["To_Do"][0]:
+                self.strategyName = self.jsonFile["To_Do"][0]["strategyName"]
+            else:
+                self.strategyName = ""
+            if "botName" in self.jsonFile["To_Do"][0]:
+                self.botName = self.jsonFile["To_Do"][0]["botName"]
+            else:
+                self.botName = ""
+            if "startAt" in self.jsonFile["To_Do"][0]:
+                self.startAt = self.jsonFile["To_Do"][0]["startAt"]
+            else:
+                self.startAt = ""
+            if "endAt" in self.jsonFile["To_Do"][0]:
+                self.endAt = self.jsonFile["To_Do"][0]["endAt"]
+            else:
+                self.endAt = ""
+            if "volume" in self.jsonFile["To_Do"][0]:
+                self.volume = self.jsonFile["To_Do"][0]["volume"]
+            else:
+                self.volume = ""
+            if "initialCapital" in self.jsonFile["To_Do"][0]:
+                self.initialCapital = self.jsonFile["To_Do"][0]["initialCapital"]
+            else:
+                self.initialCapital = ""
+            if "market" in self.jsonFile["To_Do"][0]:
+                self.market = self.jsonFile["To_Do"][0]["market"]
+            else:
+                self.market = ""
+            if "optimization" in self.jsonFile["To_Do"][0]:
+                self.optimization = self.jsonFile["To_Do"][0]["optimization"]
+            else:
+                self.optimization = ""
+            if "randomInputs" in self.jsonFile["To_Do"][0]:
+                self.randomInputs = self.jsonFile["To_Do"][0]["randomInputs"]
+            else:
+                self.randomInputs = ""
+            if "numberOfInputs" in self.jsonFile["To_Do"][0]:
+                self.numberOfInputs = self.jsonFile["To_Do"][0]["numberOfInputs"]
+            else:
+                self.numberOfInputs = ""
+            checked, error = self.check_task()
+            if checked:
+                return True
+            else:
+                self.done_task(error)
+                return False
+        else:
+            self.logger.warning("There is no tasks in the queue!")
+            return False
+            
 
     def check_task(self):
         if not (self.pair and self.timeFrame and self.startAt and\

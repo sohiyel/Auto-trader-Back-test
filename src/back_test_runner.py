@@ -42,6 +42,7 @@ class BackTestRunner():
         return result
 
     def start_task(self):
+        self.task.read_task_file()
         if self.task.read_toDo():
             self.userInput = UserInput(pair = self.task.pair,
                                   timeFrame = self.task.timeFrame,
