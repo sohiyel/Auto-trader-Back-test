@@ -122,7 +122,7 @@ class PositionManager():
                 takeProfitOrderId = uuid.uuid4().hex
                 try:
                     self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
-                    newPosition = Position(positionId, signal.pair, signal.side, amount, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
+                    newPosition = Position(positionId, signal.pair, signal.side, amount, self.contractSize, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
                     self.openPositions.append(newPosition)
                     self.logger.info ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
                     try:
@@ -149,7 +149,7 @@ class PositionManager():
             #                                                             'stopPriceType': 'MP',
             #                                                             'stopPrice': signal.takeProfit})
         else:
-            newPosition = Position(positionId, signal.pair, signal.side, self.volume, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, '', '', True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)
+            newPosition = Position(positionId, signal.pair, signal.side, self.volume, self.contractSize, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, '', '', True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)
             self.openPositions.append(newPosition)
             self.logger.info ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
 
@@ -290,7 +290,7 @@ class PositionManager():
                         self.logger.info(f"-------------- Adding database position to ram! --------------")
                         positionId = uuid.uuid4().hex
                         try:
-                            self.openPositions.append(Position(positionId, pos["pair"], pos["side"], float(pos["volume"]), float(pos["entryPrice"]),
+                            self.openPositions.append(Position(positionId, pos["pair"], pos["side"], float(pos["volume"]), self.contractSize, float(pos["entryPrice"]),
                                                                 pos["openAt"], self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"],
                                                                 pos["takeProfitOrderId"], True, int(pos["leverage"]),settings=self.settings))
                         except Exception as e:
@@ -311,7 +311,7 @@ class PositionManager():
                                     side = "sell"
                                 positionId = uuid.uuid4().hex
                                 self.logger.debug('pos["volume"]: '+ str(pos["volume"]))
-                                self.openPositions.append(Position(positionId, pos["pair"], side, float(pos["volume"]), float(pos["entryPrice"]),
+                                self.openPositions.append(Position(positionId, pos["pair"], side, float(pos["volume"]), self.contractSize, float(pos["entryPrice"]),
                                                                     float(pos["openAt"]), self.timeFrame, self.strategyName, self.botName, pos["stopLossOrderId"],
                                                                     pos["takeProfitOrderId"], True, int(pos["leverage"]),settings=self.settings))
                                 return
