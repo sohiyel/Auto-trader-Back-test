@@ -55,7 +55,7 @@ class UserInput():
                     pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
                     if pi.optimization:
                         strategyInputs = []
-                        for i in np.arange(pi.minValue, pi.maxValue, pi.step):
+                        for i in np.arange(pi.minValue, pi.maxValue+1, pi.step):
                             strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded , pi.minValue, pi.maxValue, pi.step, pi.optimization))
                         inputs.append(strategyInputs)
                     else:
@@ -95,7 +95,7 @@ class UserInput():
                     pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
                     if pi.optimization:
                         strategyInputs = []
-                        for i in np.arange(pi.minValue, pi.maxValue, pi.step):
+                        for i in np.arange(pi.minValue, pi.maxValue+1, pi.step):
                             strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded, pi.minValue, pi.maxValue, pi.step, pi.optimization))
                         inputs.append(strategyInputs)
                     else:
