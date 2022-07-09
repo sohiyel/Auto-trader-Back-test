@@ -13,7 +13,7 @@ class TradeIndex():
                 self.jsonFile = json.load(json_data_file)
                 ptss = self.jsonFile["trades"]["pts"]
                 for pts in ptss:
-                    self.indexes.append( UserInput( pair = pts["pair"], 
+                    userInput = UserInput( pair = pts["pair"], 
                                                     timeFrame = Utility.unify_timeframe(pts["tf"], settings.exchange),
                                                     strategyName = pts["strategy"],
                                                     botName = pts["bot"],
@@ -21,7 +21,9 @@ class TradeIndex():
                                                     leverage = pts["leverage"],
                                                     amount = pts["stake_amount"],
                                                     ratioAmount = pts["tradeable_balance_ratio"],
-                                                    settings= settings))
+                                                    settings= settings)
+                    userInput.find_inputs()
+                    self.indexes.append( userInput )
         except:
             self.logger.error("Error in reading trades.json!")                                                
             

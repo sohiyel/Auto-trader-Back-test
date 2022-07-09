@@ -8,6 +8,18 @@ class ParamInput():
         self.optimization = optimization
         self.strategy = strategy
         self.historyNeeded = historyNeeded
+
+    def __eq__(self, other):
+        if not isinstance(other, ParamInput):
+            return NotImplemented
+        return self.name == other.name and self.value == other.value and\
+            self.minValue == other.minValue and self.maxValue == other.maxValue and\
+                self.step == other.step and self.optimization == other.optimization and\
+                    self.strategy == other.strategy and self.optimization == other.optimization and\
+                        self.historyNeeded == other.historyNeeded
+
+    def __repr__(self):
+        print(self.to_dict())
     
     def to_dict(self):
         return {

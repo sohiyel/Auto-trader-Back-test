@@ -1,7 +1,4 @@
-from turtle import back
-from attr import s
 import pytest
-from src import backTestTask
 from src.tests.testValues import TestValue
 from src.settings import Settings
 from src.backTestTask import BackTestTask

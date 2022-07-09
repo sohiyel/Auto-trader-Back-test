@@ -1,4 +1,5 @@
 import json
+from msilib.schema import Error
 from src.paramInput import ParamInput
 import itertools
 import numpy as np
@@ -27,17 +28,19 @@ class UserInput():
         self.logger = self.logService.logger  #get_logger(__name__, settings)
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
         self.logService.set_pts_formatter(pts)
-        if botName:
+
+    def find_inputs(self):
+        if self.botName:
             try:
                 self.inputs= self.get_bot_inputs()
             except:
                 self.logger.error("Cannot get bot inputs!")
         else:
             try:
-                self.inputs = self.get_strategy_inputs(strategyName)
+                self.inputs = self.get_strategy_inputs(self.strategyName)
             except:
                 self.logger.error("Cannot get strategy input!")
-        if randomInput:
+        if self.randomInput:
             shuffle(self.inputs)
 
 
@@ -48,6 +51,7 @@ class UserInput():
             jsonFile = json.load(json_data_file)
         except:
             self.logger.error(f"Cannot open {strategyFileName}!")
+            raise FileNotFoundError(f"Cannot open {strategyFileName}!")
         inputs = []
         if self.optimization:
             try:
@@ -62,6 +66,7 @@ class UserInput():
                         inputs.append([pi])
             except:
                 self.logger.error(f"Insufficient parameters in {strategyFileName}")
+                raise NotImplementedError(f"Insufficient parameters in {strategyFileName}")
         else:
             try:    
                 if len(jsonFile["params"]) > 0:
@@ -77,6 +82,7 @@ class UserInput():
                     inputs = []
             except:
                 self.logger.error(f"Insufficient parameters in {strategyFileName}")
+                raise NotImplementedError(f"Insufficient parameters in {strategyFileName}")
         
         json_data_file.close()
         return list( itertools.product( *inputs ) )
@@ -88,6 +94,7 @@ class UserInput():
             jsonFile = json.load(json_data_file)
         except:
             self.logger.error(f"Cannot load {botFileName}!")
+            raise FileNotFoundError(f"Cannot load {botFileName}!")
         inputs = []
         if self.optimization:
             try:
@@ -102,6 +109,7 @@ class UserInput():
                         inputs.append([pi])
             except:
                 self.logger.error(f"Insufficient parameters in {botFileName}")
+                raise NotImplementedError(f"Insufficient parameters in {botFileName}")
         else:
             try:    
                 params = jsonFile["params"][0]
@@ -113,6 +121,7 @@ class UserInput():
                     inputs.append([pi])
             except:
                 self.logger.error(f"Insufficient parameters in {botFileName}")
+                raise NotImplementedError(f"Insufficient parameters in {botFileName}")
         
         json_data_file.close()
         return list( itertools.product( *inputs ) )
@@ -128,6 +137,7 @@ class UserInput():
             jsonFile = json.load(json_data_file)
         except:
             self.logger.error(f"Cannot load {botFileName}!")
+            raise FileNotFoundError(f"Cannot load {botFileName}!")
         for s in jsonFile["strategies"]:
             strategyNames.append(s["strategy"])
         json_data_file.close()
@@ -142,6 +152,7 @@ class UserInput():
                     jsonFile = json.load(json_data_file)
             except:
                 self.logger.error(f"Cannot load {botFileName}")
+                raise FileNotFoundError(f"Cannot load {botFileName}")
         else:
             strategyFileName = self.strategyName + ".json"
             try:
@@ -149,6 +160,7 @@ class UserInput():
                     jsonFile = json.load(json_data_file)
             except:
                 self.logger.error(f"Cannot open {strategyFileName}")
+                raise FileNotFoundError(f"Cannot open {strategyFileName}")
         
         try:
             params = jsonFile["params"][0]
@@ -208,7 +220,14 @@ class UserInput():
                 value = float(report[n[1] + "_" + n[0]])
                 newParam["inputs"].append(ParamInput(n[0], value, n[1],n[2]).to_dict())
             jsonFile["params"].append(newParam)
+        try:
+            self.dump_params(jsonFile)
+        except :
+            self.logger.error('Cannot dump optimized values!')
+        return jsonFile
 
+
+    def dump_params(self, jsonFile):
         if self.botName:
             botFileName = self.botName + ".json"
             try:
@@ -216,6 +235,7 @@ class UserInput():
                     json.dump(jsonFile, json_data_file)
             except:
                 self.logger.error(f"Cannot dump into {botFileName}!")
+                raise Error(f"Cannot dump into {botFileName}!")
         else:
             strategyFileName = self.strategyName + ".json"
             try:
@@ -223,6 +243,7 @@ class UserInput():
                     json.dump(jsonFile, json_data_file)
             except:
                 self.logger.error(f"Cannot dump into {strategyFileName}!")
+                raise Error(f"Cannot dump into {strategyFileName}!")
 
     def calc_history_needed(self):
         max = 1

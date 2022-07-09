@@ -51,6 +51,7 @@ class BackTestRunner():
                                   optimization = self.task.optimization,
                                   randomInput = self.task.randomInputs,
                                   settings = self.settings)
+            self.userInput.find_inputs()
             start_time = time.time()
             pts = {'pair': self.userInput.pair, 'timeFrame': self.userInput.timeFrame, 'strategyName': self.userInput.strategyName}
             self.logService.set_pts_formatter(pts)
