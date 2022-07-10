@@ -54,7 +54,7 @@ class Simulator():
                     self.positionManager.add_volume(signal.price, signal.volume)
             else:
                 lastPrice = self.positionManager.close_position(self.lastState)
-                self.portfolioManager.close_position(lastPrice, commission)
+                self.portfolioManager.close_position(lastPrice)
                 if self.positionManager.closedPositions[-1].profit > 0:
                     self.portfolioManager.add_profit(self.positionManager.closedPositions[-1].profit)
                 else:
@@ -67,7 +67,7 @@ class Simulator():
     def closePosition(self, commission):
         if len(self.positionManager.openPositions) > 0:
             lastPrice = self.positionManager.close_position(self.lastState)
-            self.portfolioManager.close_position(lastPrice, commission)
+            self.portfolioManager.close_position(lastPrice)
             if self.positionManager.closedPositions[-1].profit > 0:
                 self.portfolioManager.add_profit(self.positionManager.closedPositions[-1].profit)
             else:

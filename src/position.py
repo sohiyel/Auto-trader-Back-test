@@ -45,7 +45,7 @@ class Position():
         self.closeAt = timestamp
         self.commission += self.volume * self.currentPrice * self.settings.constantNumbers["commission"] * self.contractSize
         self.calc_profit()
-        return (self.entryPrice * self.volume * self.contractSize) + self.profit
+        return (self.entryPrice * self.volume * self.contractSize * (1+self.settings.constantNumbers["commission"])) + self.profit
 
     def calc_equity(self):
         self.calc_profit()

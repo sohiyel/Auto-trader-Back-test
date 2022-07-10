@@ -26,6 +26,9 @@ class PortfolioManager():
     def calc_poL(self):
         if self.loss != 0:
             self.pol = abs( self.profit / self.loss )
+        else:
+            self.pol = "infinite"
+        return self.pol
 
     def open_position(self, volume, price, commission):
         try:
@@ -41,7 +44,7 @@ class PortfolioManager():
             self.logger.error("Cannot check free valid balance: " + str(e))
         try:
             if volume * float(price) *  ( 1 + commission ) * self.contractSize < self.balance:
-                self.balance -= volume * price * self.contractSize
+                self.balance -= volume * price * self.contractSize *  ( 1 + commission )
                 return True
             else:
                 self.logger.warning ("Insufficent balance!", self.balance, price * volume * self.contractSize)
@@ -49,16 +52,24 @@ class PortfolioManager():
         except Exception as e:
             self.logger.error("Cannot open position:" + str(e))
 
-    def close_position(self, lastPrice, commission):
+    def close_position(self, lastPrice):
         self.balance += lastPrice
 
     def add_profit(self, profit):
-        self.profit += profit
-        self.numProfits += 1
+        if profit > 0 :
+            self.profit += profit
+            self.numProfits += 1
+        else:
+            self.logger.error("Profit cannot be lower zero!")
+            raise ValueError("Profit cannot be lower zero!")
 
     def add_loss(self, loss):
-        self.loss += loss
-        self.numLosses += 1
+        if loss < 0:
+            self.loss += loss
+            self.numLosses += 1
+        else:
+            self.logger.error("Loss cannot be above zero!")
+            raise ValueError("Loss cannot be above zero!")
 
     def add_volume(self, volume, price, commission):
         if volume * price *  ( 1 + commission ) * self.contractSize < self.balance:
@@ -87,7 +98,7 @@ class PortfolioManager():
             except Exception as e:
                 self.logger.error("Cannot fetch balance from ccxt!"+ str(e))
         else:
-            self.logger.error("Exchange is not defined!")
+            self.logger.info("Task in not trade to get equity from exchange!")
             return False
 
     # def get_balance(self):
