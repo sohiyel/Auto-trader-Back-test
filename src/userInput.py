@@ -1,5 +1,4 @@
 import json
-from msilib.schema import Error
 from src.paramInput import ParamInput
 import itertools
 import numpy as np
@@ -235,7 +234,7 @@ class UserInput():
                     json.dump(jsonFile, json_data_file)
             except:
                 self.logger.error(f"Cannot dump into {botFileName}!")
-                raise Error(f"Cannot dump into {botFileName}!")
+                raise RuntimeError(f"Cannot dump into {botFileName}!")
         else:
             strategyFileName = self.strategyName + ".json"
             try:
@@ -243,7 +242,7 @@ class UserInput():
                     json.dump(jsonFile, json_data_file)
             except:
                 self.logger.error(f"Cannot dump into {strategyFileName}!")
-                raise Error(f"Cannot dump into {strategyFileName}!")
+                raise RuntimeError(f"Cannot dump into {strategyFileName}!")
 
     def calc_history_needed(self):
         max = 1
