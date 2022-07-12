@@ -1,4 +1,3 @@
-from turtle import position
 import pandas as pd
 from src.position import Position
 from src.settings import Settings
@@ -87,3 +86,4 @@ class TestValue:
         return inputs
 
     signal01 = SignalClass("BTC/USDT:USDT",price=59753.0,slPercent=0.1,tpPercent=0.3,comment="OneEMA",longEnter=1,longExit=0,shortEnter=0,shortExit=1)
+    signal02 = SignalClass("BTC/USDT:USDT",price=59753.0,slPercent=0.1,tpPercent=0.3,comment="OneEMA",longEnter=0,longExit=1,shortEnter=1,shortExit=0)

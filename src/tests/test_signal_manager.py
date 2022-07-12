@@ -1,4 +1,3 @@
-from numpy import isin
 import pytest
 from src.settings import Settings
 from src.signalManager import SignalManager
