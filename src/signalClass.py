@@ -13,3 +13,24 @@ class SignalClass():
         self.longExit = longExit
         self.shortEnter = shortEnter
         self.shortExit = shortExit
+
+    def __eq__(self, other):
+        if not isinstance(other, SignalClass):
+            return NotImplemented
+        return self.pair == other.pair and self.price == other.price and self.slPercent == other.slPercent and\
+            self.tpPercent == other.tpPercent and self.comment == other.comment and self.longExit == other.longExit and\
+                self.longExit == other.longExit and self.shortEnter == other.shortEnter and self.shortExit == other.shortExit
+
+    def __repr__(self):
+        print(self.to_dict())
+    
+    def to_dict(self):
+        return {
+            'pair' : self.pair,
+            'volume': self.volume,
+            'price': self.price,
+            'longEnter': self.longEnter,
+            'longExit' : self.longExit,
+            'shortEnter' : self.shortEnter,
+            'shortExit': self.shortExit
+        }                

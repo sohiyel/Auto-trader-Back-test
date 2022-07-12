@@ -14,20 +14,13 @@ def settings() -> Settings:
 
 def botSignalWithMarketData(settings) -> BotSignal:
     botName = "Bot01"
-    return BotSignal(botName, currentInput(), timeFrame="default",
+    return BotSignal(botName, TestValue.currentInput("Bot01"), timeFrame="default",
                      pair="default", settings= settings, marketData=TestValue.df1)
 
 def botSignalWithoutMarketData(settings) -> BotSignal:
     botName = "Bot01"
-    return BotSignal(botName, currentInput(), timeFrame="default",
+    return BotSignal(botName, TestValue.currentInput("Bot01"), timeFrame="default",
                      pair="default", settings= settings)
-
-def currentInput():
-    inputs = []
-    inputs.append(ParamInput("len",150,"OneEMA",True,150,251,100,False))
-    inputs.append(ParamInput("fast_len",40,"TwoEMA",True,20,31,10,True))
-    inputs.append(ParamInput("slow_len",100,"TwoEMA",True,50,101,50,True))
-    return inputs
 
 def test_bot_signal_strategy_names(settings):
     expectedStrategyNames = set(['TwoEMA', 'OneEMA'])
