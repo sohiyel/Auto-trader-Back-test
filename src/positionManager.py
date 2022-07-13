@@ -26,19 +26,20 @@ class PositionManager():
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
         self.logService.set_pts_formatter(pts)
 
-    def check_open_position(self, newMargin):
+    def check_open_position_margin(self, newMargin):
         #Check margin
         dbOpenPositions = self.db.get_open_positions(Utility.get_db_format(self.pair))        
         totalMargin = 0
         for index, k in dbOpenPositions.iterrows():
             if k["side"] == "buy":
-                totalMargin += k["volume"] * k["entryPrice"]
+                totalMargin += k["volume"] * k["entryPrice"] * self.contractSize
             else:
                 if self.settings.isSpot:
-                    totalMargin -= k["volume"] * k["entryPrice"]
+                    totalMargin -= k["volume"] * k["entryPrice"] * self.contractSize
                 else:
-                    totalMargin += k["volume"] * k["entryPrice"]
+                    totalMargin += k["volume"] * k["entryPrice"] * self.contractSize
         totalMargin = abs(float(totalMargin)) + newMargin
+        self.logger.debug(dbOpenPositions)
         self.logger.debug("Total Margin: "+str(totalMargin))
         self.logger.debug("Initial Deposit: "+str(self.initialCapital))
         self.logger.debug("Total Margin / Initial Deposit: "+str(totalMargin / self.initialCapital))
@@ -46,9 +47,10 @@ class PositionManager():
         if totalMargin / self.initialCapital > self.settings.constantNumbers["margin_ratio"]:
             self.logger.warning(f"This pair({self.pair}) has reached the maximum ratio of your initial deposit!")
             return False
+        return True
         
+    def check_open_position_time(self, dbPositions):
         #Check time difference between orders
-        dbPositions = self.db.get_positions(Utility.get_db_format(self.pair))
         if dbPositions.shape[0] > 0:
             if self.botName:
                 lastOrderTimestamp = int(dbPositions.loc[dbPositions["botName"] == self.botName].iloc[-1]["openAt"])
@@ -74,7 +76,7 @@ class PositionManager():
             spread = (ask - bid) if (bid and ask) else None
             self.logger.debug('market price', {'bid': bid, 'ask': ask, 'spread': spread})
             price = bid if signal.side == 'buy' else ask
-            
+            dbPositions = self.db.get_positions(Utility.get_db_format(self.pair))
             if self.ratioAmount > 0:
                 amount = self.ratioAmount * self.initialCapital / price
                 if self.settings.isSpot:
@@ -85,7 +87,7 @@ class PositionManager():
                         self.logger.warning("Volume size is lower than the minimum size!")
                 else:
                     volume = amount / self.contractSize
-                if self.check_open_position(self.ratioAmount * self.initialCapital):
+                if self.check_open_position_margin(self.ratioAmount * self.initialCapital) and self.check_open_position_time(dbPositions):
                     pass
                 else:
                     self.logger.warning("Cannot open this order!")
@@ -99,7 +101,7 @@ class PositionManager():
                         self.logger.warning("Volume size is lower than the minimum size!")
                 else:
                     volume = self.volume / self.contractSize
-                if self.check_open_position(self.volume * price):
+                if self.check_open_position(self.volume * price) and self.check_open_position_time(dbPositions):
                     pass
                 else:
                     self.logger.warning("Cannot open this order!")
