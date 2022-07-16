@@ -49,6 +49,10 @@ class Position():
 
     def calc_equity(self):
         self.calc_profit()
+        print("Entry price:" + str(self.entryPrice))
+        print("Volume:" + str(self.volume))
+        print("Contract Size:" + str(self.contractSize))
+        print("Profit:" + str(self.profit))
         return (self.entryPrice * self.volume * self.contractSize) + self.profit
 
     def to_dict(self):
@@ -59,7 +63,7 @@ class Position():
             'volume': self.volume,
             'contractSize': str(self.contractSize),
             'entryPrice': self.entryPrice,
-            'currentPrice': str(self.currentPrice),
+            'currentPrice': self.currentPrice,
             'openAt': self.openAt,
             'stopLoss': str(self.stopLoss),
             'takeProfit': str(self.takeProfit),

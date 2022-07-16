@@ -74,7 +74,7 @@ class TestValue:
     p5.close_position(1620388800)
     positions = [p1,p2,p3,p4,p5]
     positionsDF01 = pd.DataFrame([p1.to_dict()])
-    positionsDF02 = pd.DataFrame([p3.to_dict(),p2.to_dict()])
+    positionsDF02 = pd.DataFrame([p3.to_dict()])
     
     def currentInput(name):
         inputs = []
@@ -90,6 +90,7 @@ class TestValue:
 
     signal01 = SignalClass("BTC/USDT:USDT",price=59753.0,slPercent=0.1,tpPercent=0.3,comment="OneEMA",longEnter=1,longExit=0,shortEnter=0,shortExit=1)
     signal02 = SignalClass("BTC/USDT:USDT",price=59753.0,slPercent=0.1,tpPercent=0.3,comment="OneEMA",longEnter=0,longExit=1,shortEnter=1,shortExit=0)
+    signal03 = SignalClass("BTC/USDT:USDT",side="sell",price=597.0,slPercent=0.1,tpPercent=0.3,comment="OneEMA",longEnter=0,longExit=1,shortEnter=1,shortExit=0)
 
 if __name__ == '__main__':
     print(TestValue.positionsDF)

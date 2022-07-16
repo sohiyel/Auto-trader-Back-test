@@ -57,6 +57,7 @@ class PositionManager():
             else:
                 lastOrderTimestamp = int(dbPositions.loc[dbPositions["strategyName"] == self.strategyName].iloc[-1]["openAt"])
             timeDifference = (time.time() * 1000) - lastOrderTimestamp
+            self.logger.debug("Last order time stamp: " + str(lastOrderTimestamp))
             validTimeDifference = Utility.array[self.timeFrame] * 60000 * self.settings.constantNumbers["open_position_delays"]
             self.logger.debug("Current time difference between orders: " + str(timeDifference / 60000))
             self.logger.debug("Valid time difference between orders: " + str(validTimeDifference / 60000))
@@ -101,7 +102,7 @@ class PositionManager():
                         self.logger.warning("Volume size is lower than the minimum size!")
                 else:
                     volume = self.volume / self.contractSize
-                if self.check_open_position(self.volume * price) and self.check_open_position_time(dbPositions):
+                if self.check_open_position_margin(self.volume * price * self.contractSize) and self.check_open_position_time(dbPositions):
                     pass
                 else:
                     self.logger.warning("Cannot open this order!")
@@ -124,16 +125,16 @@ class PositionManager():
                 takeProfitOrderId = uuid.uuid4().hex
                 try:
                     self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
-                    newPosition = Position(positionId, signal.pair, signal.side, amount, self.contractSize, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
+                    newPosition = Position(positionId, signal.pair, signal.side, self.volume, self.contractSize, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
                     self.openPositions.append(newPosition)
                     self.logger.info ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
                     try:
                         self.db.add_order(stopLossOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
                         self.db.add_order(takeProfitOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
-                    except:
-                        self.logger.error("Cannot add new order to db!")
-                except:
-                    self.logger.error("Cannot add new position to db!")
+                    except Exception as e:
+                        self.logger.error("Cannot add new order to db!" + str(e))
+                except Exception as e:
+                    self.logger.error("Cannot add new position to db!" + str(e))
             except Exception as e:
                 self.logger.error("Cannot create market order!" + str(e))
             # stopLossOrderId = self.exchange.create_market_order(signal.pair,
@@ -202,6 +203,10 @@ class PositionManager():
 
     def check_sl_tp(self, currentPrice, timestamp):
         for i in self.openPositions:
+            self.logger.debug(f"Check sl and tp for {i.pair}")
+            self.logger.debug(f"Current price :{currentPrice}")
+            self.logger.debug(f"Take profit :{i.takeProfit}")
+            self.logger.debug(f"Stop loss :{i.stopLoss}")
             i.currentPrice = currentPrice
             i.profit = i.calc_profit()
             if i.side == 'buy':
@@ -238,6 +243,7 @@ class PositionManager():
 
     def calc_equity(self):
         totalEquity = 0
+        self.logger.debug(f"Calculating equities for {len(self.openPositions)} positions...")
         for i in self.openPositions:
             totalEquity += i.calc_equity()
         return totalEquity
