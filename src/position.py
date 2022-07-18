@@ -75,7 +75,9 @@ class Position():
             'isOpen': self.isOpen,
             'timeFrame': self.timeFrame,
             'strategyName': self.strategyName,
-            'botName': self.botName
+            'botName': self.botName,
+            'stopLossOrderId': self.stopLossOrderId,
+            'takeProfitOrderId': self.takeProfitOrderId
         }
 
     def __repr__(self):

@@ -57,7 +57,7 @@ class TestValue:
     username = "test"
     task =  "trade"
     setting = Settings(username, task)
-    p1 = Position('b011875807044548bf44a86cbaaa1d63','BTC-USDT',"sell",10,0.001,55972.0,1620100800,'4h','OneEMA','',settings=setting)
+    p1 = Position('b011875807044548bf44a86cbaaa1d63','BTC-USDT',"sell",10,0.001,55972.0,1620100800,'4h','OneEMA','','asdkm34tr3m4lrt3lk','asdmklar32434',settings=setting)
     p1.currentPrice = 57594.0
     p1.close_position(1620216000)
     p2 = Position('a1b70c5d98c64369a85314d1c413f1aa','BTC-USDT',"buy",10,0.001,57594.0,1620216000,'4h','OneEMA','',settings=setting)
