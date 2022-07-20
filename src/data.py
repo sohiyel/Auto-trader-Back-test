@@ -36,10 +36,10 @@ class DataService():
         try:
             self.logger.info("Fetching klines...")
             self.dataFrame = self.db.fetch_klines(self.pair, self.timeFrame, (self.startAtTs - self.historyNeeded) * 1000, self.endAtTs * 1000)
-            self.logger.info("Expected candles:", (self.endAtTs - (self.startAtTs - self.historyNeeded))/(Utility.array[self.timeFrame]*60)[0])
-            self.logger.info("Existing candles:", self.dataFrame.shape[0][0])
-            self.logger.info("Needed start and end time:", (self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000)
-            self.logger.info("Existed start anad end time:", self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp'])
+            self.logger.info("Expected candles:", str((self.endAtTs - (self.startAtTs - self.historyNeeded))/(Utility.array[self.timeFrame]*60)[0]))
+            self.logger.info("Existing candles:", str(self.dataFrame.shape[0][0]))
+            self.logger.info("Needed start and end time:", str((self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000))
+            self.logger.info("Existed start anad end time:", str(self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp']))
         except:
             self.logger.error("Cannot fetch klines")
 

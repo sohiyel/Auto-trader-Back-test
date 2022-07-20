@@ -13,9 +13,9 @@ class SingleStrategy():
             strategies = importlib.import_module(settings.STRATEGIES_MODULE_PATH+strategyName)
             self.StrategyClass = getattr(strategies, strategyName)
             self.strategy = self.StrategyClass(currentInput, pair, marketData, settings)
-        except:
-            self.logger.error(f"Cannot import {settings.STRATEGIES_MODULE_PATH+strategyName}!")
-            raise FileNotFoundError(f"Cannot import {settings.STRATEGIES_MODULE_PATH+strategyName}!")
+        except Exception as e:
+            self.logger.error(f"Cannot import {settings.STRATEGIES_MODULE_PATH+strategyName}!" + str(e))
+            raise FileNotFoundError(f"Cannot import {settings.STRATEGIES_MODULE_PATH+strategyName}!" + str(e))
         
     def decider(self, marketData, timeStamp):
         signal = self.strategy.decider(marketData, timeStamp)
