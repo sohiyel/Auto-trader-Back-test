@@ -1,11 +1,10 @@
 from datetime import datetime
 from pytz import timezone
 from src.utility import Utility
-from src.databaseManager import DatabaseManager
 from src.logManager import LogService
 class DataService():
 
-    def __init__(self, market, pair, timeFrame, startTime, endTime, historyNeeded = 0, settings=''):
+    def __init__(self, db, pair, timeFrame, startTime, endTime, historyNeeded = 0, settings=''):
         self.pair = pair
         self.settings = settings
         self.dbPair = Utility.get_db_format(self.pair)
@@ -14,11 +13,10 @@ class DataService():
         self.startTime = startTime
         self.endTime = endTime
         self.dataFrame = ""
-        self.market = market
         self.startAtTs = self.convert_time(startTime)
         self.endAtTs = self.convert_time(endTime)
         self.historyNeeded = int(historyNeeded)
-        self.db = DatabaseManager(settings, pair, timeFrame)
+        self.db = db
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': 'NaN'}
@@ -40,8 +38,8 @@ class DataService():
             self.logger.info("Existing candles:", str(self.dataFrame.shape[0][0]))
             self.logger.info("Needed start and end time:", str((self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000))
             self.logger.info("Existed start anad end time:", str(self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp']))
-        except:
-            self.logger.error("Cannot fetch klines")
+        except Exception as e:
+            self.logger.error("Cannot fetch klines" + str(e))
 
     def read_data_from_db(self, limit, lastState):
         return self.db.read_klines(self.dbPair, self.timeFrame, limit, lastState)

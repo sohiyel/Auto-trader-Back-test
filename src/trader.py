@@ -10,6 +10,7 @@ from pytz import timezone
 import time
 from src.simulator import Simulator
 from src.logManager import LogService
+from src.databaseManager import DatabaseManager
 
 class Trader(Simulator):
     def __init__ (self, index, settings, market = 'futures'):
@@ -21,8 +22,9 @@ class Trader(Simulator):
         self.startAt = datetime.utcnow().strftime('%Y-%m-%d_%H:%M:%S')
         historyNeeded = index.calc_history_needed()
         self.historyNeeded = int(historyNeeded)
+        self.db = DatabaseManager(settings, self.pair, self.timeFrame)
         self.endAt = datetime.fromtimestamp(time.time() - historyNeeded, tz=timezone('utc')).strftime('%Y-%m-%d_%H:%M:%S')
-        self.dataService = DataService(market, index.pair, self.timeFrame, self.startAt, self.endAt, historyNeeded, settings)
+        self.dataService = DataService(self.db, index.pair, self.timeFrame, self.startAt, self.endAt, historyNeeded, settings)
         self.startAtTS = self.dataService.startAtTs
         self.endAtTS = self.dataService.endAtTs
         self.lastState = self.dataService.startAtTs

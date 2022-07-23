@@ -9,13 +9,15 @@ from pytz import timezone
 from src.plotter import Plotter
 import time
 from src.logManager import LogService
+from src.databaseManager import DatabaseManager
 
 class Simulator():
     def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization, historyNeeded, settings):
         self.settings = settings
         self.pair = pair
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
-        self.dataService = DataService(market, pair, self.timeFrame, startAt, endAt, historyNeeded, settings)
+        self.db = DatabaseManager(settings, self.pair, self.timeFrame)
+        self.dataService = DataService(self.db, pair, self.timeFrame, startAt, endAt, historyNeeded, settings)
         self.startAt = startAt,
         self.endAt = endAt,
         self.startAtTS = self.dataService.startAtTs
