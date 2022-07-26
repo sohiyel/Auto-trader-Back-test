@@ -28,6 +28,13 @@ class UserInput():
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
         self.logService.set_pts_formatter(pts)
 
+    def __eq__(self, other) -> bool:
+        if self.pair == other.pair and self.timeFrame == other.timeFrame and\
+            self.strategyName == other.strategyName and self.botName == other.botName and\
+                self.leverage == other.leverage and self.amount == other.amount:
+                return True
+        return False
+
     def find_inputs(self):
         if self.botName:
             try:
