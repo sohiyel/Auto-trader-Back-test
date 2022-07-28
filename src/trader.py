@@ -53,11 +53,11 @@ class Trader(Simulator):
         self.df.reset_index(drop=True, inplace=True)
         self.lastCandle = self.df.iloc[-1]
 
-    def mainloop(self):
+    def main_loop(self):
         self.logger.info ( f"<----------- Run mainloop on {self.pair} ----------->")
         if self.portfolioManager.get_equity():
             if self.portfolioManager.equity <= 0:
-                self.processOrders(4, None, self.settings.constantNumbers["commission"])
+                self.process_orders(4, None, self.settings.constantNumbers["commission"])
                 self.portfolioManager.balance = 0
                 return
         try:
@@ -71,7 +71,7 @@ class Trader(Simulator):
                                                     self.positionManager.position_size())
         self.logger.info ( f"Current choice is:{choice}")
         try:
-            self.processOrders(choice, signal, self.settings.constantNumbers["commission"])
+            self.process_orders(choice, signal, self.settings.constantNumbers["commission"])
         except Exception as e:
             self.logger.error("Cannot process this signal!" + str(e))
         self.portfolioManager.calc_poL()

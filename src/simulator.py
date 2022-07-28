@@ -9,14 +9,14 @@ from pytz import timezone
 from src.plotter import Plotter
 import time
 from src.logManager import LogService
-from src.databaseManager import DatabaseManager
+
 
 class Simulator():
-    def __init__ (self,market, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization, historyNeeded, settings):
+    def __init__ (self, pair, timeFrame, startAt, endAt, initialCapital, strategyName, botName, volume, currentInput, optimization, historyNeeded, settings, db):
         self.settings = settings
         self.pair = pair
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
-        self.db = DatabaseManager(settings, self.pair, self.timeFrame)
+        self.db = db
         self.dataService = DataService(self.db, pair, self.timeFrame, startAt, endAt, historyNeeded, settings)
         self.startAt = startAt,
         self.endAt = endAt,
@@ -45,7 +45,7 @@ class Simulator():
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
         self.logService.set_pts_formatter(pts)
 
-    def openPosition(self, signal, commission):
+    def open_position(self, signal, commission):
         if len( self.positionManager.openPositions ) == 0:
             if self.portfolioManager.open_position(self.volume, signal.price, commission):
                 self.positionManager.open_position(signal, self.lastState)
@@ -66,7 +66,7 @@ class Simulator():
                 if self.portfolioManager.open_position(self.volume, signal.price, commission):
                     self.positionManager.open_position(signal, self.lastState)
 
-    def closePosition(self, commission):
+    def close_position(self):
         if len(self.positionManager.openPositions) > 0:
             lastPrice = self.positionManager.close_position(self.lastState)
             self.portfolioManager.close_position(lastPrice)
@@ -76,27 +76,27 @@ class Simulator():
                 self.portfolioManager.add_loss(self.positionManager.closedPositions[-1].profit)
             self.portfolioManager.balances.append(self.portfolioManager.balance)
 
-    def processOrders(self, choice, signal, commission ):
+    def process_orders(self, choice, signal, commission ):
         if choice == 0:
             pass
         elif choice == 1:
             if self.side == "long" or self.side == "both":
                 if signal:
-                    self.openPosition(signal, commission)
+                    self.open_position(signal, commission)
         elif choice == 2:
             if self.side == "long" or self.side == "both":
                 if signal:
-                    self.closePosition(commission)
+                    self.close_position()
         elif choice == 3:
             if self.side == "short" or self.side == "both":
                 if signal:
-                    self.openPosition(signal, commission)
+                    self.open_position(signal, commission)
         elif choice == 4:
             if signal:
                 if self.side == "short" or self.side == "both":
-                    self.closePosition(commission)
+                    self.close_position()
             else:
-                self.closePosition(commission)
+                self.close_position()
         if len(self.positionManager.openPositions) > 0:
             lastPrice = self.positionManager.calc_equity()
             self.portfolioManager.equities.append(self.portfolioManager.update_equity(lastPrice))
@@ -104,10 +104,13 @@ class Simulator():
     def get_data(self, lastState):
         try:
             if self.settings.task == "backtest":
-                df = self.dataService.read_data_from_memory(self.historyNeeded, self.lastState * 1000)
+                df = self.dataService.read_data_from_memory(self.historyNeeded, lastState * 1000)
                 lastCandle = df.iloc[-1]
                 if lastCandle['timestamp'] != lastState*1000:
-                    self.logger.warning(f"---------- Could not find this candle{lastState*1000} ---------")
+                    self.logger.warning(f"---------- Last state is not equal to last candle ---------")
+                    self.logger.warning(f"---------- Last state is {lastState * 1000} ---------")
+                    self.logger.warning(f"---------- Last candle is {lastCandle['timestamp']} ---------")
+                    self.logger.warning(f"---------- First candle is {df.iloc[0]['timestamp']} ---------")
                     return False,False
                 return df, lastCandle
             elif self.settings.task == "fast_backtest":
@@ -125,15 +128,16 @@ class Simulator():
         if not checkContinue :
             if self.settings.task == "trade":
                 self.logger.info ( f"<----------- Close on SL/TP {self.pair} ----------->")
-            self.processOrders(4, None, self.settings.constantNumbers["commission"])
-            return
+            self.process_orders(4, None, self.settings.constantNumbers["commission"])
+            return True
+        return False
 
-    def mainloop(self):
+    def main_loop(self):
         start_time = time.time()
         self.logger.info("--- Start time: {startTime} ---".format(startTime=str(datetime.fromtimestamp(time.time()))))
         for i in range(self.dataService.startAtTs, self.dataService.endAtTs, Utility.array[self.timeFrame]*60):
             if self.portfolioManager.equity <= 0:
-                self.processOrders(4, None, self.settings.constantNumbers["commission"])
+                self.process_orders(4, None, self.settings.constantNumbers["commission"])
                 self.portfolioManager.balance = 0
                 break
             self.lastState = i
@@ -146,10 +150,10 @@ class Simulator():
             elif self.settings.task == "fast_backtest":
                 timestamp = i
             choice, signal = self.orderManager.decider(df, self.portfolioManager.equity, self.portfolioManager.balance, self.positionManager.position_average_price(), self.positionManager.position_size(), timestamp)
-            self.processOrders(choice, signal, self.settings.constantNumbers["commission"])
+            self.process_orders(choice, signal, self.settings.constantNumbers["commission"])
             self.portfolioManager.calc_poL()
 
-        self.processOrders(4, None, self.settings.constantNumbers["commission"])
+        self.process_orders(4, None, self.settings.constantNumbers["commission"])
 
         report = self.portfolioManager.report(self.positionManager.closedPositions)
         numberOfDays = ((self.endAtTS - self.startAtTS)/(1440 * 60))

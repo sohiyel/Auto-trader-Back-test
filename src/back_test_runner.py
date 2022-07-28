@@ -7,6 +7,7 @@ from src.backTestTask import BackTestTask
 from os import path
 from src.simulator import Simulator
 from src.logManager import LogService
+from src.databaseManager import DatabaseManager
 class BackTestRunner():
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -23,8 +24,8 @@ class BackTestRunner():
         self.logger.info("--------- New process started ---------")
         self.historyNeeded = self.userInput.calc_history_needed()
         self.logger.info(f'Number of history needed in secnds: {self.historyNeeded}')
-        trader = Simulator(market = self.task.market,
-                    pair = self.task.pair,
+        db = DatabaseManager(self.settings, self.task.pair, self.task.timeFrame)
+        trader = Simulator(pair = self.task.pair,
                     timeFrame = self.task.timeFrame,
                     startAt = self.task.startAt,
                     endAt = self.task.endAt,
@@ -35,9 +36,10 @@ class BackTestRunner():
                     currentInput = currentInput,
                     optimization = self.task.optimization,
                     historyNeeded = self.historyNeeded,
-                    settings = self.settings)
+                    settings = self.settings,
+                    db = db)
 
-        result = trader.mainloop()
+        result = trader.main_loop()
         self.logger.info  ("--------- A process has finished! ---------")
         return result
 

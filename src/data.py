@@ -34,10 +34,10 @@ class DataService():
         try:
             self.logger.info("Fetching klines...")
             self.dataFrame = self.db.fetch_klines(self.pair, self.timeFrame, (self.startAtTs - self.historyNeeded) * 1000, self.endAtTs * 1000)
-            self.logger.info("Expected candles:", str((self.endAtTs - (self.startAtTs - self.historyNeeded))/(Utility.array[self.timeFrame]*60)[0]))
-            self.logger.info("Existing candles:", str(self.dataFrame.shape[0][0]))
-            self.logger.info("Needed start and end time:", str((self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000))
-            self.logger.info("Existed start anad end time:", str(self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp']))
+            #self.logger.info("Expected candles:", str((self.endAtTs - (self.startAtTs - self.historyNeeded))/(Utility.array[self.timeFrame]*60)[0]))
+            #self.logger.info("Existing candles:", str(self.dataFrame.shape[0][0]))
+            #self.logger.info("Needed start and end time:", str((self.startAtTs - self.historyNeeded)*1000, self.endAtTs*1000))
+            #self.logger.info("Existed start anad end time:", str(self.dataFrame.iloc[-1]['timestamp'], self.dataFrame.iloc[0]['timestamp']))
         except Exception as e:
             self.logger.error("Cannot fetch klines" + str(e))
 
@@ -45,10 +45,12 @@ class DataService():
         return self.db.read_klines(self.dbPair, self.timeFrame, limit, lastState)
 
     def read_data_from_memory(self, limit, lastState):
+        self.logger.debug(self.dataFrame)
         try:
             df = self.dataFrame.loc[self.dataFrame['timestamp'] <= lastState]
             df = df.sort_values(by='timestamp', ascending=True)
             df.reset_index(drop=True, inplace=True)
+            self.logger.debug(df)
             return df.tail(limit)
         except:
             self.logger.error("Cannot read klines from memory!")

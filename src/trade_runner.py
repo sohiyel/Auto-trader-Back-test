@@ -28,7 +28,7 @@ class TradeRunner():
         while True:
             deltaTime = (time.time() - startTime)
             if int(deltaTime % (Utility.array[index.timeFrame] * 60)) == 0:
-                trader.mainloop()
+                trader.main_loop()
             if int(deltaTime % (Utility.array[index.timeFrame] * 20)) == 0:
                 trader.check_continue()
             time.sleep(1)
