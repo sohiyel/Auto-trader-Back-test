@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 from os import path
 import json
 
@@ -6,7 +5,7 @@ class Settings:
     def __init__(self,username, task='backtest') -> None:
         self.username = username
         self.task = task
-        self.exchange_service = NULL
+        self.exchange_service = None
         self.exchanges = {1: 'kucoin_futures', 
                         2: 'kucoin_spot',
                         3: 'okex_future',

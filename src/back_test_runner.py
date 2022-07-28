@@ -74,7 +74,7 @@ class BackTestRunner():
 
     def write_optimization_output(self, results):
         results = pd.concat(results)
-        timestr = time.strftime("%Y-%m-%d_%H-%M-%S")
+        timestr = time.strftime("%Y%m%d_%H%M%S")
         results = results.sort_values(by = 'Net profit per day', ascending = False)
         optimumResult = results.iloc[0]
         self.logger.info (results)

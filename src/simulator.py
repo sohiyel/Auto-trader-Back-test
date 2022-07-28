@@ -33,7 +33,8 @@ class Simulator():
         self.orderManager = OrderManager(initialCapital, strategyName,timeFrame, botName, currentInput, pair, settings, self.dataframe)
         self.positionManager = PositionManager(initialCapital, pair, volume, 0, self.timeFrame, strategyName, botName, 1, settings)
         self.portfolioManager = PortfolioManager(pair,self.timeFrame, self.strategyName, initialCapital, settings)
-        self.plotter =  Plotter(self.pair + "_" + str(self.startAtTS) + "_" + str(self.endAtTS) + "_" + self.timeFrame + ".csv", settings)
+        self.plotter =  Plotter(self.pair + "_" + str(datetime.utcfromtimestamp(self.startAtTS).strftime('%Y%m%d_%H%M%S')) +
+                                 "_" + str(datetime.utcfromtimestamp(self.endAtTS).strftime('%Y%m%d_%H%M%S')) + "_" + self.timeFrame + ".csv", settings)
         self.volume = volume
         self.currentInput = currentInput
         self.optimization = optimization
