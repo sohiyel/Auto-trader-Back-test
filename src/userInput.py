@@ -210,7 +210,7 @@ class UserInput():
                                 inputExist = True
                                 break
                         if not inputExist:
-                            newInput = ParamInput(n[0], value, n[1],n[2])
+                            newInput = ParamInput(n[0], value, n[1],n[2],n[3])
                             jsonFile["params"][idx]["inputs"].append(newInput.to_dict())
                     jsonFile["params"][idx]["optimization_date"] = time.strftime("%Y-%m-%d_%H:%M:%S")
         except:
@@ -224,7 +224,7 @@ class UserInput():
             newParam["inputs"] = []
             for n in inputNames:
                 value = float(report[n[1] + "_" + n[0]])
-                newParam["inputs"].append(ParamInput(n[0], value, n[1],n[2]).to_dict())
+                newParam["inputs"].append(ParamInput(n[0], value, n[1],n[2],n[3]).to_dict())
             jsonFile["params"].append(newParam)
         try:
             self.dump_params(jsonFile)

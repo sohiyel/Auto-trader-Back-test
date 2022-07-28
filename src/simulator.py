@@ -160,6 +160,19 @@ class Simulator():
         numberOfDays = ((self.endAtTS - self.startAtTS)/(1440 * 60))
         buyAndHold = int(self.dataService.dataFrame.iloc[-1]["close"]) - int(self.dataService.dataFrame.iloc[0]["close"])
         sellAndHold = buyAndHold * -1
+        if len(self.portfolioManager.equities) == 0:
+            minOfEquities = self.initialCapital
+        else:
+            minOfEquities = min(self.portfolioManager.equities)
+        if len(self.portfolioManager.balances) == 0:
+            minOfBalances = self.initialCapital
+        else:
+            minOfBalances = min(self.portfolioManager.balances)
+        if report["totalClosedTrades"] > 0:
+            numberOfDaysPerTrade = numberOfDays / report["totalClosedTrades"]
+        else:
+            numberOfDaysPerTrade = "infinite"
+
         reportDict = {
                 "Net profit percent" : [report["netProfitPercent"]],
                 "Net profit per day" : [report["netProfitPercent"] / numberOfDays],
@@ -183,9 +196,9 @@ class Simulator():
                 "Sum amount of profits" : [self.portfolioManager.profit],
                 "Sum amount of loss" : [self.portfolioManager.loss],
                 "Current Balance" : [self.portfolioManager.balance],
-                "Min of equity" : [min(self.portfolioManager.equities)],
-                "Min of balance" : [min(self.portfolioManager.balances)],
-                "Number of days per trade" : [numberOfDays / report["totalClosedTrades"]],
+                "Min of equity" : [minOfEquities],
+                "Min of balance" : [minOfBalances],
+                "Number of days per trade" : [numberOfDaysPerTrade],
                 "Buy and hold return" : [buyAndHold],
                 "Buy and hold return percent" : [buyAndHold / self.initialCapital * 100],
                 "Buy and hold return percent per day" : [buyAndHold / self.initialCapital * 100 / numberOfDays],

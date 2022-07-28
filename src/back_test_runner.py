@@ -8,6 +8,7 @@ from os import path
 from src.simulator import Simulator
 from src.logManager import LogService
 from src.databaseManager import DatabaseManager
+from random import shuffle
 class BackTestRunner():
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -59,14 +60,17 @@ class BackTestRunner():
             self.logService.set_pts_formatter(pts)
             self.logger.info("Number of steps: " + str(len(self.userInput.inputs)))
             results = []
-            if not self.task.randomInputs:
+            shuffle(self.userInput.inputs)
+            if self.task.randomInputs:
+                numberOfInputs = self.task.numberOfInputs
+            else:
                 numberOfInputs = len(self.userInput.inputs)
             if self.multiProcess:
                 with concurrent.futures.ProcessPoolExecutor() as executer:
-                    results = executer.map( self.run_back_test, self.userInput.inputs)
+                    results = executer.map( self.run_back_test, self.userInput.inputs[:numberOfInputs])
             else:
-                for i in self.userInput.inputs:
-                    results.append(self.run_back_test(i))
+                for i in range(numberOfInputs):
+                    results.append(self.run_back_test(self.userInput.inputs[i]))
             self.task.done_task()
             if self.task.optimization:
                 self.write_optimization_output(results)
