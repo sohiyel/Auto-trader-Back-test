@@ -91,6 +91,25 @@ class TestValue:
     signal01 = SignalClass("BTC/USDT:USDT",side="buy",price=59753.0,slPercent=0.1,tpPercent=0.3,comment="OneEMA",longEnter=1,longExit=0,shortEnter=0,shortExit=1)
     signal02 = SignalClass("BTC/USDT:USDT",side="sell",price=59753.0,slPercent=0.1,tpPercent=0.3,comment="OneEMA",longEnter=0,longExit=1,shortEnter=1,shortExit=0)
     signal03 = SignalClass("BTC/USDT:USDT",side="sell",price=597.0,slPercent=0.1,tpPercent=0.3,comment="OneEMA",longEnter=0,longExit=1,shortEnter=1,shortExit=0)
-
+    inputs01 = [[ParamInput("len",150,"OneEMA",True,"cross",150,250,100,True),
+                ParamInput("len",250,"OneEMA",True,"cross",150,250,100,True)],
+                [ParamInput("sl_percent",0.1,"OneEMA",False,"none",0.1,0.4,0.1,False)],
+                [ParamInput("tp_percent",0.3,"OneEMA",False,"none",0.3,0.51,0.1,False)]]
+    inputs02 = [[ParamInput("fast_len",20,"TwoEMA",True,"cross")],
+                [ParamInput("slow_len",100,"TwoEMA",True,"cross")],
+                [ParamInput("sl_percent",0.1,"TwoEMA",False,"none")],
+                [ParamInput("tp_percent",0.3,"TwoEMA",False,"none")]]
+    inputs03 = [[ParamInput("len",150,"OneEMA",True,"cross",150,251,100,True),
+                ParamInput("len",250,"OneEMA",True,"cross",150,251,100,True)],
+                [ParamInput("fast_len",20,"TwoEMA",True,"cross",20,31,10,True),
+                ParamInput("fast_len",30,"TwoEMA",True,"cross",20,31,10,True)],
+                [ParamInput("slow_len",100,"TwoEMA",True,"cross",50,101,50,False)],
+                [ParamInput("sl_percent",0.1,"Bot01",False,"none",0.1,0.4,0.1,False)],
+                [ParamInput("tp_percent",0.3,"Bot01",False,"none",0.3,0.51,0.1,False)]]
+    inputs04 = [[ParamInput("len",250,"OneEMA",True,"cross")],
+                [ParamInput("fast_len",20,"TwoEMA",True,"cross")],
+                [ParamInput("slow_len",100,"TwoEMA",True,"cross")],
+                [ParamInput("sl_percent",0.1,"Bot01",False,"none")],
+                [ParamInput("tp_percent",0.3,"Bot01",False,"none")]]
 if __name__ == '__main__':
     print(TestValue.positionsDF)

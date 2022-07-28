@@ -20,10 +20,7 @@ def test_get_strategy_inputs_without_file(settings):
 def test_get_strategy_inputs_with_optimization(settings):
     userInput = UserInput("BTC-USDT", "4h", "OneEMA", "",
                             optimization=True, settings=settings)
-    expectedInputs = [[ParamInput("len",150,"OneEMA",True,150,250,100,True),
-                        ParamInput("len",250,"OneEMA",True,150,250,100,True)],
-                        [ParamInput("sl_percent",0.1,"OneEMA",False,0.1,0.4,0.1,False)],
-                        [ParamInput("tp_percent",0.3,"OneEMA",False,0.3,0.51,0.1,False)]]
+    expectedInputs = TestValue.inputs01
     expectedReturn = list( itertools.product( *expectedInputs ) )
     assert userInput.get_strategy_inputs(userInput.strategyName) == expectedReturn
 
@@ -36,34 +33,21 @@ def test_get_strategy_inputs_with_optimization_invalid(settings):
 def test_get_strategy_inputs_without_optimization(settings):
     userInput = UserInput("BTC-USDT", "4h", "TwoEMA", "",
                             optimization=False, settings=settings)
-    expectedInputs = [[ParamInput("fast_len",20,"TwoEMA",True)],
-                        [ParamInput("slow_len",100,"TwoEMA",True)],
-                        [ParamInput("sl_percent",0.1,"TwoEMA",False)],
-                        [ParamInput("tp_percent",0.3,"TwoEMA",False)]]
+    expectedInputs = TestValue.inputs02
     expectedReturn = list( itertools.product( *expectedInputs ) )
     assert userInput.get_strategy_inputs(userInput.strategyName) == expectedReturn
 
 def test_get_bot_inputs_with_optimization(settings):
     userInput = UserInput("BTC-USDT", "4h", "OneEMA", "Bot01",
                             optimization=True, settings=settings)
-    expectedInputs = [[ParamInput("len",150,"OneEMA",True,150,251,100,True),
-                        ParamInput("len",250,"OneEMA",True,150,251,100,True)],
-                        [ParamInput("fast_len",20,"TwoEMA",True,20,31,10,True),
-                        ParamInput("fast_len",30,"TwoEMA",True,20,31,10,True)],
-                        [ParamInput("slow_len",100,"TwoEMA",True,50,101,50,False)],
-                        [ParamInput("sl_percent",0.1,"Bot01",False,0.1,0.4,0.1,False)],
-                        [ParamInput("tp_percent",0.3,"Bot01",False,0.3,0.51,0.1,False)]]
+    expectedInputs = TestValue.inputs03
     expectedReturn = list( itertools.product( *expectedInputs ) )
     assert userInput.get_bot_inputs() == expectedReturn
 
 def test_get_bot_inputs_without_optimization(settings):
     userInput = UserInput("BTC-USDT", "4h", "OneEMA", "Bot01",
                             optimization=False, settings=settings)
-    expectedInputs = [[ParamInput("len",250,"OneEMA",True)],
-                        [ParamInput("fast_len",20,"TwoEMA",True)],
-                        [ParamInput("slow_len",100,"TwoEMA",True)],
-                        [ParamInput("sl_percent",0.1,"Bot01",False)],
-                        [ParamInput("tp_percent",0.3,"Bot01",False)]]
+    expectedInputs = TestValue.inputs04
     expectedReturn = list( itertools.product( *expectedInputs ) )
     assert userInput.get_bot_inputs() == expectedReturn
 
@@ -71,11 +55,7 @@ def test_find_inputs(settings):
     userInput = UserInput("BTC-USDT", "4h", "OneEMA", "Bot01",randomInput=True,
                             optimization=False, settings=settings)
     userInput.find_inputs()
-    expectedInputs = [[ParamInput("len",250,"OneEMA",True)],
-                        [ParamInput("fast_len",20,"TwoEMA",True)],
-                        [ParamInput("slow_len",100,"TwoEMA",True)],
-                        [ParamInput("sl_percent",0.1,"Bot01",False)],
-                        [ParamInput("tp_percent",0.3,"Bot01",False)]]
+    expectedInputs = TestValue.inputs04
     expectedReturn = list( itertools.product( *expectedInputs ) )
     assert userInput.inputs == expectedReturn
 
@@ -83,13 +63,7 @@ def test_get_current_input(settings):
     userInput = UserInput("BTC-USDT", "4h", "OneEMA", "Bot01",
                             optimization=True, settings=settings)
     userInput.find_inputs()
-    expectedInputs = [[ParamInput("len",150,"OneEMA",True,150,251,100,True),
-                        ParamInput("len",250,"OneEMA",True,150,251,100,True)],
-                        [ParamInput("fast_len",20,"TwoEMA",True,20,31,10,True),
-                        ParamInput("fast_len",30,"TwoEMA",True,20,31,10,True)],
-                        [ParamInput("slow_len",100,"TwoEMA",True,50,101,50,False)],
-                        [ParamInput("sl_percent",0.1,"Bot01",False,0.1,0.4,0.1,False)],
-                        [ParamInput("tp_percent",0.3,"Bot01",False,0.3,0.51,0.1,False)]]
+    expectedInputs = TestValue.inputs03
     expectedReturn = list( itertools.product( *expectedInputs ) )
     assert userInput.get_current_input() == expectedReturn[0]
 
@@ -102,11 +76,11 @@ def test_get_strategy_names(settings):
 def test_get_input_names(settings):
     userInput = UserInput("BTC-USDT", "4h", "OneEMA", "Bot01",
                             optimization=True, settings=settings)
-    expectedInputNames = [("len", "OneEMA", True),
-                            ("fast_len", "TwoEMA", True),
-                            ("slow_len", "TwoEMA", True),
-                            ("tp_percent", "Bot01", False),
-                            ("sl_percent", "Bot01", False)]
+    expectedInputNames = [("len", "OneEMA", True, "cross"),
+                            ("fast_len", "TwoEMA", True,"cross"),
+                            ("slow_len", "TwoEMA", True,"cross"),
+                            ("tp_percent", "Bot01", False,"none"),
+                            ("sl_percent", "Bot01", False,"none")]
     assert set(userInput.get_input_names()) == set(expectedInputNames)
 
 def test_calc_history_needed(settings):

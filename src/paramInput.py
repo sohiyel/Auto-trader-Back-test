@@ -1,5 +1,5 @@
 class ParamInput():
-    def __init__(self, name, value, strategy, historyNeeded, minValue = 0, maxValue = 0, step = 0, optimization = False) -> None:
+    def __init__(self, name, value, strategy, historyNeeded, historyType, minValue = 0, maxValue = 0, step = 0, optimization = False) -> None:
         self.name = name
         self.value = value
         self.minValue = minValue
@@ -8,6 +8,7 @@ class ParamInput():
         self.optimization = optimization
         self.strategy = strategy
         self.historyNeeded = historyNeeded
+        self.historyType = historyType
 
     def __eq__(self, other):
         if not isinstance(other, ParamInput):

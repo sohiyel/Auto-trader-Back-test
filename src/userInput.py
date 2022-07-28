@@ -62,11 +62,11 @@ class UserInput():
         if self.optimization:
             try:
                 for i in jsonFile["optimization"]["inputs"]:
-                    pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
+                    pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["historyType"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
                     if pi.optimization:
                         strategyInputs = []
                         for i in np.arange(pi.minValue, pi.maxValue+1, pi.step):
-                            strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded , pi.minValue, pi.maxValue, pi.step, pi.optimization))
+                            strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded, pi.historyType , pi.minValue, pi.maxValue, pi.step, pi.optimization))
                         inputs.append(strategyInputs)
                     else:
                         inputs.append([pi])
@@ -81,7 +81,7 @@ class UserInput():
                         if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
                             params = p
                     for i in params["inputs"]:
-                        pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"])
+                        pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"], i["historyType"])
                         inputs.append([pi])
                 else:
                     params = ""
@@ -105,11 +105,11 @@ class UserInput():
         if self.optimization:
             try:
                 for i in jsonFile["optimization"]["inputs"]:
-                    pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
+                    pi = ParamInput(i["name"], i["value"], i["strategy"], i["historyNeeded"], i["historyType"], i["minValue"], i["maxValue"], i["step"], i["optimization"])
                     if pi.optimization:
                         strategyInputs = []
                         for i in np.arange(pi.minValue, pi.maxValue+1, pi.step):
-                            strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded, pi.minValue, pi.maxValue, pi.step, pi.optimization))
+                            strategyInputs.append(ParamInput(pi.name, i, pi.strategy, pi.historyNeeded, pi.historyType, pi.minValue, pi.maxValue, pi.step, pi.optimization))
                         inputs.append(strategyInputs)
                     else:
                         inputs.append([pi])
@@ -123,7 +123,7 @@ class UserInput():
                     if p["time_frame"] == self.timeFrame and p["pair"] == self.pair:
                         params = p
                 for i in params["inputs"]:
-                    pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"])
+                    pi = ParamInput(i["name"], i["value"],i["strategy"], i["historyNeeded"], i["historyType"])
                     inputs.append([pi])
             except:
                 self.logger.error(f"Insufficient parameters in {botFileName}")
@@ -171,7 +171,7 @@ class UserInput():
         try:
             params = jsonFile["params"][0]
             for i in params["inputs"]:
-                names.append( (i["name"],i["strategy"],i["historyNeeded"]) )
+                names.append( (i["name"],i["strategy"],i["historyNeeded"], i["historyType"]) )
         except:
             self.logger.error(f"Insufficient parameters in {strategyFileName}")
         
@@ -252,18 +252,33 @@ class UserInput():
                 raise RuntimeError(f"Cannot dump into {strategyFileName}!")
 
     def calc_history_needed(self):
-        max = 1
+        maxCross = 0
+        maxSum = 0
         if self.optimization:
             for j in self.inputs:
                 for i in j:
                     if i.historyNeeded:
-                        if i.value > max:
-                            max = i.value
+                        if i.historyType == "cross":
+                            if i.value > maxCross:
+                                maxCross = i.value
+            for j in self.inputs:
+                for i in j:
+                    if i.historyNeeded:
+                        if i.historyType == "sum":
+                            if i.value > maxSum:
+                                maxSum = i.value
         else:    
             for i in self.inputs[0]:
                 if i.historyNeeded:
-                    if i.value > max:
-                        max = i.value
+                    if i.historyType == "cross":
+                        if i.value > maxCross:
+                            maxCross = i.value
+            for i in self.inputs[0]:
+                if i.historyNeeded:
+                    if i.historyType == "sum":
+                        if i.value > maxSum:
+                            maxSum = i.value
+        max = maxSum + maxCross
         return max * Utility.array[self.timeFrame] * 60
         
         

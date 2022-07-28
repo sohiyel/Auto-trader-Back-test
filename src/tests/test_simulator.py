@@ -88,28 +88,28 @@ def test_process_order_opposite_direction(settings):
         len(simulator.positionManager.closedPositions) == 1
 
 def test_get_data(settings):
-    simulator = Simulator("BTC/USDT:USDT", "4h", "2021-03-09_12:00:00","2021-04-11_16:00:00",
-     100000, "OneEMA", "", 1, TestValue.currentInput("OneEMA"), True, 5, settings, DBMock())
+    simulator = Simulator("BTC/USDT:USDT", "4h", "2021-03-10_12:00:00","2021-04-11_16:00:00",
+     100000, "OneEMA", "", 1, TestValue.currentInput("OneEMA"), True, 72000, settings, DBMock())
     df, lastCandle = simulator.get_data(1615348800)
     assert df.iloc[-1]["timestamp"] == 1615348800000
 
 def test_check_continue_not_hit(settings):
     simulator = Simulator("BTC/USDT:USDT", "4h", "2021-03-09_12:00:00","2021-04-11_16:00:00",
-     100000, "OneEMA", "", 1, TestValue.currentInput("OneEMA"), True, 5, settings, DBMock())
+     100000, "OneEMA", "", 1, TestValue.currentInput("OneEMA"), True, 3600000, settings, DBMock())
     df, simulator.lastCandle = simulator.get_data(1615348800)
     simulator.open_position(TestValue.signal01, 0.0006)
     assert simulator.check_continue() == False
 
 def test_check_continue_hit(settings):
     simulator = Simulator("BTC/USDT:USDT", "4h", "2021-03-09_12:00:00","2021-04-11_16:00:00",
-     100000, "OneEMA", "", 1, TestValue.currentInput("OneEMA"), True, 5, settings, DBMock())
+     100000, "OneEMA", "", 1, TestValue.currentInput("OneEMA"), True, 3600000, settings, DBMock())
     df, simulator.lastCandle = simulator.get_data(1617926400)
     simulator.open_position(TestValue.signal01, 0.0006)
     assert simulator.check_continue() == True
 
 def test_main_loop_backtest(settings):
     simulator = Simulator("BTC/USDT:USDT", "4h", "2021-03-09_12:00:00","2021-04-11_16:00:00",
-     100000, "OneEMA", "", 1, TestValue.currentInput("OneEMA"), True, 200, settings, DBMock())
+     100000, "OneEMA", "", 1, TestValue.currentInput("OneEMA"), True, 3600000, settings, DBMock())
     report = simulator.main_loop()
     expectedReport = pd.read_csv(os.path.join(settings.REPORTS_DIR,"test.csv"))
     assert report.iloc[0]['Net profit percent'] == expectedReport.iloc[0]['Net profit percent']
@@ -117,7 +117,7 @@ def test_main_loop_backtest(settings):
 def test_main_loop_fast_backtest(settings):
     settings.task = "fast_backtest"
     simulator = Simulator("BTC/USDT:USDT", "4h", "2021-03-09_12:00:00","2021-04-11_16:00:00",
-     100000, "OneEMA", "", 1, TestValue.currentInput("OneEMA"), True, 200, settings, DBMock())
+     100000, "OneEMA", "", 1, TestValue.currentInput("OneEMA"), True, 3600000, settings, DBMock())
     report = simulator.main_loop()
     expectedReport = pd.read_csv(os.path.join(settings.REPORTS_DIR,"test.csv"))
     assert report.iloc[0]['Net profit percent'] == expectedReport.iloc[0]['Net profit percent']

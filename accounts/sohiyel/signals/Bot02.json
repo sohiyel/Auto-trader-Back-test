@@ -21,7 +21,8 @@
             "step": 5,
             "optimization": true,
             "strategy": "RSIStrategy",
-            "historyNeeded": true
+            "historyNeeded": true,
+            "historyType": "cross"
         }, {
             "name": "mid_line",
             "value": 12,
@@ -30,7 +31,8 @@
             "step": 10,
             "optimization": true,
             "strategy": "RSIStrategy",
-            "historyNeeded": false
+            "historyNeeded": false,
+            "historyType": "cross"
         }, {
             "name": "len",
             "value": 250.0,
@@ -39,7 +41,8 @@
             "step": 100,
             "optimization": true,
             "strategy": "OneEMA",
-            "historyNeeded": true
+            "historyNeeded": true,
+            "historyType": "cross"
         }, {
             "name": "fast_len",
             "value": 20.0,
@@ -48,7 +51,8 @@
             "step": 10,
             "optimization": true,
             "strategy": "TwoEMA",
-            "historyNeeded": true
+            "historyNeeded": true,
+            "historyType": "cross"
         }, {
             "name": "slow_len",
             "value": 100.0,
@@ -57,7 +61,8 @@
             "step": 50,
             "optimization": false,
             "strategy": "TwoEMA",
-            "historyNeeded": true
+            "historyNeeded": true,
+            "historyType": "cross"
         }, {
             "name": "sl_percent",
             "value": 0.1,
@@ -66,7 +71,8 @@
             "step": 0.1,
             "optimization": false,
             "strategy": "Bot02",
-            "historyNeeded": false
+            "historyNeeded": false,
+            "historyType": "none"
         }, {
             "name": "tp_percent",
             "value": 0.3,
@@ -75,7 +81,8 @@
             "step": 0.1,
             "optimization": false,
             "strategy": "Bot02",
-            "historyNeeded": false
+            "historyNeeded": false,
+            "historyType": "none"
         }]
     },
     "params": [{
@@ -85,77 +92,44 @@
             "name": "len",
             "value": 14,
             "strategy": "RSIStrategy",
-            "historyNeeded": true
+            "historyNeeded": true,
+            "historyType": "cross"
         }, {
             "name": "mid_line",
             "value": 50,
             "strategy": "RSIStrategy",
-            "historyNeeded": false
+            "historyNeeded": false,
+            "historyType": "cross"
         }, {
             "name": "len",
             "value": 250.0,
             "strategy": "OneEMA",
-            "historyNeeded": true
+            "historyNeeded": true,
+            "historyType": "cross"
         }, {
             "name": "fast_len",
             "value": 40,
             "strategy": "TwoEMA",
-            "historyNeeded": true
+            "historyNeeded": true,
+            "historyType": "cross"
         }, {
             "name": "slow_len",
             "value": 100,
             "strategy": "TwoEMA",
-            "historyNeeded": true
+            "historyNeeded": true,
+            "historyType": "cross"
         }, {
             "name": "sl_percent",
             "value": 0.1,
             "strategy": "Bot02",
-            "historyNeeded": false
+            "historyNeeded": false,
+            "historyType": "none"
         }, {
             "name": "tp_percent",
             "value": 0.3,
             "strategy": "Bot02",
-            "historyNeeded": false
-        }]
-    }, {
-        "time_frame": "4hour",
-        "pair": "BTC-USDT",
-        "optimization_date": "2022-03-07_20:55:12",
-        "inputs": [{
-            "name": "len",
-            "value": 14.0,
-            "strategy": "RSIStrategy",
-            "historyNeeded": true
-        }, {
-            "name": "mid_line",
-            "value": 40.0,
-            "strategy": "RSIStrategy",
-            "historyNeeded": false
-        }, {
-            "name": "len",
-            "value": 150.0,
-            "strategy": "OneEMA",
-            "historyNeeded": true
-        }, {
-            "name": "fast_len",
-            "value": 30.0,
-            "strategy": "TwoEMA",
-            "historyNeeded": true
-        }, {
-            "name": "slow_len",
-            "value": 100.0,
-            "strategy": "TwoEMA",
-            "historyNeeded": true
-        }, {
-            "name": "sl_percent",
-            "value": 0.1,
-            "strategy": "Bot02",
-            "historyNeeded": false
-        }, {
-            "name": "tp_percent",
-            "value": 0.3,
-            "strategy": "Bot02",
-            "historyNeeded": false
+            "historyNeeded": false,
+            "historyType": "none"
         }]
     }]
 }

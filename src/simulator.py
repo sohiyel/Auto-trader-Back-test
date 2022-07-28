@@ -105,7 +105,7 @@ class Simulator():
     def get_data(self, lastState):
         try:
             if self.settings.task == "backtest":
-                df = self.dataService.read_data_from_memory(self.historyNeeded, lastState * 1000)
+                df = self.dataService.read_data_from_memory(int(self.historyNeeded/(Utility.array[self.timeFrame] * 60)), lastState * 1000)
                 lastCandle = df.iloc[-1]
                 if lastCandle['timestamp'] != lastState*1000:
                     self.logger.warning(f"---------- Last state is not equal to last candle ---------")
