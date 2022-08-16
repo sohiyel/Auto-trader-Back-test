@@ -51,6 +51,6 @@ class DataService():
             df = df.sort_values(by='timestamp', ascending=True)
             df.reset_index(drop=True, inplace=True)
             self.logger.debug(df)
-            return df.tail(limit)
+            return df#.tail(limit)
         except Exception as e:
             self.logger.error("Cannot read klines from memory!"+str(e))

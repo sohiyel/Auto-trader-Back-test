@@ -35,7 +35,7 @@ class TradeRunner():
 
 if __name__ == '__main__':
     tradeRunner = TradeRunner()
-    tradeRunner.initialize_indexes(tradeRunner.tradeIndexList[0])
-    # with concurrent.futures.ThreadPoolExecutor() as executor:        
-    #     executor.map(tradeRunner.initialize_indexes,tradeRunner.tradeIndexList)
+    # tradeRunner.initialize_indexes(tradeRunner.tradeIndexList[0])
+    with concurrent.futures.ThreadPoolExecutor() as executor:        
+        executor.map(tradeRunner.initialize_indexes,tradeRunner.tradeIndexList)
 

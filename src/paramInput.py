@@ -27,6 +27,7 @@ class ParamInput():
             'name' : self.name,
             'value': self.value,
             'strategy' : self.strategy,
-            'historyNeeded' : self.historyNeeded
+            'historyNeeded' : self.historyNeeded,
+            'historyType': self.historyType
         }
         
