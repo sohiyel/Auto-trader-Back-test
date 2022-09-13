@@ -12,11 +12,13 @@ class KucoinFutures(BaseExchange):
         self.baseUrl = 'https://api-futures.kucoin.com/'
         self.exchange = ccxt.kucoinfutures()
         self.exchange.set_sandbox_mode(sandBox)
+        self.exchange.enableRateLimit = True
         self.logService = LogService(__name__, settings)
         self.logger = self.logService.logger  #get_logger(__name__, settings)
         
     def fetch_balance(self):
         try:
+            self.logger.critical("API request: Fetch Balance")
             response = self.exchange.fetch_balance(params={"currency":"USDT"})
             if response['info']['code'] == '200000':
                 return {
@@ -84,6 +86,7 @@ class KucoinFutures(BaseExchange):
 
     def fetch_positions(self):
         exchangePositions = self.exchange.fetch_positions()
+        self.logger.critical("API request: Fetch Positions")
         positions = []
         for p in exchangePositions:
             positions.append(ExchangePosition(p["symbol"], p["side"], p["contracts"] , p["contractSize"], p["leverage"]))
@@ -102,6 +105,7 @@ class KucoinFutures(BaseExchange):
                 if i.side == "long":
                     try:
                         self.exchange.create_market_order(i.pair, "sell", i.contracts, i.leverage, params={'leverage': i.leverage})
+                        self.logger.critical("API request: Create market order")
                         self.logger.info( f"-------- Close buy position on {i.pair}--------")
                         time.sleep(1)
                         done = False
@@ -112,6 +116,7 @@ class KucoinFutures(BaseExchange):
                 elif i.side == "short":
                     try:
                         self.exchange.create_market_order(i.pair, "buy", i.contracts,i.leverage, params={'leverage': i.leverage})
+                        self.logger.critical("API request: Create market order")
                         self.logger.info( f"-------- Close sell position on {i.pair}--------")
                         time.sleep(1)
                         done = False

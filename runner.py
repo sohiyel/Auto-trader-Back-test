@@ -29,14 +29,22 @@ def run_back_test():
 def run_trade():
     tradeRunner = TradeRunner(settings)
     # tradeRunner.initialize_indexes(tradeRunner.tradeIndexList[0])
-    with concurrent.futures.ThreadPoolExecutor() as executor:        
-        executor.map(tradeRunner.initialize_indexes,tradeRunner.tradeIndexList)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        # executor.map(tradeRunner.initialize_indexes,tradeRunner.tradeIndexList)        
+        execs = []
+        for tIndex in tradeRunner.tradeIndexList:
+            execs.append(executor.submit(tradeRunner.initialize_indexes, tIndex))
+            time.sleep(10)
 
 def run_data_downloader():
     downloader = Downloader(settings)
     # downloader.initialize_indexes(downloader.tablesList[0])
     with concurrent.futures.ThreadPoolExecutor() as executor:        
-        executor.map(downloader.initialize_indexes,downloader.tablesList)
+    #     executor.map(downloader.initialize_indexes,downloader.tablesList)
+        execs = []
+        for table in downloader.tablesList:
+            execs.append(executor.submit(downloader.initialize_indexes, table))
+            time.sleep(5)
 
 def download_data(pair, timeframe, startAt, endAt):
     db = DatabaseManager(settings, pair, timeframe)

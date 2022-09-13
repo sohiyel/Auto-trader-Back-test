@@ -69,6 +69,7 @@ class PositionManager():
 
     
     def open_position(self, signal, lastState):
+        self.logger.debug("Open Position!")
         positionId = uuid.uuid4().hex
         if self.settings.task == 'trade':
             orderbook = self.exchange.fetch_order_book(self.pair)
@@ -102,43 +103,48 @@ class PositionManager():
                         self.logger.warning("Volume size is lower than the minimum size!")
                 else:
                     volume = self.volume / self.contractSize
-                if self.check_open_position_margin(self.volume * price * self.contractSize) and self.check_open_position_time(dbPositions):
+                if self.check_open_position_margin(self.volume * float(price) * self.contractSize) and self.check_open_position_time(dbPositions):
                     pass
                 else:
                     self.logger.warning("Cannot open this order!")
                     return
             amount = volume
-            try:
-                if signal.side == 'buy':
-                    self.logger.debug(f"Open buy order with volume: {volume}")
-                    self.exchange.create_market_order(self.pair,
-                                                        signal.side,
-                                                        volume,
-                                                        self.leverage,
-                                                        'open_buy')
-                elif signal.side == 'sell':
-                    self.logger.debug(f"Open sell order with volume: {volume}")
-                    self.exchange.create_market_order(self.pair,
-                                                        signal.side,
-                                                        volume,
-                                                        self.leverage,
-                                                        'open_sell')
-                stopLossOrderId = uuid.uuid4().hex
-                takeProfitOrderId = uuid.uuid4().hex
+            doneCreateMarketOrder = False
+            while not doneCreateMarketOrder:
                 try:
-                    self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
-                    newPosition = Position(positionId, signal.pair, signal.side, self.volume, self.contractSize, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
-                    self.openPositions.append(newPosition)
-                    self.logger.info ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
-                    try:
-                        self.db.add_order(stopLossOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
-                        self.db.add_order(takeProfitOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
-                    except Exception as e:
-                        self.logger.error("Cannot add new order to db!" + str(e))
+                    if signal.side == 'buy':
+                        self.logger.debug(f"Open buy order with volume: {volume}")
+                        self.exchange.create_market_order(self.pair,
+                                                            signal.side,
+                                                            volume,
+                                                            self.leverage,
+                                                            'open_buy')
+                    elif signal.side == 'sell':
+                        self.logger.debug(f"Open sell order with volume: {volume}")
+                        self.exchange.create_market_order(self.pair,
+                                                            signal.side,
+                                                            volume,
+                                                            self.leverage,
+                                                            'open_sell')
+                    doneCreateMarketOrder = True
                 except Exception as e:
-                    self.logger.error("Cannot add new position to db!" + str(e))
+                    self.logger.error("Cannot create market order!" + str(e))
+                    self.logger.warning("Waiting for 10 seconds...")
+                    time.sleep(10)
+            stopLossOrderId = uuid.uuid4().hex
+            takeProfitOrderId = uuid.uuid4().hex
+            try:
+                self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
+                newPosition = Position(positionId, signal.pair, signal.side, self.volume, self.contractSize, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
+                self.openPositions.append(newPosition)
+                self.logger.info ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
+                try:
+                    self.db.add_order(stopLossOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+                    self.db.add_order(takeProfitOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+                except Exception as e:
+                    self.logger.error("Cannot add new order to db!" + str(e))
             except Exception as e:
-                self.logger.error("Cannot create market order!" + str(e))
+                self.logger.error("Cannot add new position to db!" + str(e))
             # stopLossOrderId = self.exchange.create_market_order(signal.pair,
             #                                                     Utility.opposite_side(signal.side),
             #                                                     volume,
@@ -164,20 +170,52 @@ class PositionManager():
                 if self.openPositions[0].side == "buy":
                     try:
                         if self.settings.isSpot:
-                            self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "sell", self.openPositions[0].volume)
+                            doneCreateMarketOrder = False
+                            while not doneCreateMarketOrder:
+                                try:
+                                    self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "sell", self.openPositions[0].volume)
+                                    doneCreateMarketOrder = True
+                                except Exception as e:
+                                    self.logger.error("Cannot create market order!" + str(e))
+                                    self.logger.warning("Waiting for 10 seconds...")
+                                    time.sleep(10)
                         else:
                             self.logger.debug("self.openPositions[0].volume: " + str(self.openPositions[0].volume))
                             self.logger.debug("self.contractSize: " + str(self.contractSize))
-                            self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "sell", self.openPositions[0].volume / self.contractSize,self.leverage, 'close_buy')
+                            doneCreateMarketOrder = False
+                            while not doneCreateMarketOrder:
+                                try:
+                                    self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "sell", self.openPositions[0].volume / self.contractSize,self.leverage, 'close_buy')
+                                    doneCreateMarketOrder = True
+                                except Exception as e:
+                                    self.logger.error("Cannot create market order!" + str(e))
+                                    self.logger.warning("Waiting for 10 seconds...")
+                                    time.sleep(10)
                         self.logger.info ( f"-------- Close buy position on {self.openPositions[0].pair}--------")
                     except Exception as e:
                         self.logger.error("Cannot create market order!" + str(e))
                 elif self.openPositions[0].side == "sell":
                     try:
                         if self.settings.isSpot:
-                            self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "buy", self.openPositions[0].volume)
+                            doneCreateMarketOrder = False
+                            while not doneCreateMarketOrder:
+                                try:
+                                    self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "buy", self.openPositions[0].volume)
+                                    doneCreateMarketOrder = True
+                                except Exception as e:
+                                    self.logger.error("Cannot create market order!" + str(e))
+                                    self.logger.warning("Waiting for 10 seconds...")
+                                    time.sleep(10)
                         else:
-                            self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "buy", self.openPositions[0].volume / self.contractSize,self.leverage, 'close_sell')
+                            doneCreateMarketOrder = False
+                            while not doneCreateMarketOrder:
+                                try:
+                                    self.exchange.create_market_order(self.exchange.change_symbol_for_trade(self.openPositions[0].pair), "buy", self.openPositions[0].volume / self.contractSize,self.leverage, 'close_sell')
+                                    doneCreateMarketOrder = True
+                                except Exception as e:
+                                    self.logger.error("Cannot create market order!" + str(e))
+                                    self.logger.warning("Waiting for 10 seconds...")
+                                    time.sleep(10)
                         self.logger.info ( f"-------- Close sell position on {self.openPositions[0].pair}--------")
                     except Exception as e:
                         self.logger.error("Cannot create market order!" + str(e))
@@ -335,7 +373,15 @@ class PositionManager():
             if self.settings.isSpot:
                 try:
                     self.logger.info(f"-------------- Closing position in exchange! --------------")
-                    self.exchange.create_market_order(self.pair, "sell", balance)
+                    doneCreateMarketOrder = False
+                    while not doneCreateMarketOrder:
+                        try:
+                            self.exchange.create_market_order(self.pair, "sell", balance)
+                            doneCreateMarketOrder = True
+                        except Exception as e:
+                            self.logger.error("Cannot create market order!" + str(e))
+                            self.logger.warning("Waiting for 10 seconds...")
+                            time.sleep(10)
                 except Exception as e:
                     self.logger.error("Cannot create market order!" + str(e))
                     return False

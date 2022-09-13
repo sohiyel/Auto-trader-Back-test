@@ -86,8 +86,10 @@ class Downloader():
         pts = {'pair': 'NaN', 'timeFrame': 'NaN', 'strategyName': 'NaN'}
         self.logService.set_pts_formatter(pts)
 
+
     def initialize_indexes(self, table):
-        downloader = DataDownloader(table[0], table[1], self.settings)
+        db = DatabaseManager(self.settings, table[0], table[1])
+        downloader = DataDownloader(table[0], table[1], self.settings,db)
         downloader.main_loop()
 
     def find_tables(self):

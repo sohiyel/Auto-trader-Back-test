@@ -37,7 +37,7 @@ class PortfolioManager():
                 self.logger.debug("Current order value: "+ str(price * volume))
                 self.logger.debug("Balance / Initialcapital: "+str((self.balance - (price * volume)) / self.initialCapital))
                 self.logger.debug("Valid free balance: "+ str(self.settings.constantNumbers["free_balance"]))
-                if (self.balance - (price * volume)) / self.initialCapital < self.settings.constantNumbers["free_balance"]:
+                if (self.balance - (float(price) * float(volume))) / float(self.initialCapital) < float(self.settings.constantNumbers["free_balance"]):
                     self.logger.debug(f"Not enough free balance to open new order on this pair({self.pair})")
                     return False
         except Exception as e:

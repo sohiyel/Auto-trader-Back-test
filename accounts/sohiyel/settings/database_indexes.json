@@ -1,12 +1,6 @@
 {
     "tables": [
         {
-            "pair": "BTC_USDT",
-            "tf": "1m"
-        }, {
-            "pair": "ETH_USDT",
-            "tf": "1m"
-        },{
             "pair": "SUSHI_USDT",
             "tf": "1m"
         }

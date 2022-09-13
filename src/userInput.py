@@ -279,6 +279,7 @@ class UserInput():
                         if i.value > maxSum:
                             maxSum = i.value
         max = maxSum + maxCross
+        self.logger.debug("History needed:"+str(max))
         return max * Utility.array[self.timeFrame] * 60
         
         

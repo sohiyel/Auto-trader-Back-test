@@ -10,20 +10,25 @@ class BaseExchange():
         self.authorize()
 
     def fetch_ohlcv(self, pair, timeframe, since=""):
+        self.logger.critical("API request: Fetch OHLCV")
         if since:
             return self.exchange.fetch_ohlcv(pair, timeframe, since)
         return self.exchange.fetch_ohlcv(pair, timeframe)
     
     def fetch_order_book(self, pair):
+        self.logger.critical("API request: Fetch order book")
         return self.exchange.fetch_order_book(pair)
 
     def create_market_order(self, symbol, side, amount, leverage=1, comment="", price=None, params={}):
+        self.logger.critical("API request: Create market order")
         return self.exchange.create_market_order(symbol, side, amount, params)
 
     def fetch_positions(self, symbols=None, params={}):
+        self.logger.critical("API request: Fetch positions")
         return self.exchange.fetch_positions()
 
     def load_markets(self):
+        self.logger.critical("API request: Load market")
         return self.exchange.load_markets()
 
 

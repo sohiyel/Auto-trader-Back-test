@@ -3,7 +3,7 @@ from src.signalClass import SignalClass
 import pandas as pd
 import time
 from src.logManager import LogService
-class Test02(Strategy):
+class Test03(Strategy):
     def __init__(self, currentInput, pair, marketData = "", settings = "") -> None:
         super().__init__()
         self.pair = pair
@@ -15,7 +15,7 @@ class Test02(Strategy):
         self.logService.set_pts_formatter(pts)
 
     def long_enter(self):
-        longEnters = [2]
+        longEnters = [0]
         if self.currentTime in longEnters:
             self.decisions['longEnt'] = 1
 
@@ -25,12 +25,12 @@ class Test02(Strategy):
             self.decisions['longExt'] = 1
 
     def short_enter(self):
-        shortEnters = [0]
+        shortEnters = [1]
         if self.currentTime in shortEnters:
             self.decisions['shortEnt'] = 1
 
     def short_exit(self):
-        shortExits = [1]
+        shortExits = [2]
         if self.currentTime in shortExits:
             self.decisions['shortExt'] = 1
 
@@ -54,7 +54,7 @@ class Test02(Strategy):
                         price = self.df.iloc[-1]["close"],
                         slPercent = 0,
                         tpPercent = 0,
-                        comment= "Test01",
+                        comment= "Test03",
                         longEnter = self.decisions["longEnt"],
                         longExit = self.decisions["longExt"],
                         shortEnter = self.decisions["shortEnt"],

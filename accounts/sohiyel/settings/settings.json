@@ -10,6 +10,6 @@
         "data_limit_spot" : 1440,
         "margin_ratio": 0.2,
         "free_balance": 0.2,
-        "open_position_delays": 3
+        "open_position_delays": 0
     }
 }

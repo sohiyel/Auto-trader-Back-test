@@ -62,16 +62,16 @@ class Trader(Simulator):
                 return
         try:
             self.update_candle_data()
-        except:
-            self.logger.error("Cannot update candle data!")
+        except Exception as e:
+            self.logger.error("Cannot update candle data! --->"+ str(e))
         choice, signal = self.orderManager.decider(self.df,
                                                     self.portfolioManager.equity,
                                                     self.portfolioManager.balance,
                                                     self.positionManager.position_average_price(),
                                                     self.positionManager.position_size())
         self.logger.info ( f"Current choice is:{choice}")
-        try:
-            self.process_orders(choice, signal, self.settings.constantNumbers["commission"])
-        except Exception as e:
-            self.logger.error("Cannot process this signal!" + str(e))
+        # try:
+        self.process_orders(choice, signal, self.settings.constantNumbers["commission"])
+        # except Exception as e:
+        #     self.logger.error("Cannot process this signal!" + str(e))
         self.portfolioManager.calc_poL()

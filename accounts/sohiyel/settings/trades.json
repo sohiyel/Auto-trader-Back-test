@@ -23,6 +23,26 @@
             "long_short": "both",
             "stake_amount": 1,
             "tradeable_balance_ratio": 0
+        },
+        {
+            "pair": "SUSHI-USDT",
+            "tf": "1m",
+            "strategy": "Test02",
+            "bot": "",
+            "leverage": 1,
+            "long_short": "both",
+            "stake_amount": 1,
+            "tradeable_balance_ratio": 0
+        },
+        {
+            "pair": "SUSHI-USDT",
+            "tf": "1m",
+            "strategy": "Test03",
+            "bot": "",
+            "leverage": 1,
+            "long_short": "both",
+            "stake_amount": 1,
+            "tradeable_balance_ratio": 0
         }]
     }
 }

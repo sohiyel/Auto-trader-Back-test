@@ -57,6 +57,8 @@ class Simulator():
                     self.positionManager.add_volume(signal.price, signal.volume)
             else:
                 lastPrice = self.positionManager.close_position(self.lastState)
+                if self.settings.task == "trade":
+                    time.sleep(5)
                 self.portfolioManager.close_position(lastPrice)
                 if self.positionManager.closedPositions[-1].profit > 0:
                     self.portfolioManager.add_profit(self.positionManager.closedPositions[-1].profit)
