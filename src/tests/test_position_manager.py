@@ -88,20 +88,20 @@ class DBMockSynced:
         return True
 
 def positionManagerSynced(syncedSettings):
-    positionManager = PositionManager(10000, "BTC/USDT:USDT", 10, 0, "4h", "OneEMA", "", 1, syncedSettings)
+    positionManager = PositionManager(10000, "BTC/USDT:USDT", 10, 0, 0, "4h", "OneEMA", "", 1, syncedSettings)
     positionManager.db = DBMockSynced()
     return positionManager
 
 def test_init_position_manager(syncedSettings):
-    positionManager = PositionManager(100000, "BTC/USDT:USDT", 10, 0, "4h", "OneEMA", "", 1, syncedSettings)
+    positionManager = PositionManager(100000, "BTC/USDT:USDT", 10, 0, 0, "4h", "OneEMA", "", 1, syncedSettings)
 
 def test_check_open_position_with_valid_margin(syncedSettings):
-    newMargin = 10000*syncedSettings.constantNumbers["margin_ratio"]-559.72-1
-    assert positionManagerSynced(syncedSettings).check_open_position_margin(newMargin) == True
+    newMargin = 10000*syncedSettings.constantNumbers["max_of_each_pair_margins"]-559.72-1
+    assert positionManagerSynced(syncedSettings).check_open_available_balance(newMargin) == True
 
 def test_check_open_position_with_invalid_margin(syncedSettings):
-    newMargin = 10000*syncedSettings.constantNumbers["margin_ratio"]-559.72+1
-    assert positionManagerSynced(syncedSettings).check_open_position_margin(newMargin) == False
+    newMargin = 10000*syncedSettings.constantNumbers["max_of_each_pair_margins"]-559.72+1
+    assert positionManagerSynced(syncedSettings).check_open_available_balance(newMargin) == False
 
 def test_open_position(syncedSettings):
     pManager = positionManagerSynced(syncedSettings)

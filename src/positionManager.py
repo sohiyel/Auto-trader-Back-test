@@ -6,7 +6,7 @@ from src.markets import Markets
 from src.logManager import LogService
 import time
 class PositionManager():
-    def __init__(self, initialCapital, pair, volume, ratioAmount, timeFrame, strategyName, botName, leverage, settings) -> None:
+    def __init__(self, initialCapital, pair, volume, ratioAmount, mOfContractSize, timeFrame, strategyName, botName, leverage, settings) -> None:
         self.openPositions = []
         self.closedPositions = []
         self.initialCapital = initialCapital
@@ -14,6 +14,7 @@ class PositionManager():
         self.pair = self.exchange.change_symbol_for_trade(pair)
         self.volume = volume
         self.ratioAmount = ratioAmount
+        self.mOfContractSize = mOfContractSize
         self.timeFrame = timeFrame
         self.strategyName = strategyName
         self.botName = botName
@@ -26,25 +27,25 @@ class PositionManager():
         pts = {'pair': self.pair, 'timeFrame': self.timeFrame, 'strategyName': self.strategyName}
         self.logService.set_pts_formatter(pts)
 
-    def check_open_position_margin(self, newMargin):
+    def check_open_available_balance(self, newMargin):
         #Check margin
         dbOpenPositions = self.db.get_open_positions(Utility.get_db_format(self.pair))        
         totalMargin = 0
         for index, k in dbOpenPositions.iterrows():
             if k["side"] == "buy":
-                totalMargin += k["volume"] * k["entryPrice"] * self.contractSize
+                totalMargin += k["volume"] * k["entryPrice"] * self.contractSize / self.leverage
             else:
                 if self.settings.isSpot:
-                    totalMargin -= k["volume"] * k["entryPrice"] * self.contractSize
+                    totalMargin -= k["volume"] * k["entryPrice"] * self.contractSize / self.leverage
                 else:
-                    totalMargin += k["volume"] * k["entryPrice"] * self.contractSize
+                    totalMargin += k["volume"] * k["entryPrice"] * self.contractSize / self.leverage
         totalMargin = abs(float(totalMargin)) + newMargin
         self.logger.debug(dbOpenPositions)
         self.logger.debug("Total Margin: "+str(totalMargin))
         self.logger.debug("Initial Deposit: "+str(self.initialCapital))
         self.logger.debug("Total Margin / Initial Deposit: "+str(totalMargin / self.initialCapital))
-        self.logger.debug("Valid Margin Ratio: "+ str(self.settings.constantNumbers["margin_ratio"]))
-        if totalMargin / self.initialCapital > self.settings.constantNumbers["margin_ratio"]:
+        self.logger.debug("Valid Margin Ratio: "+ str(self.settings.constantNumbers["max_of_each_pair_margins"]))
+        if totalMargin / self.initialCapital > self.settings.constantNumbers["max_of_each_pair_margins"]:
             self.logger.warning(f"This pair({self.pair}) has reached the maximum ratio of your initial deposit!")
             return False
         return True
@@ -67,6 +68,14 @@ class PositionManager():
 
         return True
 
+    def get_volume(self, entryPrice):
+        if self.mOfContractSize > 0:
+            return int(self.mOfContractSize)
+        elif self.volume > 0:
+            return int(self.volume / self.contractSize)
+        elif self.ratioAmount > 0 and self.exchange.get_second_currency() == self.settings.base_currency:         
+            return int((self.ratioAmount * self.initialCapital * self.leverage)/(entryPrice * self.contractSize))
+        raise ValueError("Entered amount is not correct for this pair:"+self.pair)
     
     def open_position(self, signal, lastState):
         self.logger.debug("Open Position!")
@@ -77,38 +86,14 @@ class PositionManager():
             ask = orderbook['asks'][0][0] if len (orderbook['asks']) > 0 else None
             spread = (ask - bid) if (bid and ask) else None
             self.logger.debug('market price', {'bid': bid, 'ask': ask, 'spread': spread})
-            price = bid if signal.side == 'buy' else ask
+            entryPrice = bid if signal.side == 'buy' else ask
             dbPositions = self.db.get_positions(Utility.get_db_format(self.pair))
-            if self.ratioAmount > 0:
-                amount = self.ratioAmount * self.initialCapital / price
-                if self.settings.isSpot:
-                    if amount > self.contractSize:
-                        volume = amount
-                    else:
-                        volume = self.contractSize
-                        self.logger.warning("Volume size is lower than the minimum size!")
-                else:
-                    volume = amount / self.contractSize
-                if self.check_open_position_margin(self.ratioAmount * self.initialCapital) and self.check_open_position_time(dbPositions):
-                    pass
-                else:
-                    self.logger.warning("Cannot open this order!")
-                    return
+            volume = self.get_volume(entryPrice)
+            if self.check_open_available_balance(self.volume * float(entryPrice) * self.contractSize / self.leverage) and self.check_open_position_time(dbPositions):
+                pass
             else:
-                if self.settings.isSpot:
-                    if self.volume > self.contractSize:
-                        volume = self.volume
-                    else:
-                        volume = self.contractSize
-                        self.logger.warning("Volume size is lower than the minimum size!")
-                else:
-                    volume = self.volume / self.contractSize
-                if self.check_open_position_margin(self.volume * float(price) * self.contractSize) and self.check_open_position_time(dbPositions):
-                    pass
-                else:
-                    self.logger.warning("Cannot open this order!")
-                    return
-            amount = volume
+                self.logger.warning("Cannot open this order!")
+                return
             doneCreateMarketOrder = False
             while not doneCreateMarketOrder:
                 try:
@@ -134,13 +119,13 @@ class PositionManager():
             stopLossOrderId = uuid.uuid4().hex
             takeProfitOrderId = uuid.uuid4().hex
             try:
-                self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, amount, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
+                self.db.add_position(positionId, Utility.get_db_format(signal.pair), signal.side, volume, signal.price, lastState, self.leverage, True, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId)
                 newPosition = Position(positionId, signal.pair, signal.side, self.volume, self.contractSize, signal.price, lastState, self.timeFrame, self.strategyName, self.botName, stopLossOrderId, takeProfitOrderId, True, self.leverage, signal.stopLoss, signal.takeProfit, signal.slPercent, signal.tpPercent, signal.comment, self.settings)                
                 self.openPositions.append(newPosition)
                 self.logger.info ( f"-------- Open {signal.side} position on {self.openPositions[0].pair}--------")
                 try:
-                    self.db.add_order(stopLossOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
-                    self.db.add_order(takeProfitOrderId, signal.pair, Utility.opposite_side(signal.side), amount, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+                    self.db.add_order(stopLossOrderId, signal.pair, Utility.opposite_side(signal.side), volume, newPosition.stopLoss, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
+                    self.db.add_order(takeProfitOrderId, signal.pair, Utility.opposite_side(signal.side), volume, newPosition.takeProfit, self.leverage, True, self.timeFrame, self.strategyName, self.botName, positionId)
                 except Exception as e:
                     self.logger.error("Cannot add new order to db!" + str(e))
             except Exception as e:

@@ -19,8 +19,9 @@ class TradeIndex():
                                                     botName = pts["bot"],
                                                     side = pts["long_short"],
                                                     leverage = pts["leverage"],
-                                                    amount = pts["stake_amount"],
-                                                    ratioAmount = pts["tradeable_balance_ratio"],
+                                                    mOfContractSize = pts["amount_multiple_of_contract_size"],
+                                                    amount = pts["amount_stake"],
+                                                    ratioAmount = pts["amout_balance_ratio"],
                                                     settings= settings)
                     userInput.find_inputs()
                     self.indexes.append( userInput )

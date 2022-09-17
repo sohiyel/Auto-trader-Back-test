@@ -12,5 +12,5 @@ def settings() -> Settings:
 
 def test_init_trade_index(settings):
     tradeIndex = TradeIndex(settings)
-    expectedIndexes = [UserInput("SUSHI-USDT","1m","Test01","","both",1,1,0,settings=settings)]
+    expectedIndexes = [UserInput("SUSHI-USDT","1m","Test01","","both",1,1,1,0,settings=settings)]
     assert tradeIndex.indexes == expectedIndexes

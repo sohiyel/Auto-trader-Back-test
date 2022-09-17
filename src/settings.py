@@ -46,7 +46,7 @@ class Settings:
                                                                                                     "commission" : 0.0006,
                                                                                                     "data_limit_future" : 200,
                                                                                                     "data_limit_spot" : 1440,
-                                                                                                    "margin_ratio" : 0.2,
+                                                                                                    "max_of_each_pair_margins" : 0.2,
                                                                                                     "free_balance": 0.2,
                                                                                                     "open_position_delays": 3
                                                                                                 }

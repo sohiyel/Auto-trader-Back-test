@@ -34,12 +34,6 @@ class KucoinSpot(BaseExchange):
     def change_symbol_for_markets(self, symbol):
         return self.change_symbol_for_data(symbol)
 
-    def get_second_currency(self, symbol):
-        symbols = symbol.split("/")
-        for i in symbols:
-            if i != self.settings.baseCurrency:
-                return i
-
     def fetch_balance(self, symbol=""):
         response = self.exchange.fetch_accounts()
         self.logger.debug(response)
@@ -87,3 +81,11 @@ class KucoinSpot(BaseExchange):
                 raise ValueError(f'Cannot find contractSize of {ePair}!')
         except Exception as e:
             self.logger.error(f"Cannot get contract size of {ePair}" + str(e))
+
+    def get_second_currency(self, symbol):
+        symbols = symbol.split("/")
+        return symbols[1]
+
+    def get_first_currency(self, symbol):
+        symbols = symbol.split("/")
+        return symbols[0]

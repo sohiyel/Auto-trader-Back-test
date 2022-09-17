@@ -9,7 +9,7 @@ from os import path
 from src.logManager import LogService
 
 class UserInput():
-    def __init__(self, pair, timeFrame, strategyName, botName, side = "both", leverage = 1, amount = 1 , ratioAmount = 0, optimization = False, randomInput = False, settings="") -> None:
+    def __init__(self, pair, timeFrame, strategyName, botName, side = "both", leverage = 1, mOfContractSize = 1, amount = 1 , ratioAmount = 0, optimization = False, randomInput = False, settings="") -> None:
         self.settings = settings
         self.pair = pair
         self.timeFrame = Utility.unify_timeframe(timeFrame, settings.exchange)
@@ -17,6 +17,7 @@ class UserInput():
         self.botName = botName
         self.side = side
         self.leverage = leverage
+        self.mOfContractSize = mOfContractSize
         self.amount = amount
         self.ratioAmount = ratioAmount
         self.optimization = optimization

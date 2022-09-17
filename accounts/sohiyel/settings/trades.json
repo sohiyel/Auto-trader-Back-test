@@ -21,8 +21,9 @@
             "bot": "",
             "leverage": 1,
             "long_short": "both",
-            "stake_amount": 1,
-            "tradeable_balance_ratio": 0
+            "amount_multiple_of_contract_size": 1,
+            "amount_stake": 1,
+            "amout_balance_ratio": 0
         },
         {
             "pair": "SUSHI-USDT",
@@ -31,8 +32,9 @@
             "bot": "",
             "leverage": 1,
             "long_short": "both",
-            "stake_amount": 1,
-            "tradeable_balance_ratio": 0
+            "amount_multiple_of_contract_size": 1,
+            "amount_stake": 1,
+            "amout_balance_ratio": 0
         },
         {
             "pair": "SUSHI-USDT",
@@ -41,8 +43,9 @@
             "bot": "",
             "leverage": 1,
             "long_short": "both",
-            "stake_amount": 1,
-            "tradeable_balance_ratio": 0
+            "amount_multiple_of_contract_size": 1,
+            "amount_stake": 1,
+            "amout_balance_ratio": 0
         }]
     }
 }

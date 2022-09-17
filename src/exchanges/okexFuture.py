@@ -171,3 +171,12 @@ class OkexFuture(BaseExchange):
             except Exception as e:
                 self.logger.error("Cannot close positions! " + str(e))
 
+    def get_second_currency(self, symbol):
+        symbols = symbol.split("-")
+        return symbols[1]
+
+    def get_first_currency(self, symbol):
+        symbols = symbol.split("-")
+        return symbols[0]
+
+

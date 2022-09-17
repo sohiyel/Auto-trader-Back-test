@@ -124,3 +124,11 @@ class KucoinFutures(BaseExchange):
                         self.logger.error("Cannot create market order!" + str(e))
                         time.sleep(10)
                         attempt += 1
+
+    def get_second_currency(self, symbol):
+        symbols = symbol.split("/")
+        return symbols[1].split(":")[0]
+
+    def get_first_currency(self, symbol):
+        symbols = symbol.split("/")
+        return symbols[0]

@@ -36,8 +36,9 @@ class Trader(Simulator):
         self.lastCandle = ""
         self.volume = index.amount
         self.ratioAmount = index.ratioAmount
+        self.mOfContractSize = index.mOfContractSize
         self.leverage = index.leverage
-        self.positionManager = PositionManager(self.portfolioManager.initialCapital, self.pair, self.volume, self.ratioAmount, self.timeFrame, self.strategyName, self.botName, self.leverage,settings)
+        self.positionManager = PositionManager(self.portfolioManager.initialCapital, self.pair, self.volume, self.ratioAmount, self.mOfContractSize, self.timeFrame, self.strategyName, self.botName, self.leverage,settings)
         self.positionManager.sync_positions()
         self.currentInput = index
         self.df = ""
